@@ -1,0 +1,20 @@
+# Unity-generated, machine-local
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild*/
+[Ll]ogs/
+UserSettings/
+MemoryCaptures/
+
+# IDEs
+.vs/
+.vscode/
+.idea/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Crash dumps
+*.stacktrace
