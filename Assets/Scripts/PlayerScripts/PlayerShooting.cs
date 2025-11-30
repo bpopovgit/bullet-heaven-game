@@ -1,18 +1,13 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+[RequireComponent(typeof(PlayerInput))]
 public class PlayerShooting : MonoBehaviour
 {
     [Header("Setup")]
-    [SerializeField] private Transform muzzle;          // FirePoint (child of Player)
-    [SerializeField] private GameObject bulletPrefab;   // Bullet prefab
-    [SerializeField] private Camera mainCam;            // leave empty to auto-grab
-
-    [Header("Weapon Stats")]
-    [SerializeField] private float shotsPerSecond = 6f; // fire rate
-    [SerializeField] private int damage = 10;
-    [SerializeField] private float bulletSpeed = 20f;
-    [SerializeField] private int pierce = 0;
+    [SerializeField] private Transform muzzle;           // FirePoint (child of Player)
+    [SerializeField] private Camera mainCam;             // leave empty to auto-fill
+    [SerializeField] private WeaponDefinition weapon;    // assign a WeaponDefinition asset
 
     private PlayerInput _playerInput;
     private InputAction _fire;
@@ -26,7 +21,7 @@ public class PlayerShooting : MonoBehaviour
 
     private void OnEnable()
     {
-        _fire = _playerInput.actions["Fire"]; // uses your existing action
+        _fire = _playerInput.actions["Fire"]; // must match your action name
         _playerInput.actions.Enable();
     }
 
@@ -36,24 +31,23 @@ public class PlayerShooting : MonoBehaviour
         if (_fire != null && _fire.IsPressed() && _cooldown <= 0f)
         {
             ShootOnce();
-            _cooldown = 1f / Mathf.Max(0.01f, shotsPerSecond);
+            _cooldown = 1f / Mathf.Max(0.01f, weapon.shotsPerSecond);
         }
     }
 
     private void ShootOnce()
     {
-        if (!muzzle || !bulletPrefab || !mainCam) return;
+        if (!muzzle || !weapon || !weapon.bulletPrefab || !mainCam) return;
 
-        // Aim at mouse
         Vector3 mouseWorld = mainCam.ScreenToWorldPoint(Mouse.current.position.ReadValue());
         mouseWorld.z = 0f;
         Vector2 dir = (mouseWorld - muzzle.position).normalized;
 
-        var go = Instantiate(bulletPrefab, muzzle.position, Quaternion.identity);
-        var bullet = go.GetComponent<Bullet>();
-        bullet.Init(dir, bulletSpeed, damage, pierce);
+        var go = Instantiate(weapon.bulletPrefab, muzzle.position, Quaternion.identity);
+        var bullet = go.GetComponent<BulletElemental>();
+        bullet.Init(weapon, dir);
 
-        // Optional: visually point the muzzle at the cursor
+        // rotate the muzzle/arm for visuals (optional)
         muzzle.right = dir;
     }
 }

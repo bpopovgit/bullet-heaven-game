@@ -5,12 +5,18 @@ public class Bullet : MonoBehaviour
 {
     [SerializeField] private float lifeTime = 3f;
 
+    // What element this bullet uses – set per prefab in the Inspector
+    [SerializeField] private DamageElement element = DamageElement.Physical;
+
     private Rigidbody2D _rb;
     private int _damage;
     private int _pierceRemaining;
     private float _ttl;
 
-    private void Awake() { _rb = GetComponent<Rigidbody2D>(); }
+    private void Awake()
+    {
+        _rb = GetComponent<Rigidbody2D>();
+    }
 
     // Called by the shooter after Instantiate
     public void Init(Vector2 direction, float speed, int damage, int pierce)
@@ -26,7 +32,8 @@ public class Bullet : MonoBehaviour
     private void Update()
     {
         _ttl -= Time.deltaTime;
-        if (_ttl <= 0f) Destroy(gameObject);
+        if (_ttl <= 0f)
+            Destroy(gameObject);
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -34,10 +41,15 @@ public class Bullet : MonoBehaviour
         // Only damage enemies
         if (other.TryGetComponent<EnemyHealth>(out var hp))
         {
-            hp.TakeDamage(_damage);
+            // Build a DamagePacket and pass that to the enemy
+            DamagePacket packet = new DamagePacket(_damage, element);
+            hp.TakeDamage(packet);
 
-            if (_pierceRemaining > 0) _pierceRemaining--;
-            else Destroy(gameObject);
+            // Piercing logic as before
+            if (_pierceRemaining > 0)
+                _pierceRemaining--;
+            else
+                Destroy(gameObject);
         }
     }
 }
