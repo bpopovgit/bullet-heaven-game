@@ -14,7 +14,7 @@ public class EnemyProjectile : MonoBehaviour
         _rb = GetComponent<Rigidbody2D>();
     }
 
-    // Called by the shooter when spawning
+    // Called by RangedShooter when spawning
     public void Fire(Vector2 direction)
     {
         _rb.velocity = direction.normalized * speed;
@@ -27,12 +27,9 @@ public class EnemyProjectile : MonoBehaviour
         // Hit player?
         if (other.TryGetComponent<PlayerHealth>(out var player))
         {
-            player.TakeDamage(damage, transform.position);
+            player.TakeDamage(damage, transform.position, false);  // no knockback
             Destroy(gameObject);
             return;
         }
-
-        // Optional: prevent hitting enemies / other bullets
-        // Do nothing for enemies; matrix will also protect us.
     }
 }
