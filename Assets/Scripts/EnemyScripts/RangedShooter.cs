@@ -35,8 +35,10 @@ public class RangedShooter : MonoBehaviour
 
         // Maintain preferred range
         Vector2 desired = Vector2.zero;
-        if (dist > preferredRange * 1.1f) desired = toPlayer.normalized;         // approach
-        else if (dist < preferredRange * 0.9f) desired = -toPlayer.normalized;   // back away
+        if (dist > preferredRange * 1.1f)
+            desired = toPlayer.normalized;          // approach
+        else if (dist < preferredRange * 0.9f)
+            desired = -toPlayer.normalized;         // back away
 
         _rb.velocity = desired * moveSpeed;
         transform.right = toPlayer.normalized;
@@ -57,10 +59,18 @@ public class RangedShooter : MonoBehaviour
     private void Fire()
     {
         if (!enemyProjectilePrefab) return;
+
         Vector2 dir = (_player.position - transform.position).normalized;
 
         var go = Instantiate(enemyProjectilePrefab, transform.position, Quaternion.identity);
         var proj = go.GetComponent<EnemyProjectile>();
-        proj.Fire(dir);
+        if (proj != null)
+        {
+            proj.Fire(dir);
+        }
+        else
+        {
+            Debug.LogError("EnemyProjectile prefab is missing the EnemyProjectile script!");
+        }
     }
 }
