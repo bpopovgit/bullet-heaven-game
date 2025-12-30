@@ -3,9 +3,15 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D), typeof(Collider2D))]
 public class BulletElemental : MonoBehaviour
 {
+    [Header("Lifetime")]
     [SerializeField] private float lifeTime = 3f;
 
+    [Header("Collision")]
+    [Tooltip("Set this to the Walls layer (only). Bullet will disappear on wall hit.")]
+    [SerializeField] private LayerMask wallsMask;
+
     private Rigidbody2D _rb;
+    private Collider2D _col;
     private WeaponDefinition _weapon;
     private float _ttl;
     private int _pierceLeft;
@@ -24,6 +30,10 @@ public class BulletElemental : MonoBehaviour
     private void Awake()
     {
         _rb = GetComponent<Rigidbody2D>();
+        _col = GetComponent<Collider2D>();
+
+        // This script uses trigger callbacks.
+        _col.isTrigger = true;
     }
 
     private void Update()
@@ -34,7 +44,14 @@ public class BulletElemental : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        // Only damage enemies
+        // 1) Hit a wall? Destroy BULLET only.
+        if (IsInLayerMask(other.gameObject.layer, wallsMask))
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        // 2) Only damage enemies
         if (!other.TryGetComponent<EnemyHealth>(out var enemy)) return;
 
         // Build the damage packet
@@ -67,6 +84,11 @@ public class BulletElemental : MonoBehaviour
         if (_pierceLeft > 0) { _pierceLeft--; return; }
 
         Destroy(gameObject);
+    }
+
+    private static bool IsInLayerMask(int layer, LayerMask mask)
+    {
+        return (mask.value & (1 << layer)) != 0;
     }
 
     private void OnDrawGizmosSelected()

@@ -3,12 +3,19 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D), typeof(Collider2D))]
 public class Bullet : MonoBehaviour
 {
+    [Header("Lifetime")]
     [SerializeField] private float lifeTime = 3f;
 
-    // What element this bullet uses – set per prefab in the Inspector
+    [Header("Damage")]
     [SerializeField] private DamageElement element = DamageElement.Physical;
 
+    [Header("Collision")]
+    [Tooltip("Set this to the Walls layer (only).")]
+    [SerializeField] private LayerMask wallsMask;
+
     private Rigidbody2D _rb;
+    private Collider2D _col;
+
     private int _damage;
     private int _pierceRemaining;
     private float _ttl;
@@ -16,6 +23,13 @@ public class Bullet : MonoBehaviour
     private void Awake()
     {
         _rb = GetComponent<Rigidbody2D>();
+        _col = GetComponent<Collider2D>();
+
+        // This script expects trigger callbacks.
+        _col.isTrigger = true;
+
+        // Lifetime countdown
+        _ttl = lifeTime;
     }
 
     // Called by the shooter after Instantiate
@@ -23,10 +37,13 @@ public class Bullet : MonoBehaviour
     {
         _damage = damage;
         _pierceRemaining = pierce;
-        _ttl = lifeTime;
 
-        _rb.velocity = direction.normalized * speed;
-        transform.right = direction; // rotate sprite to flight direction
+        direction = direction.normalized;
+        _rb.velocity = direction * speed;
+
+        // Optional: rotate sprite to face travel direction
+        if (direction.sqrMagnitude > 0.0001f)
+            transform.right = direction;
     }
 
     private void Update()
@@ -38,18 +55,32 @@ public class Bullet : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        // Only damage enemies
+        // 1) Hit a wall? Destroy BULLET only.
+        if (IsInLayerMask(other.gameObject.layer, wallsMask))
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        // 2) Damage enemies
         if (other.TryGetComponent<EnemyHealth>(out var hp))
         {
-            // Build a DamagePacket and pass that to the enemy
             DamagePacket packet = new DamagePacket(_damage, element);
             hp.TakeDamage(packet);
 
-            // Piercing logic as before
             if (_pierceRemaining > 0)
+            {
                 _pierceRemaining--;
+            }
             else
+            {
                 Destroy(gameObject);
+            }
         }
+    }
+
+    private static bool IsInLayerMask(int layer, LayerMask mask)
+    {
+        return (mask.value & (1 << layer)) != 0;
     }
 }

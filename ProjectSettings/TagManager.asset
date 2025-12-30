@@ -17,7 +17,7 @@ TagManager:
   - Enemy
   - Bullet
   - EnemyBullet
-  - 
+  - Walls
   - 
   - 
   - 
@@ -46,6 +46,12 @@ TagManager:
   - name: Background
     uniqueID: 1275726669
     locked: 0
-  - name: New Layer 2
+  - name: Actors
     uniqueID: 3055159265
+    locked: 0
+  - name: Foreground
+    uniqueID: 3829763871
+    locked: 0
+  - name: Effects
+    uniqueID: 2348721701
     locked: 0
