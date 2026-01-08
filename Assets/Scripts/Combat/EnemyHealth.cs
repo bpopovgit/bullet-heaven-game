@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class EnemyHealth : MonoBehaviour
@@ -7,6 +8,9 @@ public class EnemyHealth : MonoBehaviour
 
     private EnemyResistances _resists;
 
+    public event Action<EnemyHealth> Died;   // <-- NEW
+    public bool IsDead { get; private set; } // <-- NEW
+
     private void Awake()
     {
         currentHealth = maxHealth;
@@ -15,26 +19,27 @@ public class EnemyHealth : MonoBehaviour
 
     public void TakeDamage(DamagePacket packet)
     {
+        if (IsDead) return;
+
         float multiplier = 1f;
 
         if (_resists != null)
-        {
-            // Assuming EnemyResistances has something like:
-            // public float GetMultiplier(DamageElement element)
             multiplier = _resists.GetMultiplier(packet.element);
-        }
 
         int finalDamage = Mathf.RoundToInt(packet.amount * multiplier);
         currentHealth -= finalDamage;
 
         if (currentHealth <= 0)
-        {
             Die();
-        }
     }
 
     private void Die()
     {
+        if (IsDead) return;
+        IsDead = true;
+
+        Died?.Invoke(this); // <-- notify respawn system
+
         // TODO: add death VFX, score, etc.
         Destroy(gameObject);
     }
