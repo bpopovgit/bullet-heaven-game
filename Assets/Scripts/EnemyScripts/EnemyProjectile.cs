@@ -15,6 +15,13 @@ public class EnemyProjectile : MonoBehaviour
     [Header("Collision")]
     [Tooltip("Set this to the Walls layer (only). Enemy projectile disappears on wall hit.")]
     [SerializeField] private LayerMask wallsMask;
+    [Header("Element & Status")]
+    [SerializeField] private DamageElement element = DamageElement.Physical;
+    [SerializeField] private StatusEffect status = StatusEffect.None;
+    [SerializeField] private float statusDuration = 0f;
+    [Range(0f, 1f)]
+    [SerializeField] private float statusStrength = 0f;
+
 
     private Rigidbody2D _rb;
     private Collider2D _col;
@@ -48,7 +55,20 @@ public class EnemyProjectile : MonoBehaviour
         // Hit player?
         if (other.TryGetComponent<PlayerHealth>(out var player))
         {
-            player.TakeDamage(damage, transform.position, false);  // no knockback
+            var packet = new DamagePacket
+            {
+                amount = damage,
+                element = element,
+                splashRadius = 0f,
+                sourcePos = transform.position,
+
+                status = status,
+                statusDuration = statusDuration,
+                statusStrength = statusStrength
+            };
+
+            packet.Clamp();
+            player.TakeDamage(packet, applyKnockback: false);
             Destroy(gameObject);
             return;
         }

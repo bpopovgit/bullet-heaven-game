@@ -9,17 +9,20 @@ public class PlayerHealth : MonoBehaviour
     [SerializeField] private float iFrameTime = 0.3f;
     [SerializeField] private float knockbackForce = 6f;
 
+
     [Header("UI")]
     [SerializeField] private GameObject gameOverScreen;   // assign in Inspector
 
     private int _hp;
     private bool _invuln;
     private Rigidbody2D _rb;
+    private StatusReceiver _status;
 
     private void Awake()
     {
         _hp = maxHP;
         _rb = GetComponent<Rigidbody2D>();
+        _status = GetComponent<StatusReceiver>();
     }
 
     /// <summary>
@@ -48,6 +51,23 @@ public class PlayerHealth : MonoBehaviour
         {
             StartCoroutine(Invulnerability());
         }
+    }
+
+    public void TakeDamage(DamagePacket packet, bool applyKnockback = true)
+    {
+        packet.Clamp();
+
+        // Capture state before calling the int method
+        bool wasInvuln = _invuln;
+        bool wasDead = _hp <= 0;
+
+        TakeDamage(packet.amount, packet.sourcePos, applyKnockback);
+
+        // If damage was ignored, also ignore status
+        if (wasInvuln || wasDead) return;
+
+        if (_status != null)
+            _status.ApplyStatus(packet);
     }
 
     private void Die()

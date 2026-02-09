@@ -5,6 +5,13 @@ public class EnemyMeleeDamage : MonoBehaviour
     [Header("Damage")]
     [SerializeField] private int contactDamage = 10;
     [SerializeField] private float damageInterval = 2f; // seconds between hits
+    [Header("Element & Status")]
+    [SerializeField] private DamageElement element = DamageElement.Physical;
+    [SerializeField] private StatusEffect status = StatusEffect.None;
+    [SerializeField] private float statusDuration = 0f;
+    [Range(0f, 1f)]
+    [SerializeField] private float statusStrength = 0f;
+
 
     private float _damageTimer;
     private PlayerHealth _playerInContact;
@@ -17,7 +24,20 @@ public class EnemyMeleeDamage : MonoBehaviour
 
         if (_damageTimer <= 0f)
         {
-            _playerInContact.TakeDamage(contactDamage, transform.position);
+            var packet = new DamagePacket
+            {
+                amount = contactDamage,
+                element = element,
+                splashRadius = 0f,
+                sourcePos = transform.position,
+
+                status = status,
+                statusDuration = statusDuration,
+                statusStrength = statusStrength
+            };
+
+            packet.Clamp();
+            _playerInContact.TakeDamage(packet, applyKnockback: true);
             _damageTimer = damageInterval;
         }
     }

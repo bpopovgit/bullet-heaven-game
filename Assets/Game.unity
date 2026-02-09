@@ -481,6 +481,7 @@ GameObject:
   - component: {fileID: 402174257}
   - component: {fileID: 402174258}
   - component: {fileID: 402174259}
+  - component: {fileID: 402174260}
   m_Layer: 6
   m_Name: Player
   m_TagString: Player
@@ -702,6 +703,18 @@ MonoBehaviour:
   iFrameTime: 0.3
   knockbackForce: 6
   gameOverScreen: {fileID: 1786344790}
+--- !u!114 &402174260
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 402174251}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96904d36ad59f774bbd13dcc2371ece0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &489553061
 GameObject:
   m_ObjectHideFlags: 0

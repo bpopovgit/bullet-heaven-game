@@ -10,6 +10,7 @@ public class PlayerMovement : MonoBehaviour
     private Rigidbody2D rb;
     private PlayerInput playerInput;
     private InputAction moveAction;
+    private StatusReceiver _status;
 
     private Vector2 movementInput;
 
@@ -17,6 +18,7 @@ public class PlayerMovement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         playerInput = GetComponent<PlayerInput>();
+        _status = GetComponent<StatusReceiver>();
 
         // Grab the action once (safer than calling this repeatedly).
         moveAction = playerInput.actions["Move"];
@@ -30,9 +32,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnEnable()
     {
-        // Enable only what we use (avoid enabling the whole asset repeatedly).
         moveAction.Enable();
-
         moveAction.performed += OnMove;
         moveAction.canceled += OnMove;
     }
@@ -41,13 +41,11 @@ public class PlayerMovement : MonoBehaviour
     {
         moveAction.performed -= OnMove;
         moveAction.canceled -= OnMove;
-
         moveAction.Disable();
     }
 
     private void OnMove(InputAction.CallbackContext context)
     {
-        // Normalize so diagonals aren't faster.
         movementInput = context.ReadValue<Vector2>();
         if (movementInput.sqrMagnitude > 1f)
             movementInput.Normalize();
@@ -55,7 +53,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
-        // Move using Rigidbody2D so collision is respected.
-        rb.velocity = movementInput * moveSpeed;
+        float mult = _status != null ? _status.SpeedMultiplier : 1f;
+        rb.velocity = movementInput * moveSpeed * mult;
     }
 }
