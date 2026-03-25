@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: 2035579310482281145}
   - component: {fileID: -6106274352104567697}
   m_Layer: 7
-  m_Name: MeleeEnemy
+  m_Name: MeleeEnemy_Frost
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

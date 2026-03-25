@@ -12,12 +12,11 @@ GameObject:
   - component: {fileID: 7113559280484374124}
   - component: {fileID: 8190139323690447503}
   - component: {fileID: 8690956063233016887}
-  - component: {fileID: 1394922626558150866}
   - component: {fileID: -7674568210783495502}
   - component: {fileID: 2035579310482281145}
-  - component: {fileID: -6106274352104567697}
+  - component: {fileID: 1439513368538830253}
   m_Layer: 7
-  m_Name: MeleeEnemy
+  m_Name: RangedEnemy_Fire
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -152,19 +151,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 1
   m_Constraints: 4
---- !u!114 &1394922626558150866
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7709740700198657319}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f30e03866af61364da343d746cba777f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  speed: 2
 --- !u!114 &-7674568210783495502
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -191,7 +177,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 20
---- !u!114 &-6106274352104567697
+--- !u!114 &1439513368538830253
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -200,12 +186,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 7709740700198657319}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b502193353aa3ae4e9578b7589c68a3b, type: 3}
+  m_Script: {fileID: 11500000, guid: a87c1b9748c2de445a0575aa48b81b85, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  contactDamage: 10
-  damageInterval: 2
-  element: 1
-  status: 1
-  statusDuration: 3
-  statusStrength: 0.5
+  preferredRange: 6
+  moveSpeed: 2.5
+  enemyProjectilePrefab: {fileID: 6321428270796088216, guid: a53457e9f776e2c4f884aed19195257d, type: 3}
+  fireCooldown: 1.2

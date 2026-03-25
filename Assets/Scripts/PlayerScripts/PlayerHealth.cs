@@ -70,6 +70,17 @@ public class PlayerHealth : MonoBehaviour
             _status.ApplyStatus(packet);
     }
 
+    public void TakeDamageDirect(int amount)
+    {
+        if (_hp <= 0) return; // already dead
+        _hp -= amount;
+
+        Debug.Log($"Player took {amount} DOT damage. HP now: {_hp}");
+
+        if (_hp <= 0)
+            Die();
+    }
+
     private void Die()
     {
         Debug.Log("PLAYER DIED");
