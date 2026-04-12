@@ -6,14 +6,18 @@ public class StatusReceiver : MonoBehaviour
     public float SpeedMultiplier { get; private set; } = 1f;
     public bool IsStunned { get; private set; } = false;
 
+    [Header("Status VFX")]
+    [SerializeField] private ParticleSystem burnVFX;
+    [SerializeField] private ParticleSystem frostVFX;
+    [SerializeField] private ParticleSystem poisonVFX;
+    [SerializeField] private ParticleSystem shockVFX;
+
     private Coroutine _slowRoutine;
     private Coroutine _burnRoutine;
     private Coroutine _poisonRoutine;
     private Coroutine _shockRoutine;
 
     private PlayerHealth _playerHealth;
-
-    // Keep track of the slow separately so Shock doesn't permanently overwrite it
     private float _slowMultiplier = 1f;
 
     private void Awake()
@@ -46,8 +50,6 @@ public class StatusReceiver : MonoBehaviour
         }
     }
 
-    // ---------------- SLOW ----------------
-
     private void ApplySlow(float strength, float duration)
     {
         Debug.Log($"SLOW APPLIED: strength={strength}, duration={duration}", this);
@@ -58,6 +60,7 @@ public class StatusReceiver : MonoBehaviour
         if (_slowRoutine != null)
             StopCoroutine(_slowRoutine);
 
+        PlayVFX(frostVFX);
         _slowRoutine = StartCoroutine(SlowRoutine(mult, duration));
     }
 
@@ -71,10 +74,9 @@ public class StatusReceiver : MonoBehaviour
         _slowMultiplier = 1f;
         RefreshSpeedMultiplier();
 
+        StopVFX(frostVFX);
         _slowRoutine = null;
     }
-
-    // ---------------- BURN ----------------
 
     private void ApplyBurn(float strength, float duration)
     {
@@ -82,16 +84,16 @@ public class StatusReceiver : MonoBehaviour
             StopCoroutine(_burnRoutine);
 
         int damagePerTick = StrengthToDot(strength, 6f, 2f);
+        PlayVFX(burnVFX);
         _burnRoutine = StartCoroutine(BurnRoutine(duration, damagePerTick));
     }
 
     private IEnumerator BurnRoutine(float duration, int damagePerTick)
     {
         yield return StartCoroutine(DotRoutine(2f, duration, damagePerTick));
+        StopVFX(burnVFX);
         _burnRoutine = null;
     }
-
-    // ---------------- POISON ----------------
 
     private void ApplyPoison(float strength, float duration)
     {
@@ -99,12 +101,14 @@ public class StatusReceiver : MonoBehaviour
             StopCoroutine(_poisonRoutine);
 
         int damagePerTick = StrengthToDot(strength, 3f, 2f);
+        PlayVFX(poisonVFX);
         _poisonRoutine = StartCoroutine(PoisonRoutine(duration, damagePerTick));
     }
 
     private IEnumerator PoisonRoutine(float duration, int damagePerTick)
     {
         yield return StartCoroutine(DotRoutine(2f, duration, damagePerTick));
+        StopVFX(poisonVFX);
         _poisonRoutine = null;
     }
 
@@ -133,13 +137,12 @@ public class StatusReceiver : MonoBehaviour
         return Mathf.Max(1, Mathf.RoundToInt(damagePerTick));
     }
 
-    // ---------------- SHOCK ----------------
-
     private void ApplyShock(float strength, float duration)
     {
         if (_shockRoutine != null)
             StopCoroutine(_shockRoutine);
 
+        PlayVFX(shockVFX);
         _shockRoutine = StartCoroutine(ShockRoutine(duration));
     }
 
@@ -153,13 +156,24 @@ public class StatusReceiver : MonoBehaviour
         IsStunned = false;
         RefreshSpeedMultiplier();
 
+        StopVFX(shockVFX);
         _shockRoutine = null;
     }
-
-    // ---------------- HELPERS ----------------
 
     private void RefreshSpeedMultiplier()
     {
         SpeedMultiplier = IsStunned ? 0f : _slowMultiplier;
+    }
+
+    private void PlayVFX(ParticleSystem vfx)
+    {
+        if (vfx != null && !vfx.isPlaying)
+            vfx.Play();
+    }
+
+    private void StopVFX(ParticleSystem vfx)
+    {
+        if (vfx != null && vfx.isPlaying)
+            vfx.Stop();
     }
 }

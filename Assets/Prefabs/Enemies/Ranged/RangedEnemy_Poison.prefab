@@ -191,5 +191,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   preferredRange: 6
   moveSpeed: 2.5
-  enemyProjectilePrefab: {fileID: 6321428270796088216, guid: a53457e9f776e2c4f884aed19195257d, type: 3}
+  enemyProjectilePrefab: {fileID: 6321428270796088216, guid: 0b64372dacf4b564aa2c263e0ce12f77, type: 3}
   fireCooldown: 1.2

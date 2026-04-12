@@ -45,9 +45,12 @@ public class EnemyProjectile : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
+        Debug.Log($"EnemyProjectile hit: {other.name}");
+
         // Hit a wall? Destroy projectile only.
         if (IsInLayerMask(other.gameObject.layer, wallsMask))
         {
+            Debug.Log("Projectile hit wall");
             Destroy(gameObject);
             return;
         }
@@ -55,6 +58,8 @@ public class EnemyProjectile : MonoBehaviour
         // Hit player?
         if (other.TryGetComponent<PlayerHealth>(out var player))
         {
+            Debug.Log($"PROJECTILE HIT PLAYER. Element = {element}, Status = {status}");
+
             var packet = new DamagePacket
             {
                 amount = damage,

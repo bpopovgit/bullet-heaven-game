@@ -9,9 +9,14 @@ public class PlayerHealth : MonoBehaviour
     [SerializeField] private float iFrameTime = 0.3f;
     [SerializeField] private float knockbackForce = 6f;
 
-
     [Header("UI")]
-    [SerializeField] private GameObject gameOverScreen;   // assign in Inspector
+    [SerializeField] private GameObject gameOverScreen;
+
+    [Header("Hit VFX")]
+    [SerializeField] private GameObject fireHitVFX;
+    [SerializeField] private GameObject frostHitVFX;
+    [SerializeField] private GameObject poisonHitVFX;
+    [SerializeField] private GameObject lightningHitVFX;
 
     private int _hp;
     private bool _invuln;
@@ -25,18 +30,13 @@ public class PlayerHealth : MonoBehaviour
         _status = GetComponent<StatusReceiver>();
     }
 
-    /// <summary>
-    /// Take damage. sourcePos = where the hit came from.
-    /// applyKnockback = false for bullets that should NOT push the player.
-    /// </summary>
     public void TakeDamage(int amount, Vector2 sourcePos, bool applyKnockback = true)
     {
-        if (_invuln || _hp <= 0) return;   // already dead or currently invulnerable
+        if (_invuln || _hp <= 0) return;
 
         _hp -= amount;
         Debug.Log($"Player took {amount} damage. HP now: {_hp}");
 
-        // Optional knockback
         if (applyKnockback && knockbackForce > 0f && _rb != null)
         {
             Vector2 dir = ((Vector2)transform.position - sourcePos).normalized;
@@ -55,16 +55,24 @@ public class PlayerHealth : MonoBehaviour
 
     public void TakeDamage(DamagePacket packet, bool applyKnockback = true)
     {
+        Debug.Log($"PLAYER PACKET DAMAGE CALLED. Element = {packet.element}, Status = {packet.status}");
+
         packet.Clamp();
 
-        // Capture state before calling the int method
         bool wasInvuln = _invuln;
         bool wasDead = _hp <= 0;
+        int hpBefore = _hp;
 
         TakeDamage(packet.amount, packet.sourcePos, applyKnockback);
 
-        // If damage was ignored, also ignore status
-        if (wasInvuln || wasDead) return;
+        bool damageApplied = !wasInvuln && !wasDead && _hp < hpBefore;
+
+        Debug.Log($"Damage applied = {damageApplied}, HP before = {hpBefore}, HP now = {_hp}");
+
+        if (!damageApplied) return;
+
+        Debug.Log($"Spawning hit VFX for element: {packet.element}");
+        SpawnHitVFX(packet.element);
 
         if (_status != null)
             _status.ApplyStatus(packet);
@@ -72,26 +80,46 @@ public class PlayerHealth : MonoBehaviour
 
     public void TakeDamageDirect(int amount)
     {
-        if (_hp <= 0) return; // already dead
-        _hp -= amount;
+        if (_hp <= 0) return;
 
+        _hp -= amount;
         Debug.Log($"Player took {amount} DOT damage. HP now: {_hp}");
 
         if (_hp <= 0)
             Die();
     }
 
+    private void SpawnHitVFX(DamageElement element)
+    {
+        GameObject prefab = null;
+
+        switch (element)
+        {
+            case DamageElement.Fire:
+                prefab = fireHitVFX;
+                break;
+            case DamageElement.Frost:
+                prefab = frostHitVFX;
+                break;
+            case DamageElement.Poison:
+                prefab = poisonHitVFX;
+                break;
+            case DamageElement.Lightning:
+                prefab = lightningHitVFX;
+                break;
+        }
+
+        if (prefab != null)
+            Instantiate(prefab, transform.position, Quaternion.identity);
+    }
+
     private void Die()
     {
         Debug.Log("PLAYER DIED");
 
-        // Show Game Over UI if assigned
         if (gameOverScreen != null)
-        {
             gameOverScreen.SetActive(true);
-        }
 
-        // Pause gameplay
         Time.timeScale = 0f;
     }
 
@@ -102,7 +130,6 @@ public class PlayerHealth : MonoBehaviour
         _invuln = false;
     }
 
-    // Called by the Restart button on the Game Over screen
     public void RestartLevel()
     {
         Time.timeScale = 1f;
