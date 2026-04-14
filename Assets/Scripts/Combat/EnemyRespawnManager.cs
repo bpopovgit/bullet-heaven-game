@@ -18,8 +18,8 @@ public class EnemyRespawnManager : MonoBehaviour
     [SerializeField] private bool preferFarthestSpawn = true;
     [SerializeField] private int triesPerSpawn = 12;
 
-    [Header("Dynamic Spawn")]
-    [SerializeField] private bool useDynamicSpawn = true;
+    [Header("Dynamic Spawn (disabled for now)")]
+    [SerializeField] private bool useDynamicSpawn = false;
     [SerializeField] private float spawnRadiusMin = 8f;
     [SerializeField] private float spawnRadiusMax = 12f;
 
@@ -29,7 +29,8 @@ public class EnemyRespawnManager : MonoBehaviour
     private void Awake()
     {
         var playerObj = GameObject.FindGameObjectWithTag("Player");
-        if (playerObj) _player = playerObj.transform;
+        if (playerObj != null)
+            _player = playerObj.transform;
 
         if (spawnPoints == null || spawnPoints.Length == 0)
             spawnPoints = FindObjectsOfType<EnemySpawnPoint>();
@@ -48,35 +49,53 @@ public class EnemyRespawnManager : MonoBehaviour
 
     private bool TrySpawnOne()
     {
-        if (enemyPrefabs == null || enemyPrefabs.Length == 0) return false;
+        if (enemyPrefabs == null || enemyPrefabs.Length == 0)
+            return false;
 
         GameObject prefab = enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];
 
         Vector2 spawnPos;
+        bool foundSpawn;
+
+        // ACTIVE MODE:
+        // Use spawn points for now because this is easier to balance.
+        foundSpawn = preferFarthestSpawn
+            ? TryGetFarthestValidSpawn(out spawnPos)
+            : TryGetRandomValidSpawn(out spawnPos);
+
+        /*
+        // FUTURE MODE:
+        // Re-enable this later if you want dynamic spawning again.
         bool foundSpawn = useDynamicSpawn
             ? TryGetDynamicSpawn(out spawnPos)
             : (preferFarthestSpawn
                 ? TryGetFarthestValidSpawn(out spawnPos)
                 : TryGetRandomValidSpawn(out spawnPos));
+        */
 
-        if (!foundSpawn) return false;
+        if (!foundSpawn)
+            return false;
 
-        var go = Instantiate(prefab, spawnPos, Quaternion.identity);
+        GameObject go = Instantiate(prefab, spawnPos, Quaternion.identity);
         _alive.Add(go);
 
-        var hp = go.GetComponent<EnemyHealth>();
+        EnemyHealth hp = go.GetComponent<EnemyHealth>();
         if (hp != null)
             hp.Died += OnEnemyDied;
 
         return true;
     }
 
+    /*
     private bool TryGetDynamicSpawn(out Vector2 spawnPos)
     {
         spawnPos = default;
 
-        if (_player == null) return false;
-        if (spawnRadiusMax < spawnRadiusMin) spawnRadiusMax = spawnRadiusMin;
+        if (_player == null)
+            return false;
+
+        if (spawnRadiusMax < spawnRadiusMin)
+            spawnRadiusMax = spawnRadiusMin;
 
         for (int i = 0; i < triesPerSpawn; i++)
         {
@@ -97,6 +116,7 @@ public class EnemyRespawnManager : MonoBehaviour
 
         return false;
     }
+    */
 
     private bool TryGetRandomValidSpawn(out Vector2 spawnPos)
     {
@@ -107,8 +127,11 @@ public class EnemyRespawnManager : MonoBehaviour
 
         for (int i = 0; i < triesPerSpawn; i++)
         {
-            var sp = spawnPoints[Random.Range(0, spawnPoints.Length)];
-            var pos = sp.Position;
+            EnemySpawnPoint sp = spawnPoints[Random.Range(0, spawnPoints.Length)];
+            if (sp == null)
+                continue;
+
+            Vector2 pos = sp.Position;
 
             if (!IsSpawnValid(pos))
                 continue;
@@ -132,6 +155,9 @@ public class EnemyRespawnManager : MonoBehaviour
 
         for (int i = 0; i < spawnPoints.Length; i++)
         {
+            if (spawnPoints[i] == null)
+                continue;
+
             Vector2 pos = spawnPoints[i].Position;
 
             if (!IsSpawnValid(pos))
@@ -154,8 +180,10 @@ public class EnemyRespawnManager : MonoBehaviour
 
     private void OnEnemyDied(EnemyHealth hp)
     {
-        if (hp == null) return;
+        if (hp == null)
+            return;
 
+        hp.Died -= OnEnemyDied;
         _alive.Remove(hp.gameObject);
         StartCoroutine(RespawnAfterDelay());
     }
@@ -175,9 +203,10 @@ public class EnemyRespawnManager : MonoBehaviour
                 return false;
         }
 
-        foreach (var enemy in _alive)
+        foreach (GameObject enemy in _alive)
         {
-            if (enemy == null) continue;
+            if (enemy == null)
+                continue;
 
             float distToEnemy = Vector2.Distance(pos, enemy.transform.position);
             if (distToEnemy < minDistanceBetweenEnemies)
