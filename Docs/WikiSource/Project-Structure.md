@@ -60,6 +60,18 @@ Assets/Scripts/EnemyScripts/
 - `RangedShooter.cs`: ranged movement and shooting.
 - `EnemyProjectile.cs`: enemy projectile behavior.
 
+### Pickups
+
+```text
+Assets/Scripts/Pickups/
+```
+
+- `PlayerPickup.cs`: shared attraction and collection behavior.
+- `HealthPickup.cs`: heals the player.
+- `MagnetPickup.cs`: pulls active XP gems to the player.
+- `BombPickup.cs`: damages enemies near the player.
+- `PickupSpriteFactory.cs`: creates simple runtime placeholder pickup visuals.
+
 ### UI
 
 ```text
@@ -69,6 +81,7 @@ Assets/Scripts/UIScripts/
 - `ScoreManager.cs`: score state and score-changed event.
 - `ScoreTextUI.cs`: TMP score display.
 - `ExperienceUI.cs`: optional XP/level display.
+- `PlayerHealthUI.cs`: optional HP display.
 - `LevelUpManager.cs`: level-up choice popup.
 - `CursorScript.cs`: custom cursor setup.
 
@@ -80,4 +93,3 @@ Assets/Prefabs/Enemies/Ranged/
 Assets/Prefabs/Projectiles/Enemy/
 Assets/VFX/Hit/
 ```
-

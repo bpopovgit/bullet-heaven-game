@@ -104,6 +104,33 @@ Upgrades modify either:
 
 If `LevelUpManager` is missing or not configured, `PlayerExperience` auto-picks an upgrade so the game remains playable.
 
+## Survival Pickups
+
+Pickups share movement and attraction behavior through `PlayerPickup`.
+
+Current pickup types:
+
+- `HealthPickup`: heals the player.
+- `MagnetPickup`: pulls every active XP gem to the player.
+- `BombPickup`: damages enemies near the player.
+
+Enemy pickup drops are configured on `EnemyHealth`.
+
+If no custom prefab is assigned, the game creates simple runtime pickups:
+
+- red health pickup
+- cyan magnet pickup
+- yellow/orange bomb pickup
+
+## Health UI
+
+`PlayerHealth` raises `HealthChanged` when HP or max HP changes.
+
+`PlayerHealthUI` can show:
+
+- HP text
+- HP slider
+
 ## Enemy Spawning
 
 `EnemyRespawnManager`:
@@ -127,4 +154,3 @@ Dynamic spawn-radius mode exists in code but is currently disabled for easier ba
 - poison
 
 Burn and poison use `PlayerHealth.TakeDamageDirect()`.
-

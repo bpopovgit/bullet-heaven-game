@@ -177,6 +177,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 20
+  pointsOnDeath: 10
+  experienceOnDeath: 1
+  experienceDropChance: 1
+  experienceGemPrefab: {fileID: 0}
+  healthDropChance: 0.08
+  healthPickupAmount: 20
+  healthPickupPrefab: {fileID: 0}
+  magnetDropChance: 0.03
+  magnetPickupPrefab: {fileID: 0}
+  bombDropChance: 0.02
+  bombDamage: 50
+  bombRadius: 6
+  bombPickupPrefab: {fileID: 0}
 --- !u!114 &1439513368538830253
 MonoBehaviour:
   m_ObjectHideFlags: 0

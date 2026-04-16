@@ -109,3 +109,29 @@ Assign it to:
 EnemyHealth > Experience Gem Prefab
 ```
 
+## Custom Survival Pickups
+
+Custom pickup prefabs are optional. If they are not assigned, runtime placeholder pickups are created.
+
+Health pickup prefab:
+
+- `SpriteRenderer`
+- trigger `Collider2D`
+- optional kinematic `Rigidbody2D`
+- `HealthPickup`
+
+Magnet pickup prefab:
+
+- `SpriteRenderer`
+- trigger `Collider2D`
+- optional kinematic `Rigidbody2D`
+- `MagnetPickup`
+
+Bomb pickup prefab:
+
+- `SpriteRenderer`
+- trigger `Collider2D`
+- optional kinematic `Rigidbody2D`
+- `BombPickup`
+
+Assign them on `EnemyHealth`.

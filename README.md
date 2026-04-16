@@ -12,6 +12,7 @@ A Unity 2D bullet-heaven prototype with elemental combat, enemy spawning, scorin
 6. Dead enemies award score and drop XP gems.
 7. XP gems are pulled toward the player within pickup range.
 8. Level-ups pause the game and offer upgrade choices when `LevelUpManager` is configured.
+9. Survival pickups can heal the player, pull all XP gems, or damage nearby enemies.
 
 ## Documentation
 
@@ -29,4 +30,3 @@ This project currently targets Unity `2022.3.56f1`.
 ## Main Scene Notes
 
 The active gameplay work has been happening in `Assets/Game.unity`. Check Unity's Build Settings before making a build, because `ProjectSettings/EditorBuildSettings.asset` may not include every scene used during development.
-

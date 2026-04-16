@@ -55,7 +55,7 @@ public class ExperienceUI : MonoBehaviour
             levelText.text = $"Level {level}";
 
         if (experienceText != null)
-            experienceText.text = $"XP {currentXp}/{xpToNext}";
+            experienceText.text = $"XP: {currentXp} / {xpToNext}";
 
         if (experienceSlider != null)
         {

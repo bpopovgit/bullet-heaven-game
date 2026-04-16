@@ -96,8 +96,30 @@ On each enemy prefab's `EnemyHealth`:
 - set `Experience On Death`
 - set `Experience Drop Chance`
 - optionally assign `Experience Gem Prefab`
+- set `Health Drop Chance`
+- set `Health Pickup Amount`
+- optionally assign `Health Pickup Prefab`
+- set `Magnet Drop Chance`
+- optionally assign `Magnet Pickup Prefab`
+- set `Bomb Drop Chance`
+- set `Bomb Damage`
+- set `Bomb Radius`
+- optionally assign `Bomb Pickup Prefab`
 
 If no gem prefab is assigned, a simple runtime green gem is created.
+
+If no pickup prefabs are assigned, simple runtime pickups are created.
+
+## Health UI
+
+To use `PlayerHealthUI`:
+
+1. Create TMP text for HP.
+2. Optionally create a UI Slider for HP.
+3. Add `PlayerHealthUI` to a UI object.
+4. Assign `Player Health`, `Health Text`, and optional `Health Slider`.
+
+If `Player Health` is empty, the script tries to find one in the scene.
 
 ## EventSystem
 
@@ -108,4 +130,3 @@ For the new Input System, use:
 ```text
 Input System UI Input Module
 ```
-

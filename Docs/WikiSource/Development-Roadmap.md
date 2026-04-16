@@ -14,18 +14,12 @@
 - Level-up upgrades.
 - Level-up choice UI.
 - Spawn-point based enemy respawning.
+- Health, magnet, and bomb survival pickups.
+- Optional health UI support.
 
 ## Recommended Next Features
 
-### 1. Health UI
-
-Add:
-
-- HP bar
-- HP text
-- low-health warning
-
-### 2. XP Bar UI
+### 1. XP Bar UI
 
 Use `ExperienceUI` with:
 
@@ -33,15 +27,21 @@ Use `ExperienceUI` with:
 - XP text
 - UI Slider
 
-### 3. Survival Pickups
+### 2. Low-Health Feedback
 
 Add:
 
-- small heart
-- large heart
-- magnet pickup
-- bomb pickup
+- red screen vignette
+- pulsing HP text
+- warning sound
+
+### 3. More Survival Pickups
+
+Health, magnet, and bomb pickups exist. Add:
+
 - temporary shield
+- temporary speed boost
+- temporary fire-rate boost
 
 ### 4. Run Timer
 
@@ -105,4 +105,3 @@ Every minute of play should add at least one of:
 - a new threat
 - a new reward
 - a new pattern the player must learn
-

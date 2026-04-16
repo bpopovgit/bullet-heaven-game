@@ -22,8 +22,8 @@ public class PlayerPickupCollector : MonoBehaviour
 
         for (int i = 0; i < count; i++)
         {
-            if (_hits[i] != null && _hits[i].TryGetComponent<XPGem>(out var gem))
-                gem.AttractTo(transform);
+            if (_hits[i] != null && _hits[i].TryGetComponent<PlayerPickup>(out var pickup))
+                pickup.AttractTo(transform);
         }
     }
 

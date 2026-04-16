@@ -53,8 +53,23 @@ On enemy prefabs, configure `EnemyHealth`:
 - `Experience On Death`
 - `Experience Drop Chance`
 - Optional `Experience Gem Prefab`
+- `Health Drop Chance`
+- `Health Pickup Amount`
+- Optional `Health Pickup Prefab`
+- `Magnet Drop Chance`
+- Optional `Magnet Pickup Prefab`
+- `Bomb Drop Chance`
+- `Bomb Damage`
+- `Bomb Radius`
+- Optional `Bomb Pickup Prefab`
 
 If no XP gem prefab is assigned, the game creates a simple green runtime gem automatically.
+
+If pickup prefabs are empty, the game creates simple runtime pickups automatically:
+
+- red health pickup
+- cyan magnet pickup
+- yellow/orange bomb pickup
 
 ## XP and Leveling Setup
 
@@ -154,6 +169,25 @@ Experience Slider
 
 If `Player Experience` is left empty, the script tries to find one in the scene.
 
+## Health UI Setup
+
+`PlayerHealthUI` is optional but recommended.
+
+To use it:
+
+1. Create TMP text for HP.
+2. Optionally create a UI Slider for the HP bar.
+3. Add `PlayerHealthUI` to a UI object.
+4. Assign:
+
+```text
+Player Health
+Health Text
+Health Slider
+```
+
+If `Player Health` is empty, the script tries to find one in the scene.
+
 ## Enemy Respawn Setup
 
 The scene should contain an object with `EnemyRespawnManager`.
@@ -171,4 +205,3 @@ Spawn point objects should have:
 
 - `EnemySpawnPoint`
 - a clear name such as `Spawn_01`
-

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -26,6 +27,8 @@ public class PlayerHealth : MonoBehaviour
     public int CurrentHP => _hp;
     public int MaxHP => maxHP;
 
+    public event Action<int, int> HealthChanged;
+
     private void Awake()
     {
         _hp = maxHP;
@@ -33,11 +36,17 @@ public class PlayerHealth : MonoBehaviour
         _status = GetComponent<StatusReceiver>();
     }
 
+    private void Start()
+    {
+        PublishHealth();
+    }
+
     public void TakeDamage(int amount, Vector2 sourcePos, bool applyKnockback = true)
     {
         if (_invuln || _hp <= 0) return;
 
-        _hp -= amount;
+        _hp = Mathf.Max(0, _hp - Mathf.Max(0, amount));
+        PublishHealth();
         Debug.Log($"Player took {amount} damage. HP now: {_hp}");
 
         if (applyKnockback && knockbackForce > 0f && _rb != null)
@@ -85,7 +94,8 @@ public class PlayerHealth : MonoBehaviour
     {
         if (_hp <= 0) return;
 
-        _hp -= amount;
+        _hp = Mathf.Max(0, _hp - Mathf.Max(0, amount));
+        PublishHealth();
         Debug.Log($"Player took {amount} DOT damage. HP now: {_hp}");
 
         if (_hp <= 0)
@@ -98,6 +108,7 @@ public class PlayerHealth : MonoBehaviour
             return;
 
         _hp = Mathf.Min(maxHP, _hp + amount);
+        PublishHealth();
         Debug.Log($"Player healed {amount}. HP now: {_hp}");
     }
 
@@ -110,8 +121,15 @@ public class PlayerHealth : MonoBehaviour
 
         if (healSameAmount)
             Heal(amount);
+        else
+            PublishHealth();
 
         Debug.Log($"Player max HP increased by {amount}. Max HP now: {maxHP}");
+    }
+
+    private void PublishHealth()
+    {
+        HealthChanged?.Invoke(_hp, maxHP);
     }
 
     private void SpawnHitVFX(DamageElement element)

@@ -16,6 +16,8 @@ This roadmap is intentionally practical. It focuses on changes that make the pro
 - Level-up upgrades.
 - Optional level-up choice UI.
 - Spawn-point based enemy respawning.
+- Health, magnet, and bomb survival pickups.
+- Optional health UI support.
 
 ## Highest-Value Next Features
 
@@ -29,38 +31,21 @@ Add an always-visible UI display for:
 
 The `ExperienceUI` script already supports TMP texts and an optional Slider.
 
-### 2. Health UI
+### 2. Low-Health Feedback
 
-The player currently has HP logic, but no dedicated HP display is documented.
+Health UI support exists. Next, add stronger feedback when the player is in danger:
 
-Add:
+- red screen vignette
+- pulsing HP text
+- warning sound
 
-- HP text
-- HP bar
-- low-health visual cue
+### 3. More Pickup Variety
 
-Useful script idea:
+Health, magnet, and bomb pickups exist. Good next pickup additions:
 
-```text
-PlayerHealthUI
-```
-
-### 3. Pickup Variety
-
-Add drops beyond XP:
-
-- small heart
-- large heart
-- magnet pickup
-- bomb pickup
 - temporary shield
 - temporary speed boost
-
-Suggested first implementation:
-
-- `HealthPickup`
-- `MagnetPickup`
-- `BombPickup`
+- temporary fire-rate boost
 
 ### 4. Wave Timer and Difficulty Scaling
 
@@ -139,14 +124,13 @@ This makes movement choices more interesting than walking in circles forever.
 
 ## Suggested Immediate Implementation Order
 
-1. Health UI.
-2. XP bar UI.
-3. Health pickup.
-4. Magnet pickup.
-5. Run timer.
-6. Spawn scaling.
-7. Elite enemy.
-8. Mini-boss.
+1. XP bar UI.
+2. Low-health feedback.
+3. Temporary shield pickup.
+4. Run timer.
+5. Spawn scaling.
+6. Elite enemy.
+7. Mini-boss.
 
 ## Design Rule of Thumb
 
@@ -156,4 +140,3 @@ Every minute of play should add at least one of these:
 - a new threat
 - a new reward
 - a new pattern the player must learn
-

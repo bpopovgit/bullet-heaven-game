@@ -135,6 +135,39 @@ EnemyHealth > Experience Gem Prefab
 
 If this field is empty, the default runtime green gem is used.
 
+## Adding Custom Survival Pickup Prefabs
+
+Custom pickup prefabs are optional. If these fields are empty on `EnemyHealth`, runtime placeholder pickups are spawned.
+
+Health pickup prefab requirements:
+
+- `SpriteRenderer`
+- trigger `Collider2D`
+- optional kinematic `Rigidbody2D`
+- `HealthPickup`
+
+Magnet pickup prefab requirements:
+
+- `SpriteRenderer`
+- trigger `Collider2D`
+- optional kinematic `Rigidbody2D`
+- `MagnetPickup`
+
+Bomb pickup prefab requirements:
+
+- `SpriteRenderer`
+- trigger `Collider2D`
+- optional kinematic `Rigidbody2D`
+- `BombPickup`
+
+Assign custom prefabs on `EnemyHealth`:
+
+```text
+Health Pickup Prefab
+Magnet Pickup Prefab
+Bomb Pickup Prefab
+```
+
 ## Adding a New Enemy Projectile
 
 1. Duplicate an existing projectile prefab from:
@@ -179,4 +212,3 @@ ThingUI.cs
 ```
 
 Keep script names and class names identical.
-

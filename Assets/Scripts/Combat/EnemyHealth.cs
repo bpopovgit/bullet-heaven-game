@@ -18,6 +18,20 @@ public class EnemyHealth : MonoBehaviour
     [SerializeField] private float experienceDropChance = 1f;
     [SerializeField] private GameObject experienceGemPrefab;
 
+    [Header("Pickup Drops")]
+    [Range(0f, 1f)]
+    [SerializeField] private float healthDropChance = 0.08f;
+    [SerializeField] private int healthPickupAmount = 20;
+    [SerializeField] private GameObject healthPickupPrefab;
+    [Range(0f, 1f)]
+    [SerializeField] private float magnetDropChance = 0.03f;
+    [SerializeField] private GameObject magnetPickupPrefab;
+    [Range(0f, 1f)]
+    [SerializeField] private float bombDropChance = 0.02f;
+    [SerializeField] private int bombDamage = 50;
+    [SerializeField] private float bombRadius = 6f;
+    [SerializeField] private GameObject bombPickupPrefab;
+
     private int currentHealth;
     private EnemyResistances _resists;
 
@@ -64,6 +78,7 @@ public class EnemyHealth : MonoBehaviour
             Debug.LogWarning($"{name} died, but no ScoreManager was found in the scene.", this);
 
         DropExperience();
+        DropPickups();
         Died?.Invoke(this);
 
         // TODO: add death VFX, score popup, loot drop, etc.
@@ -93,6 +108,68 @@ public class EnemyHealth : MonoBehaviour
         XPGem.SpawnDefault(transform.position, xp);
     }
 
+    private void DropPickups()
+    {
+        TryDropHealthPickup();
+        TryDropMagnetPickup();
+        TryDropBombPickup();
+    }
+
+    private void TryDropHealthPickup()
+    {
+        if (UnityEngine.Random.value > healthDropChance)
+            return;
+
+        if (healthPickupPrefab != null)
+        {
+            GameObject pickupObject = Instantiate(healthPickupPrefab, transform.position, Quaternion.identity);
+            if (pickupObject.TryGetComponent<HealthPickup>(out var pickup))
+                pickup.SetHealAmount(healthPickupAmount);
+            else
+                Debug.LogWarning($"{healthPickupPrefab.name} does not have a HealthPickup component.", healthPickupPrefab);
+
+            return;
+        }
+
+        HealthPickup.SpawnDefault(transform.position, healthPickupAmount);
+    }
+
+    private void TryDropMagnetPickup()
+    {
+        if (UnityEngine.Random.value > magnetDropChance)
+            return;
+
+        if (magnetPickupPrefab != null)
+        {
+            GameObject pickupObject = Instantiate(magnetPickupPrefab, transform.position, Quaternion.identity);
+            if (!pickupObject.TryGetComponent<MagnetPickup>(out _))
+                Debug.LogWarning($"{magnetPickupPrefab.name} does not have a MagnetPickup component.", magnetPickupPrefab);
+
+            return;
+        }
+
+        MagnetPickup.SpawnDefault(transform.position);
+    }
+
+    private void TryDropBombPickup()
+    {
+        if (UnityEngine.Random.value > bombDropChance)
+            return;
+
+        if (bombPickupPrefab != null)
+        {
+            GameObject pickupObject = Instantiate(bombPickupPrefab, transform.position, Quaternion.identity);
+            if (pickupObject.TryGetComponent<BombPickup>(out var pickup))
+                pickup.Configure(bombDamage, bombRadius);
+            else
+                Debug.LogWarning($"{bombPickupPrefab.name} does not have a BombPickup component.", bombPickupPrefab);
+
+            return;
+        }
+
+        BombPickup.SpawnDefault(transform.position, bombDamage, bombRadius);
+    }
+
     private void OnValidate()
     {
         if (pointsOnDeath <= 0)
@@ -100,5 +177,14 @@ public class EnemyHealth : MonoBehaviour
 
         if (experienceOnDeath <= 0)
             experienceOnDeath = DefaultExperienceOnDeath;
+
+        if (healthPickupAmount <= 0)
+            healthPickupAmount = 20;
+
+        if (bombDamage <= 0)
+            bombDamage = 50;
+
+        if (bombRadius <= 0f)
+            bombRadius = 6f;
     }
 }

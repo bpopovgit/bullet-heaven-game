@@ -82,16 +82,42 @@ Important fields:
 - score reward
 - XP reward
 - optional XP gem prefab
+- optional health, magnet, and bomb pickup drops
 - death event for respawn tracking
 
 On death:
 
 1. Adds score through `ScoreManager`.
 2. Drops XP through `XPGem`.
-3. Raises `Died`.
-4. Destroys the enemy GameObject.
+3. Rolls optional survival pickup drops.
+4. Raises `Died`.
+5. Destroys the enemy GameObject.
 
 If no XP prefab is assigned, `XPGem.SpawnDefault()` creates a simple green gem at runtime.
+
+## Survival Pickups
+
+Pickups share attraction behavior through `PlayerPickup`.
+
+Current pickup types:
+
+- `HealthPickup`: heals the player.
+- `MagnetPickup`: attracts every active XP gem to the player.
+- `BombPickup`: damages enemies in a radius around the player.
+
+`EnemyHealth` controls pickup drop chances:
+
+- `healthDropChance`
+- `magnetDropChance`
+- `bombDropChance`
+
+If a pickup prefab is not assigned, the game spawns a simple colored runtime pickup:
+
+- red: health
+- cyan: magnet
+- yellow/orange: bomb
+
+`PlayerPickupCollector` attracts all `PlayerPickup` objects, including XP gems.
 
 ## Score System
 
@@ -110,6 +136,17 @@ Scene requirements:
 
 - Active `ScoreManager` GameObject.
 - `ScoreTextUI` attached to a TMP text object.
+
+## Health UI
+
+`PlayerHealth` raises `HealthChanged` whenever HP or max HP changes.
+
+`PlayerHealthUI` can display:
+
+- HP text
+- HP slider
+
+It can auto-find `PlayerHealth` if the field is left empty.
 
 ## XP and Leveling
 
@@ -199,4 +236,3 @@ Dynamic spawn-radius mode exists in the script but is currently disabled/comment
 - Shock sets `IsStunned` and forces movement speed to zero.
 - Burn and poison deal damage over time through `PlayerHealth.TakeDamageDirect()`.
 - Optional VFX references can play while effects are active.
-
