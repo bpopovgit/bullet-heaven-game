@@ -1,0 +1,130 @@
+# Gameplay Systems
+
+## Combat and Damage
+
+Damage flows through `DamagePacket`.
+
+Key fields:
+
+- `amount`
+- `element`
+- `splashRadius`
+- `sourcePos`
+- `status`
+- `statusDuration`
+- `statusStrength`
+
+Elements:
+
+- `Physical`
+- `Fire`
+- `Lightning`
+- `Frost`
+- `Poison`
+
+Statuses:
+
+- `None`
+- `Burn`
+- `Shock`
+- `Slow`
+- `Poison`
+
+Call `DamagePacket.Clamp()` before applying damage from configurable data.
+
+## Player Shooting
+
+`PlayerShooting` reads the active `WeaponDefinition`, mouse position, and `PlayerStats`.
+
+Upgrade-aware stats:
+
+- damage multiplier
+- fire rate
+- projectile count
+- pierce
+- splash radius
+
+Extra projectiles are fired as spread shots.
+
+## Score System
+
+`ScoreManager` is a scene singleton.
+
+Enemies call:
+
+```csharp
+ScoreManager.Instance.AddScore(points);
+```
+
+`ScoreTextUI` listens for score changes and updates the TMP score text.
+
+## XP and Leveling
+
+`EnemyHealth` drops XP gems on death.
+
+`PlayerPickupCollector` attracts nearby XP gems.
+
+`XPGem` calls:
+
+```csharp
+PlayerExperience.AddExperience(amount);
+```
+
+`PlayerExperience` handles level thresholds and upgrade choices.
+
+Default values:
+
+```text
+First level-up: 10 XP
+Growth: 1.25x per level
+Choices per level: 3
+```
+
+## Upgrade System
+
+Default upgrades:
+
+- `Sharpened Rounds`: +15% damage
+- `Trigger Rhythm`: +15% fire rate
+- `Fleet Footing`: +10% movement speed
+- `Magnetic Field`: +1.5 pickup radius
+- `Split Shot`: +1 projectile
+- `Punch Through`: +1 pierce
+- `Vital Core`: +20 max HP and heal 20
+- `Volatile Payload`: +0.5 splash radius
+
+Upgrades modify either:
+
+- `PlayerStats`
+- `PlayerHealth`
+
+## Level-Up Popup
+
+`LevelUpManager` pauses the game with `Time.timeScale = 0`, shows three choices, applies the clicked upgrade, hides the panel, then restores time scale.
+
+If `LevelUpManager` is missing or not configured, `PlayerExperience` auto-picks an upgrade so the game remains playable.
+
+## Enemy Spawning
+
+`EnemyRespawnManager`:
+
+- keeps enemies up to `maxAlive`
+- respawns after `respawnDelay`
+- uses `EnemySpawnPoint` positions
+- avoids spawning too close to the player
+- avoids spawning too close to living enemies
+- can prefer the farthest valid spawn point
+
+Dynamic spawn-radius mode exists in code but is currently disabled for easier balancing.
+
+## Player Status Effects
+
+`StatusReceiver` handles:
+
+- slow
+- shock/stun
+- burn
+- poison
+
+Burn and poison use `PlayerHealth.TakeDamageDirect()`.
+
