@@ -23,6 +23,9 @@ public class PlayerHealth : MonoBehaviour
     private Rigidbody2D _rb;
     private StatusReceiver _status;
 
+    public int CurrentHP => _hp;
+    public int MaxHP => maxHP;
+
     private void Awake()
     {
         _hp = maxHP;
@@ -87,6 +90,28 @@ public class PlayerHealth : MonoBehaviour
 
         if (_hp <= 0)
             Die();
+    }
+
+    public void Heal(int amount)
+    {
+        if (amount <= 0 || _hp <= 0)
+            return;
+
+        _hp = Mathf.Min(maxHP, _hp + amount);
+        Debug.Log($"Player healed {amount}. HP now: {_hp}");
+    }
+
+    public void IncreaseMaxHP(int amount, bool healSameAmount)
+    {
+        if (amount <= 0)
+            return;
+
+        maxHP += amount;
+
+        if (healSameAmount)
+            Heal(amount);
+
+        Debug.Log($"Player max HP increased by {amount}. Max HP now: {maxHP}");
     }
 
     private void SpawnHitVFX(DamageElement element)

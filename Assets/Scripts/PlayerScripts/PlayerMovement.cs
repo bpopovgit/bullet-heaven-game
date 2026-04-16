@@ -11,6 +11,7 @@ public class PlayerMovement : MonoBehaviour
     private PlayerInput playerInput;
     private InputAction moveAction;
     private StatusReceiver _status;
+    private PlayerStats _stats;
 
     private Vector2 movementInput;
 
@@ -19,6 +20,7 @@ public class PlayerMovement : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         playerInput = GetComponent<PlayerInput>();
         _status = GetComponent<StatusReceiver>();
+        _stats = GetComponent<PlayerStats>();
 
         // Grab the action once (safer than calling this repeatedly).
         moveAction = playerInput.actions["Move"];
@@ -54,6 +56,9 @@ public class PlayerMovement : MonoBehaviour
     private void FixedUpdate()
     {
         float mult = _status != null ? _status.SpeedMultiplier : 1f;
+        if (_stats != null)
+            mult *= _stats.MoveSpeedMultiplier;
+
         rb.velocity = movementInput * moveSpeed * mult;
     }
 }

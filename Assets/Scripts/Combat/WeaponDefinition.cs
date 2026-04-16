@@ -7,6 +7,8 @@ public class WeaponDefinition : ScriptableObject
     public DamageElement element = DamageElement.Physical;
     public StatusEffect onHitEffect = StatusEffect.None;
     [Range(0f, 1f)] public float effectChance = 0.3f; // 30% by default
+    public float statusDuration = 2f;
+    [Range(0f, 1f)] public float statusStrength = 0.3f;
     public int baseDamage = 10;
     public float shotsPerSecond = 6f;
     public float bulletSpeed = 20f;

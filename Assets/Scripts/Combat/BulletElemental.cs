@@ -13,13 +13,19 @@ public class BulletElemental : MonoBehaviour
     private Rigidbody2D _rb;
     private Collider2D _col;
     private WeaponDefinition _weapon;
+    private int _damage;
+    private float _splashRadius;
     private float _ttl;
     private int _pierceLeft;
 
-    public void Init(WeaponDefinition weapon, Vector2 dir)
+    public void Init(WeaponDefinition weapon, Vector2 dir, PlayerStats ownerStats = null)
     {
         _weapon = weapon;
-        _pierceLeft = weapon.pierce;
+        float damageMultiplier = ownerStats != null ? ownerStats.DamageMultiplier : 1f;
+
+        _damage = Mathf.Max(0, Mathf.RoundToInt(weapon.baseDamage * damageMultiplier));
+        _splashRadius = weapon.splashRadius + (ownerStats != null ? ownerStats.SplashRadiusBonus : 0f);
+        _pierceLeft = weapon.pierce + (ownerStats != null ? ownerStats.BonusPierce : 0);
         _ttl = lifeTime;
 
         if (!_rb) _rb = GetComponent<Rigidbody2D>();
@@ -57,19 +63,22 @@ public class BulletElemental : MonoBehaviour
         // Build the damage packet
         var packet = new DamagePacket
         {
-            amount = _weapon.baseDamage,
+            amount = _damage,
             element = _weapon.element,
-            splashRadius = _weapon.splashRadius,
-            sourcePos = transform.position
+            splashRadius = _splashRadius,
+            sourcePos = transform.position,
+            status = ShouldApplyWeaponStatus() ? _weapon.onHitEffect : StatusEffect.None,
+            statusDuration = _weapon.statusDuration,
+            statusStrength = _weapon.statusStrength
         };
 
         // Single target damage first
         enemy.TakeDamage(packet);
 
         // Optional splash damage
-        if (_weapon.splashRadius > 0.01f)
+        if (_splashRadius > 0.01f)
         {
-            var hits = Physics2D.OverlapCircleAll(transform.position, _weapon.splashRadius, ~0);
+            var hits = Physics2D.OverlapCircleAll(transform.position, _splashRadius, ~0);
             foreach (var hit in hits)
             {
                 if (hit == other) continue; // skip the primary we already hit
@@ -91,12 +100,22 @@ public class BulletElemental : MonoBehaviour
         return (mask.value & (1 << layer)) != 0;
     }
 
+    private bool ShouldApplyWeaponStatus()
+    {
+        if (_weapon == null || _weapon.onHitEffect == StatusEffect.None)
+            return false;
+
+        return Random.value <= _weapon.effectChance;
+    }
+
     private void OnDrawGizmosSelected()
     {
-        if (_weapon && _weapon.splashRadius > 0.01f)
+        float radius = _splashRadius > 0.01f ? _splashRadius : (_weapon ? _weapon.splashRadius : 0f);
+
+        if (radius > 0.01f)
         {
             Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(transform.position, _weapon.splashRadius);
+            Gizmos.DrawWireSphere(transform.position, radius);
         }
     }
 }
