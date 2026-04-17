@@ -60,6 +60,7 @@ Assets/Scripts/GameSystems/
 Run-level systems:
 
 - `RunTimer.cs`: tracks active survival time and exposes time events for UI and future wave pacing.
+- `EnemyWaveDirector.cs`: applies timed spawn stages to `EnemyRespawnManager`.
 
 ```text
 Assets/Scripts/EnemyScripts/
@@ -117,6 +118,7 @@ The gameplay scene should contain:
 - `Player`
 - `ScoreManager`
 - `RunTimer`
+- `EnemyWaveDirector`
 - `EnemyRespawnManager` or equivalent enemy system object
 - `Canvas` with score UI and optional level/XP UI
 - Optional `LevelUpManager`

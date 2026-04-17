@@ -266,6 +266,31 @@ Current behavior:
 
 Dynamic spawn-radius mode exists in the script but is currently disabled/commented for balancing simplicity.
 
+## Wave Director
+
+`EnemyWaveDirector` listens to `RunTimer.WholeSecondChanged` and applies timed stages to `EnemyRespawnManager`.
+
+Each stage can set:
+
+- start time in seconds
+- `maxAlive`
+- `respawnDelay`
+- whether to fill to the new cap immediately
+- optional enemy prefab pool
+
+If a stage has an empty prefab pool, the current enemy prefab pool remains unchanged.
+
+Default stages:
+
+```text
+0:00  maxAlive 8   respawnDelay 4.0
+1:00  maxAlive 10  respawnDelay 3.5
+2:00  maxAlive 12  respawnDelay 3.0
+3:00  maxAlive 15  respawnDelay 2.5
+```
+
+This is the first step toward timed waves, elites, and bosses.
+
 ## Player Status Effects
 
 `StatusReceiver` handles effects applied to the player:

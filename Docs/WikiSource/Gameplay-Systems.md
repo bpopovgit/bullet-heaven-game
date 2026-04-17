@@ -163,6 +163,27 @@ Time: 00:00
 
 Dynamic spawn-radius mode exists in code but is currently disabled for easier balancing.
 
+## Wave Director
+
+`EnemyWaveDirector` listens to `RunTimer.WholeSecondChanged` and applies stages to `EnemyRespawnManager`.
+
+Each stage can configure:
+
+- start time in seconds
+- max alive enemies
+- respawn delay
+- immediate refill
+- optional enemy prefab pool
+
+Default stages:
+
+```text
+0:00  maxAlive 8   respawnDelay 4.0
+1:00  maxAlive 10  respawnDelay 3.5
+2:00  maxAlive 12  respawnDelay 3.0
+3:00  maxAlive 15  respawnDelay 2.5
+```
+
 ## Player Status Effects
 
 `StatusReceiver` handles:

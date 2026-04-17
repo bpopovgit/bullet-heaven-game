@@ -127,6 +127,30 @@ If no gem prefab is assigned, a simple runtime green gem is created.
 
 If no pickup prefabs are assigned, simple runtime pickups are created.
 
+## Wave Director
+
+1. Create an empty scene object named `EnemyWaveDirector`.
+2. Add the `EnemyWaveDirector` script.
+3. Assign:
+
+```text
+Run Timer: RunTimer
+Respawn Manager: EnemySystems or whichever object has EnemyRespawnManager
+```
+
+4. Configure stages.
+
+Example:
+
+```text
+0 seconds:    maxAlive 8,  respawnDelay 4
+60 seconds:   maxAlive 10, respawnDelay 3.5
+120 seconds:  maxAlive 12, respawnDelay 3
+180 seconds:  maxAlive 15, respawnDelay 2.5
+```
+
+If a stage's enemy prefab array is empty, the current enemy pool remains active.
+
 ## Health UI
 
 To use `PlayerHealthUI`:

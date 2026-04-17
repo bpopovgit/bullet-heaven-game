@@ -24,6 +24,7 @@ Welcome to the development wiki for **Bullet Heaven Game**, a Unity 2D bullet-he
 8. Level-ups pause the game and offer upgrade choices when `LevelUpManager` is configured.
 9. Survival pickups can heal the player, pull all XP gems, or damage nearby enemies.
 10. A run timer tracks active survival time and stops when the player dies.
+11. A wave director can increase enemy pressure as the run timer advances.
 
 ## Current Unity Version
 

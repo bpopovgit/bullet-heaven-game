@@ -56,6 +56,7 @@ Assets/Scripts/GameSystems/
 ```
 
 - `RunTimer.cs`: active survival timer and time events.
+- `EnemyWaveDirector.cs`: timed spawn-stage controller.
 
 ### Enemies
 

@@ -26,6 +26,9 @@ public class EnemyRespawnManager : MonoBehaviour
     private readonly HashSet<GameObject> _alive = new HashSet<GameObject>();
     private Transform _player;
 
+    public int MaxAlive => maxAlive;
+    public float RespawnDelay => respawnDelay;
+
     private void Awake()
     {
         var playerObj = GameObject.FindGameObjectWithTag("Player");
@@ -40,11 +43,25 @@ public class EnemyRespawnManager : MonoBehaviour
 
     private void FillToCap()
     {
+        RemoveMissingEnemies();
+
         while (_alive.Count < maxAlive)
         {
             if (!TrySpawnOne())
                 break;
         }
+    }
+
+    public void ApplyWaveSettings(GameObject[] waveEnemyPrefabs, int waveMaxAlive, float waveRespawnDelay, bool fillImmediately)
+    {
+        if (waveEnemyPrefabs != null && waveEnemyPrefabs.Length > 0)
+            enemyPrefabs = waveEnemyPrefabs;
+
+        maxAlive = Mathf.Max(0, waveMaxAlive);
+        respawnDelay = Mathf.Max(0.05f, waveRespawnDelay);
+
+        if (fillImmediately)
+            FillToCap();
     }
 
     private bool TrySpawnOne()
@@ -192,6 +209,11 @@ public class EnemyRespawnManager : MonoBehaviour
     {
         yield return new WaitForSeconds(respawnDelay);
         FillToCap();
+    }
+
+    private void RemoveMissingEnemies()
+    {
+        _alive.RemoveWhere(enemy => enemy == null);
     }
 
     private bool IsSpawnValid(Vector2 pos)

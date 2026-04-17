@@ -225,3 +225,50 @@ Spawn point objects should have:
 
 - `EnemySpawnPoint`
 - a clear name such as `Spawn_01`
+
+## Wave Director Setup
+
+`EnemyWaveDirector` is optional but recommended once `RunTimer` exists.
+
+1. Create an empty scene object named `EnemyWaveDirector`.
+2. Add the `EnemyWaveDirector` script.
+3. Assign:
+
+```text
+Run Timer: RunTimer
+Respawn Manager: EnemySystems or whichever object has EnemyRespawnManager
+```
+
+Both fields can be left empty because the script auto-finds them, but assigning them is clearer.
+
+4. Configure `Stages`.
+
+Suggested starting stages:
+
+```text
+Element 0:
+  Start Time Seconds: 0
+  Max Alive: 8
+  Respawn Delay: 4
+  Fill Immediately: true
+
+Element 1:
+  Start Time Seconds: 60
+  Max Alive: 10
+  Respawn Delay: 3.5
+  Fill Immediately: true
+
+Element 2:
+  Start Time Seconds: 120
+  Max Alive: 12
+  Respawn Delay: 3
+  Fill Immediately: true
+
+Element 3:
+  Start Time Seconds: 180
+  Max Alive: 15
+  Respawn Delay: 2.5
+  Fill Immediately: true
+```
+
+To introduce a new enemy type later, add that prefab to the stage's `Enemy Prefabs` array. If the array is empty, the existing respawn-manager prefab pool is kept.

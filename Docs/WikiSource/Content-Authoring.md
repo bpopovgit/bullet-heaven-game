@@ -25,6 +25,10 @@ RangedEnemy_Poison
 
 4. Add it to `EnemyRespawnManager.enemyPrefabs`.
 
+To introduce an enemy later in a run, add it to an `EnemyWaveDirector` stage's `Enemy Prefabs` array instead.
+
+If a stage's prefab array is empty, the previous enemy pool remains active.
+
 ## Enemy Resistances
 
 Use `EnemyResistances.overrides`.

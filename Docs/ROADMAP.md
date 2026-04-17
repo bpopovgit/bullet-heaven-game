@@ -19,6 +19,7 @@ This roadmap is intentionally practical. It focuses on changes that make the pro
 - Health, magnet, and bomb survival pickups.
 - Optional health UI support.
 - Run timer and timer UI support.
+- Wave director and basic spawn scaling.
 
 ## Highest-Value Next Features
 
@@ -48,14 +49,14 @@ Health, magnet, and bomb pickups exist. Good next pickup additions:
 - temporary speed boost
 - temporary fire-rate boost
 
-### 4. Wave Director and Difficulty Scaling
+### 4. Advanced Wave Content
 
-Run timer support exists. Next, use it to drive spawn scaling:
+Basic wave scaling exists. Next, add more interesting timed content:
 
-- increase `maxAlive` over time
-- decrease respawn delay over time
 - introduce ranged enemies after a delay
 - introduce elemental variants later
+- create special swarm waves
+- add timed elite spawns
 
 Suggested script:
 
@@ -128,7 +129,7 @@ This makes movement choices more interesting than walking in circles forever.
 1. XP bar UI.
 2. Low-health feedback.
 3. Temporary shield pickup.
-4. Spawn scaling.
+4. Timed enemy pool changes.
 5. Elite enemy.
 6. Mini-boss.
 7. Weapon evolution.

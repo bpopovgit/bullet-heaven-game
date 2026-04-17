@@ -84,6 +84,7 @@
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark02.cs" />
     <Compile Include="Assets\Scripts\Combat\AutoDestroyAfterTime.cs" />
     <Compile Include="Assets\Scripts\UIScripts\ScoreManager.cs" />
+    <Compile Include="Assets\Scripts\GameSystems\EnemyWaveDirector.cs" />
     <Compile Include="Assets\Scripts\PlayerScripts\PlayerHealth.cs" />
     <Compile Include="Assets\Scripts\EnemyScripts\EnemyMeleeDamage.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\CameraController.cs" />

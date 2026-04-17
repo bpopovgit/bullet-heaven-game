@@ -25,6 +25,10 @@ RangedEnemy_FireElite
 
 4. Add the prefab to `EnemyRespawnManager.enemyPrefabs` in the scene.
 
+To introduce the enemy later in a run, add it to an `EnemyWaveDirector` stage's `Enemy Prefabs` array instead.
+
+If a wave stage's prefab array is empty, the previous enemy pool remains active.
+
 ## Adding Enemy Resistances
 
 Use `EnemyResistances.overrides`.

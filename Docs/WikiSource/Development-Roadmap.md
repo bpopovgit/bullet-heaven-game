@@ -17,6 +17,7 @@
 - Health, magnet, and bomb survival pickups.
 - Optional health UI support.
 - Run timer and timer UI support.
+- Wave director and basic spawn scaling.
 
 ## Recommended Next Features
 
@@ -44,14 +45,13 @@ Health, magnet, and bomb pickups exist. Add:
 - temporary speed boost
 - temporary fire-rate boost
 
-### 4. Spawn Scaling
+### 4. Advanced Wave Content
 
-Run timer support exists. Next, use it to scale difficulty over time:
+Basic spawn scaling exists. Next, add richer timed content:
 
-- increase max alive enemies
-- reduce respawn delay
 - add ranged enemies
 - add elemental variants
+- create special swarm waves
 - spawn elites
 
 ### 5. Elite Enemies
