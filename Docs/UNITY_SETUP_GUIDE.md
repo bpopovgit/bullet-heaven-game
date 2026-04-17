@@ -44,6 +44,26 @@ The weapon's `bulletPrefab` should have:
 4. Add `ScoreTextUI` to the same TMP text object.
 5. Leave the prefix as `Score: ` or customize it.
 
+## Run Timer Setup
+
+1. Create an empty scene object named `RunTimer`.
+2. Add the `RunTimer` script.
+3. Leave `Start On Awake` enabled.
+4. Under the Canvas, create a TMP text object named `RunTimerText`.
+5. Add `RunTimerUI` to `RunTimerText`.
+6. Assign `Run Timer` if desired, or leave it empty to use `RunTimer.Instance`.
+7. Leave the prefix as `Time: ` or customize it.
+
+Recommended top-left HUD placement:
+
+```text
+Score: 0
+Time: 00:00
+HP: 100 / 100
+```
+
+Because `RunTimer` uses scaled time, it pauses automatically during level-up popups.
+
 ## Enemy Reward Setup
 
 On enemy prefabs, configure `EnemyHealth`:

@@ -160,6 +160,9 @@ public class PlayerHealth : MonoBehaviour
     {
         Debug.Log("PLAYER DIED");
 
+        if (RunTimer.Instance != null)
+            RunTimer.Instance.StopTimer();
+
         if (gameOverScreen != null)
             gameOverScreen.SetActive(true);
 

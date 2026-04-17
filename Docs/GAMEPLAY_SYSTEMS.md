@@ -148,6 +148,44 @@ Scene requirements:
 
 It can auto-find `PlayerHealth` if the field is left empty.
 
+## Run Timer
+
+`RunTimer` tracks active survival time using scaled `Time.deltaTime`.
+
+That means:
+
+- it advances during normal gameplay
+- it pauses during level-up choices because `Time.timeScale` is `0`
+- it stops when the player dies
+
+Core API:
+
+```csharp
+RunTimer.Instance.StartTimer();
+RunTimer.Instance.StopTimer();
+RunTimer.Instance.ResetTimer(startAfterReset: true);
+RunTimer.FormatTime(seconds);
+```
+
+Events:
+
+- `TimeChanged`: raised when the displayed whole second changes.
+- `WholeSecondChanged`: useful for future wave/director logic.
+- `MinuteChanged`: useful for difficulty milestones.
+- `RunEnded`: raised when the timer stops.
+
+`RunTimerUI` displays the time as:
+
+```text
+Time: 00:00
+```
+
+For runs longer than an hour, formatting becomes:
+
+```text
+Time: 1:00:00
+```
+
 ## XP and Leveling
 
 `PlayerExperience` tracks:

@@ -18,6 +18,7 @@ This roadmap is intentionally practical. It focuses on changes that make the pro
 - Spawn-point based enemy respawning.
 - Health, magnet, and bomb survival pickups.
 - Optional health UI support.
+- Run timer and timer UI support.
 
 ## Highest-Value Next Features
 
@@ -47,9 +48,9 @@ Health, magnet, and bomb pickups exist. Good next pickup additions:
 - temporary speed boost
 - temporary fire-rate boost
 
-### 4. Wave Timer and Difficulty Scaling
+### 4. Wave Director and Difficulty Scaling
 
-Add a run timer and spawn scaling:
+Run timer support exists. Next, use it to drive spawn scaling:
 
 - increase `maxAlive` over time
 - decrease respawn delay over time
@@ -127,10 +128,10 @@ This makes movement choices more interesting than walking in circles forever.
 1. XP bar UI.
 2. Low-health feedback.
 3. Temporary shield pickup.
-4. Run timer.
-5. Spawn scaling.
-6. Elite enemy.
-7. Mini-boss.
+4. Spawn scaling.
+5. Elite enemy.
+6. Mini-boss.
+7. Weapon evolution.
 
 ## Design Rule of Thumb
 

@@ -16,6 +16,7 @@
 - Spawn-point based enemy respawning.
 - Health, magnet, and bomb survival pickups.
 - Optional health UI support.
+- Run timer and timer UI support.
 
 ## Recommended Next Features
 
@@ -43,18 +44,9 @@ Health, magnet, and bomb pickups exist. Add:
 - temporary speed boost
 - temporary fire-rate boost
 
-### 4. Run Timer
+### 4. Spawn Scaling
 
-Track:
-
-- elapsed time
-- survival time
-- timed events
-- boss spawn time
-
-### 5. Spawn Scaling
-
-Over time:
+Run timer support exists. Next, use it to scale difficulty over time:
 
 - increase max alive enemies
 - reduce respawn delay
@@ -62,7 +54,7 @@ Over time:
 - add elemental variants
 - spawn elites
 
-### 6. Elite Enemies
+### 5. Elite Enemies
 
 Add occasional stronger enemies with:
 
@@ -72,7 +64,7 @@ Add occasional stronger enemies with:
 - more XP
 - guaranteed drop
 
-### 7. First Mini-Boss
+### 6. First Mini-Boss
 
 Suggested boss:
 
@@ -87,7 +79,7 @@ Patterns:
 - summon minions
 - phase change at 66% and 33% HP
 
-### 8. Weapon Evolution
+### 7. Weapon Evolution
 
 Examples:
 

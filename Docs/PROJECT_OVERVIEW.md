@@ -54,6 +54,14 @@ Player movement, shooting, health, XP, and upgrades:
 - `PlayerUpgradeOption.cs`: upgrade option data and application logic.
 
 ```text
+Assets/Scripts/GameSystems/
+```
+
+Run-level systems:
+
+- `RunTimer.cs`: tracks active survival time and exposes time events for UI and future wave pacing.
+
+```text
 Assets/Scripts/EnemyScripts/
 ```
 
@@ -87,6 +95,7 @@ UI and scene managers:
 - `ScoreTextUI.cs`: TMP score display.
 - `ExperienceUI.cs`: optional XP/level display.
 - `PlayerHealthUI.cs`: optional HP display.
+- `RunTimerUI.cs`: optional survival timer display.
 - `LevelUpManager.cs`: optional level-up choice popup.
 - `CursorScript.cs`: custom cursor setup.
 
@@ -107,6 +116,7 @@ The gameplay scene should contain:
 
 - `Player`
 - `ScoreManager`
+- `RunTimer`
 - `EnemyRespawnManager` or equivalent enemy system object
 - `Canvas` with score UI and optional level/XP UI
 - Optional `LevelUpManager`

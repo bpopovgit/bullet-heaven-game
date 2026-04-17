@@ -13,6 +13,7 @@ A Unity 2D bullet-heaven prototype with elemental combat, enemy spawning, scorin
 7. XP gems are pulled toward the player within pickup range.
 8. Level-ups pause the game and offer upgrade choices when `LevelUpManager` is configured.
 9. Survival pickups can heal the player, pull all XP gems, or damage nearby enemies.
+10. A run timer tracks active survival time and stops when the player dies.
 
 ## Documentation
 

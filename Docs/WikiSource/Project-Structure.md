@@ -49,6 +49,14 @@ Assets/Scripts/PlayerScripts/
 - `PlayerPickupCollector.cs`: XP gem attraction radius.
 - `PlayerUpgradeOption.cs`: upgrade data and application logic.
 
+### Game Systems
+
+```text
+Assets/Scripts/GameSystems/
+```
+
+- `RunTimer.cs`: active survival timer and time events.
+
 ### Enemies
 
 ```text
@@ -82,6 +90,7 @@ Assets/Scripts/UIScripts/
 - `ScoreTextUI.cs`: TMP score display.
 - `ExperienceUI.cs`: optional XP/level display.
 - `PlayerHealthUI.cs`: optional HP display.
+- `RunTimerUI.cs`: optional survival timer display.
 - `LevelUpManager.cs`: level-up choice popup.
 - `CursorScript.cs`: custom cursor setup.
 

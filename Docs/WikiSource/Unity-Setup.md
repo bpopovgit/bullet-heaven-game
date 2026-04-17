@@ -23,6 +23,23 @@ The `Player` GameObject should have:
 4. Add `ScoreTextUI` to `ScoreText`.
 5. Keep the prefix as `Score: ` or customize it.
 
+## Run Timer UI
+
+1. Create an empty scene object named `RunTimer`.
+2. Add the `RunTimer` script.
+3. Leave `Start On Awake` enabled.
+4. Under the Canvas, create a TMP text object named `RunTimerText`.
+5. Add `RunTimerUI` to `RunTimerText`.
+6. Leave `Run Timer` empty to use `RunTimer.Instance`, or assign the scene timer object.
+
+Recommended HUD order:
+
+```text
+Score: 0
+Time: 00:00
+HP: 100 / 100
+```
+
 ## XP and Leveling
 
 On the Player:

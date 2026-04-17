@@ -23,6 +23,7 @@ Welcome to the development wiki for **Bullet Heaven Game**, a Unity 2D bullet-he
 7. XP gems are pulled toward the player within pickup range.
 8. Level-ups pause the game and offer upgrade choices when `LevelUpManager` is configured.
 9. Survival pickups can heal the player, pull all XP gems, or damage nearby enemies.
+10. A run timer tracks active survival time and stops when the player dies.
 
 ## Current Unity Version
 

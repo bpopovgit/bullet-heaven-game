@@ -131,6 +131,25 @@ If no custom prefab is assigned, the game creates simple runtime pickups:
 - HP text
 - HP slider
 
+## Run Timer
+
+`RunTimer` tracks active survival time using scaled `Time.deltaTime`.
+
+It advances during gameplay, pauses during level-up choices, and stops when the player dies.
+
+Useful events:
+
+- `TimeChanged`
+- `WholeSecondChanged`
+- `MinuteChanged`
+- `RunEnded`
+
+`RunTimerUI` displays:
+
+```text
+Time: 00:00
+```
+
 ## Enemy Spawning
 
 `EnemyRespawnManager`:
