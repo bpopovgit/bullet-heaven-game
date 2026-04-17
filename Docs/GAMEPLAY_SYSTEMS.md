@@ -321,6 +321,17 @@ If `Elite Prefabs` is empty, the director uses the respawn manager's current ene
 
 If `Elite Prefabs` is assigned, only those prefabs can be picked for elite spawns.
 
+Elite spawn and elite defeat can display temporary messages through `RunAnnouncementUI`.
+
+Default messages:
+
+```text
+ELITE INCOMING
+ELITE DEFEATED
+```
+
+If no `RunAnnouncementUI` exists, elite gameplay still works and messages are only logged to the Console.
+
 ## Player Status Effects
 
 `StatusReceiver` handles effects applied to the player:

@@ -310,3 +310,33 @@ Elite Interval Seconds: 20
 If `Elite Prefabs` is empty, the director chooses from the respawn manager's current enemy pool.
 
 If you want only specific enemies to become elites, add those prefabs to `Elite Prefabs`.
+
+## Run Announcement UI Setup
+
+`RunAnnouncementUI` is optional but recommended for elite and boss warnings.
+
+1. Under the Canvas, create a TMP text object named `RunAnnouncementText`.
+2. Add `RunAnnouncementUI` to it.
+3. Anchor it near the upper-middle of the screen.
+4. Recommended Rect Transform:
+
+```text
+Anchor: Top Center
+Pivot X: 0.5
+Pivot Y: 1
+Pos X: 0
+Pos Y: -80
+Width: 600
+Height: 80
+```
+
+5. Recommended TextMeshPro settings:
+
+```text
+Font Size: 42
+Alignment: Center / Middle
+Color: gold or white
+Text Input: empty
+```
+
+`EliteSpawnDirector` will use this automatically through `RunAnnouncementUI.Instance`.

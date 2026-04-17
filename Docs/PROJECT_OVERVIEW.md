@@ -99,6 +99,7 @@ UI and scene managers:
 - `ExperienceUI.cs`: optional XP/level display.
 - `PlayerHealthUI.cs`: optional HP display.
 - `RunTimerUI.cs`: optional survival timer display.
+- `RunAnnouncementUI.cs`: temporary run-event announcement display.
 - `LevelUpManager.cs`: optional level-up choice popup.
 - `CursorScript.cs`: custom cursor setup.
 

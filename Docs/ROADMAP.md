@@ -21,6 +21,7 @@ This roadmap is intentionally practical. It focuses on changes that make the pro
 - Run timer and timer UI support.
 - Wave director and basic spawn scaling.
 - Timed elite enemy spawns.
+- Run announcement UI for elite events.
 
 ## Highest-Value Next Features
 
@@ -70,10 +71,10 @@ EnemyWaveDirector
 
 Timed elite spawns exist. Next polish:
 
-- spawn warning text or sound
 - elite death burst
 - guaranteed pickup drop
 - elite-specific sprite or outline
+- warning/death sound
 
 ### 6. First Mini-Boss
 

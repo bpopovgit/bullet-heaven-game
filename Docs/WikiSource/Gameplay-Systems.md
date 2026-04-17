@@ -204,6 +204,15 @@ Tint: gold
 
 If `Elite Prefabs` is empty, the director uses the respawn manager's current enemy pool.
 
+Elite spawn and defeat can display messages through `RunAnnouncementUI`.
+
+Default messages:
+
+```text
+ELITE INCOMING
+ELITE DEFEATED
+```
+
 ## Player Status Effects
 
 `StatusReceiver` handles:

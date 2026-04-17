@@ -25,6 +25,12 @@ public class EliteSpawnDirector : MonoBehaviour
     [SerializeField] private float pickupDropChanceBonus = 0.25f;
     [SerializeField] private Color tintColor = new Color(1f, 0.78f, 0.15f);
 
+    [Header("Announcements")]
+    [SerializeField] private bool showAnnouncements = true;
+    [SerializeField] private string eliteSpawnMessage = "ELITE INCOMING";
+    [SerializeField] private string eliteDefeatedMessage = "ELITE DEFEATED";
+    [SerializeField] private float announcementDuration = 2f;
+
     private readonly HashSet<GameObject> _aliveElites = new HashSet<GameObject>();
     private float _nextEliteTime;
 
@@ -92,8 +98,25 @@ public class EliteSpawnDirector : MonoBehaviour
 
         _aliveElites.Add(spawnedEnemy);
 
+        EnemyHealth health = spawnedEnemy.GetComponent<EnemyHealth>();
+        if (health != null)
+            health.Died += HandleEliteDied;
+
+        ShowAnnouncement(eliteSpawnMessage);
         Debug.Log($"ELITE SPAWNED: {spawnedEnemy.name}");
         return true;
+    }
+
+    private void HandleEliteDied(EnemyHealth health)
+    {
+        if (health == null)
+            return;
+
+        health.Died -= HandleEliteDied;
+        _aliveElites.Remove(health.gameObject);
+
+        ShowAnnouncement(eliteDefeatedMessage);
+        Debug.Log($"ELITE DEFEATED: {health.name}");
     }
 
     private GameObject GetElitePrefab()
@@ -107,6 +130,14 @@ public class EliteSpawnDirector : MonoBehaviour
     private void RemoveMissingElites()
     {
         _aliveElites.RemoveWhere(enemy => enemy == null);
+    }
+
+    private void ShowAnnouncement(string message)
+    {
+        if (!showAnnouncements || string.IsNullOrWhiteSpace(message) || RunAnnouncementUI.Instance == null)
+            return;
+
+        RunAnnouncementUI.Instance.ShowMessage(message, announcementDuration);
     }
 
     private void FindReferencesIfNeeded()

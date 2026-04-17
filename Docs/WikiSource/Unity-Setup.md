@@ -182,6 +182,33 @@ First Elite Time Seconds: 10
 Elite Interval Seconds: 20
 ```
 
+## Run Announcement UI
+
+1. Under the Canvas, create a TMP text object named `RunAnnouncementText`.
+2. Add `RunAnnouncementUI`.
+3. Anchor it near the upper-middle of the screen.
+
+Recommended Rect Transform:
+
+```text
+Anchor: Top Center
+Pivot X: 0.5
+Pivot Y: 1
+Pos X: 0
+Pos Y: -80
+Width: 600
+Height: 80
+```
+
+Recommended TMP settings:
+
+```text
+Font Size: 42
+Alignment: Center / Middle
+Color: gold or white
+Text Input: empty
+```
+
 ## Health UI
 
 To use `PlayerHealthUI`:
