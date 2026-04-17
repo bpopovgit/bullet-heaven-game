@@ -184,6 +184,26 @@ Default stages:
 3:00  maxAlive 15  respawnDelay 2.5
 ```
 
+## Elite Enemies
+
+`EliteSpawnDirector` spawns occasional elite enemies using the current run timer.
+
+Elites reuse normal enemy prefabs and get runtime modifiers through `EliteEnemy`.
+
+Default behavior:
+
+```text
+First elite: 90 seconds
+Interval: 90 seconds
+Max elites alive: 1
+Health multiplier: 4x
+Reward multiplier: 5x
+Scale multiplier: 1.4x
+Tint: gold
+```
+
+If `Elite Prefabs` is empty, the director uses the respawn manager's current enemy pool.
+
 ## Player Status Effects
 
 `StatusReceiver` handles:

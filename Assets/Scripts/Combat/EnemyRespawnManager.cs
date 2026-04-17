@@ -69,7 +69,29 @@ public class EnemyRespawnManager : MonoBehaviour
         if (enemyPrefabs == null || enemyPrefabs.Length == 0)
             return false;
 
-        GameObject prefab = enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];
+        GameObject prefab = GetRandomEnemyPrefab();
+        return TrySpawnPrefab(prefab, out _);
+    }
+
+    public GameObject GetRandomEnemyPrefab()
+    {
+        if (enemyPrefabs == null || enemyPrefabs.Length == 0)
+            return null;
+
+        return enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];
+    }
+
+    public bool TrySpawnSpecial(GameObject prefab, out GameObject spawnedEnemy)
+    {
+        return TrySpawnPrefab(prefab, out spawnedEnemy);
+    }
+
+    private bool TrySpawnPrefab(GameObject prefab, out GameObject spawnedEnemy)
+    {
+        spawnedEnemy = null;
+
+        if (prefab == null)
+            return false;
 
         Vector2 spawnPos;
         bool foundSpawn;
@@ -94,6 +116,7 @@ public class EnemyRespawnManager : MonoBehaviour
             return false;
 
         GameObject go = Instantiate(prefab, spawnPos, Quaternion.identity);
+        spawnedEnemy = go;
         _alive.Add(go);
 
         EnemyHealth hp = go.GetComponent<EnemyHealth>();

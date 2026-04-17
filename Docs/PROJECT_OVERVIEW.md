@@ -33,6 +33,7 @@ Core combat and shared gameplay systems:
 - `WeaponDefinition.cs`: ScriptableObject data for player weapons.
 - `BulletElemental.cs`: player bullet behavior using weapon and player stat data.
 - `EnemyHealth.cs`: enemy health, score reward, XP drop, and death event.
+- `EliteEnemy.cs`: runtime elite enemy modifier.
 - `EnemyResistances.cs`: element-specific enemy damage multipliers.
 - `StatusReceiver.cs`: burn, poison, slow, shock/stun handling.
 - `EnemyRespawnManager.cs`: keeps enemies spawned up to a cap.
@@ -61,6 +62,7 @@ Run-level systems:
 
 - `RunTimer.cs`: tracks active survival time and exposes time events for UI and future wave pacing.
 - `EnemyWaveDirector.cs`: applies timed spawn stages to `EnemyRespawnManager`.
+- `EliteSpawnDirector.cs`: spawns boosted elite enemies on timed intervals.
 
 ```text
 Assets/Scripts/EnemyScripts/
@@ -119,6 +121,7 @@ The gameplay scene should contain:
 - `ScoreManager`
 - `RunTimer`
 - `EnemyWaveDirector`
+- `EliteSpawnDirector`
 - `EnemyRespawnManager` or equivalent enemy system object
 - `Canvas` with score UI and optional level/XP UI
 - Optional `LevelUpManager`

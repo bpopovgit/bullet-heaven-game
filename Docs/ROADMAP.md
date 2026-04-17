@@ -20,6 +20,7 @@ This roadmap is intentionally practical. It focuses on changes that make the pro
 - Optional health UI support.
 - Run timer and timer UI support.
 - Wave director and basic spawn scaling.
+- Timed elite enemy spawns.
 
 ## Highest-Value Next Features
 
@@ -65,17 +66,14 @@ RunTimer
 EnemyWaveDirector
 ```
 
-### 5. Elite Enemies
+### 5. Elite Enemy Polish
 
-Add occasional stronger enemies:
+Timed elite spawns exist. Next polish:
 
-- more health
-- larger sprite
-- higher score
-- more XP
+- spawn warning text or sound
+- elite death burst
 - guaranteed pickup drop
-
-This can reuse existing enemy scripts at first.
+- elite-specific sprite or outline
 
 ### 6. First Mini-Boss
 
@@ -130,7 +128,7 @@ This makes movement choices more interesting than walking in circles forever.
 2. Low-health feedback.
 3. Temporary shield pickup.
 4. Timed enemy pool changes.
-5. Elite enemy.
+5. Elite warning/death feedback.
 6. Mini-boss.
 7. Weapon evolution.
 

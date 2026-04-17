@@ -1107,12 +1107,12 @@ MonoBehaviour:
     fillImmediately: 1
     enemyPrefabs: []
   - startTimeSeconds: 10
-    maxAlive: 6
+    maxAlive: 20
     respawnDelay: 2
     fillImmediately: 1
     enemyPrefabs: []
   - startTimeSeconds: 20
-    maxAlive: 10
+    maxAlive: 20
     respawnDelay: 1
     fillImmediately: 1
     enemyPrefabs: []
@@ -7057,6 +7057,62 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -13.5, y: 4.4, z: 0.05524961}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &861318689
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 861318691}
+  - component: {fileID: 861318690}
+  m_Layer: 0
+  m_Name: EliteSpawnDirector
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &861318690
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 861318689}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fdfc10ee7d6a4525a8107297a2ee5402, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  runTimer: {fileID: 1051013084}
+  respawnManager: {fileID: 2020060677}
+  spawnElites: 1
+  firstEliteTimeSeconds: 10
+  eliteIntervalSeconds: 20
+  maxElitesAlive: 1
+  elitePrefabs: []
+  healthMultiplier: 4
+  rewardMultiplier: 5
+  scaleMultiplier: 1.4
+  pickupDropChanceBonus: 0.25
+  tintColor: {r: 1, g: 0.78, b: 0.15, a: 1}
+--- !u!4 &861318691
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 861318689}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2.1390402, y: 0.5551989, z: 1.4283366}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -23633,6 +23689,7 @@ MonoBehaviour:
   - {fileID: 7709740700198657319, guid: 4f4abb45d9362c54bb2ce5e4d922e4c2, type: 3}
   - {fileID: 7709740700198657319, guid: 27dd125fbdbbd6a4da66466c8f6ddea2, type: 3}
   - {fileID: 7709740700198657319, guid: 8e847dbbae10c8d4497b88cc164f5480, type: 3}
+  - {fileID: 7709740700198657319, guid: 4d6c8825e2cff8a45bf20db415a85e4f, type: 3}
   spawnPoints:
   - {fileID: 745048615}
   - {fileID: 196138617}
@@ -23797,3 +23854,4 @@ SceneRoots:
   - {fileID: 989602621}
   - {fileID: 1051013085}
   - {fileID: 375168384}
+  - {fileID: 861318691}

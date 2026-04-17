@@ -291,6 +291,36 @@ Default stages:
 
 This is the first step toward timed waves, elites, and bosses.
 
+## Elite Enemies
+
+`EliteSpawnDirector` uses the `RunTimer` and `EnemyRespawnManager` to spawn occasional elite enemies.
+
+Elites reuse existing enemy prefabs and are modified at runtime by `EliteEnemy`.
+
+Elite modifiers:
+
+- health multiplier
+- score/XP reward multiplier
+- visual scale multiplier
+- sprite tint color
+- pickup drop chance bonus
+
+Default elite behavior:
+
+```text
+First elite: 90 seconds
+Interval: 90 seconds
+Max elites alive: 1
+Health multiplier: 4x
+Reward multiplier: 5x
+Scale multiplier: 1.4x
+Tint: gold
+```
+
+If `Elite Prefabs` is empty, the director uses the respawn manager's current enemy pool.
+
+If `Elite Prefabs` is assigned, only those prefabs can be picked for elite spawns.
+
 ## Player Status Effects
 
 `StatusReceiver` handles effects applied to the player:

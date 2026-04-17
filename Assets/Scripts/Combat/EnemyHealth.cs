@@ -37,6 +37,8 @@ public class EnemyHealth : MonoBehaviour
 
     public event Action<EnemyHealth> Died;
     public bool IsDead { get; private set; }
+    public int CurrentHealth => currentHealth;
+    public int MaxHealth => maxHealth;
 
     private void Awake()
     {
@@ -61,6 +63,25 @@ public class EnemyHealth : MonoBehaviour
 
         if (currentHealth <= 0)
             Die();
+    }
+
+    public void ApplyEliteModifiers(float healthMultiplier, float rewardMultiplier, float pickupDropChanceBonus)
+    {
+        if (IsDead)
+            return;
+
+        float safeHealthMultiplier = Mathf.Max(1f, healthMultiplier);
+        float safeRewardMultiplier = Mathf.Max(1f, rewardMultiplier);
+
+        maxHealth = Mathf.Max(1, Mathf.RoundToInt(maxHealth * safeHealthMultiplier));
+        currentHealth = maxHealth;
+
+        pointsOnDeath = Mathf.Max(1, Mathf.RoundToInt(pointsOnDeath * safeRewardMultiplier));
+        experienceOnDeath = Mathf.Max(1, Mathf.RoundToInt(experienceOnDeath * safeRewardMultiplier));
+
+        healthDropChance = Mathf.Clamp01(healthDropChance + pickupDropChanceBonus);
+        magnetDropChance = Mathf.Clamp01(magnetDropChance + pickupDropChanceBonus);
+        bombDropChance = Mathf.Clamp01(bombDropChance + pickupDropChanceBonus);
     }
 
     private void Die()

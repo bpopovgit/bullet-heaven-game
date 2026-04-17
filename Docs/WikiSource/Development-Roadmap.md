@@ -18,6 +18,7 @@
 - Optional health UI support.
 - Run timer and timer UI support.
 - Wave director and basic spawn scaling.
+- Timed elite enemy spawns.
 
 ## Recommended Next Features
 
@@ -54,15 +55,14 @@ Basic spawn scaling exists. Next, add richer timed content:
 - create special swarm waves
 - spawn elites
 
-### 5. Elite Enemies
+### 5. Elite Enemy Polish
 
-Add occasional stronger enemies with:
+Timed elite spawns exist. Next polish:
 
-- more HP
-- larger sprite
-- more score
-- more XP
-- guaranteed drop
+- spawn warning text or sound
+- elite death burst
+- guaranteed pickup drop
+- elite-specific sprite or outline
 
 ### 6. First Mini-Boss
 

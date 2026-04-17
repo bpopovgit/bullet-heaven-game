@@ -151,6 +151,37 @@ Example:
 
 If a stage's enemy prefab array is empty, the current enemy pool remains active.
 
+## Elite Spawn Director
+
+1. Create an empty scene object named `EliteSpawnDirector`.
+2. Add the `EliteSpawnDirector` script.
+3. Assign:
+
+```text
+Run Timer: RunTimer
+Respawn Manager: EnemySystems or whichever object has EnemyRespawnManager
+```
+
+Recommended values:
+
+```text
+Spawn Elites: true
+First Elite Time Seconds: 90
+Elite Interval Seconds: 90
+Max Elites Alive: 1
+Health Multiplier: 4
+Reward Multiplier: 5
+Scale Multiplier: 1.4
+Pickup Drop Chance Bonus: 0.25
+```
+
+For quick testing:
+
+```text
+First Elite Time Seconds: 10
+Elite Interval Seconds: 20
+```
+
 ## Health UI
 
 To use `PlayerHealthUI`:

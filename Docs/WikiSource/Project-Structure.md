@@ -29,6 +29,7 @@ Assets/Scripts/Combat/
 - `WeaponDefinition.cs`: ScriptableObject data for player weapons.
 - `BulletElemental.cs`: player bullet behavior.
 - `EnemyHealth.cs`: enemy health, score reward, XP drop, and death event.
+- `EliteEnemy.cs`: runtime elite enemy modifier.
 - `EnemyResistances.cs`: element-specific enemy damage multipliers.
 - `StatusReceiver.cs`: burn, poison, slow, shock/stun handling.
 - `EnemyRespawnManager.cs`: enemy respawn/cap logic.
@@ -57,6 +58,7 @@ Assets/Scripts/GameSystems/
 
 - `RunTimer.cs`: active survival timer and time events.
 - `EnemyWaveDirector.cs`: timed spawn-stage controller.
+- `EliteSpawnDirector.cs`: timed elite enemy spawner.
 
 ### Enemies
 

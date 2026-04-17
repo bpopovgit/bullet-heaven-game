@@ -29,6 +29,10 @@ To introduce the enemy later in a run, add it to an `EnemyWaveDirector` stage's 
 
 If a wave stage's prefab array is empty, the previous enemy pool remains active.
 
+To allow an enemy to spawn as an elite, add the prefab to `EliteSpawnDirector.Elite Prefabs`.
+
+If `Elite Prefabs` is empty, elites are chosen from the respawn manager's current enemy pool.
+
 ## Adding Enemy Resistances
 
 Use `EnemyResistances.overrides`.

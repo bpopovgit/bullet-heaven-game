@@ -15,6 +15,7 @@ A Unity 2D bullet-heaven prototype with elemental combat, enemy spawning, scorin
 9. Survival pickups can heal the player, pull all XP gems, or damage nearby enemies.
 10. A run timer tracks active survival time and stops when the player dies.
 11. A wave director can increase enemy pressure as the run timer advances.
+12. Elite enemies can spawn on timed intervals with boosted health, rewards, scale, and tint.
 
 ## Documentation
 

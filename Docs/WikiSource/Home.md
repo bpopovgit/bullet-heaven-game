@@ -25,6 +25,7 @@ Welcome to the development wiki for **Bullet Heaven Game**, a Unity 2D bullet-he
 9. Survival pickups can heal the player, pull all XP gems, or damage nearby enemies.
 10. A run timer tracks active survival time and stops when the player dies.
 11. A wave director can increase enemy pressure as the run timer advances.
+12. Elite enemies can spawn on timed intervals with boosted health, rewards, scale, and tint.
 
 ## Current Unity Version
 
