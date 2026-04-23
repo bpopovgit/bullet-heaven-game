@@ -33,6 +33,7 @@ public class PlayerStats : MonoBehaviour
     public void AddProjectiles(int amount)
     {
         BonusProjectiles += Mathf.Max(0, amount);
+        Debug.Log($"PLAYER PROJECTILES BONUS: {BonusProjectiles}");
     }
 
     public void AddPierce(int amount)

@@ -8,7 +8,8 @@ public class PlayerShooting : MonoBehaviour
     [SerializeField] private Transform muzzle;           // FirePoint (child of Player)
     [SerializeField] private Camera mainCam;             // leave empty to auto-fill
     [SerializeField] private WeaponDefinition weapon;    // assign a WeaponDefinition asset
-    [SerializeField] private float multiProjectileSpreadAngle = 12f;
+    [SerializeField] private float multiProjectileSpreadAngle = 18f;
+    [SerializeField] private float multiProjectileSpawnOffset = 0.18f;
 
     private PlayerInput _playerInput;
     private InputAction _fire;
@@ -47,18 +48,22 @@ public class PlayerShooting : MonoBehaviour
         mouseWorld.z = 0f;
         Vector2 dir = (mouseWorld - muzzle.position).normalized;
 
-        int projectileCount = 1 + (_stats != null ? _stats.BonusProjectiles : 0);
+        int projectileCount = Mathf.Max(1, 1 + (_stats != null ? _stats.BonusProjectiles : 0));
         float totalSpread = multiProjectileSpreadAngle * Mathf.Max(0, projectileCount - 1);
         float startAngle = -totalSpread * 0.5f;
+        Vector2 perpendicular = new Vector2(-dir.y, dir.x);
 
         for (int i = 0; i < projectileCount; i++)
         {
             float angle = startAngle + multiProjectileSpreadAngle * i;
             Vector2 shotDir = Quaternion.Euler(0f, 0f, angle) * dir;
+            float offsetIndex = i - (projectileCount - 1) * 0.5f;
+            Vector3 spawnPosition = muzzle.position + (Vector3)(perpendicular * (offsetIndex * multiProjectileSpawnOffset));
 
-            var go = Instantiate(weapon.bulletPrefab, muzzle.position, Quaternion.identity);
+            var go = Instantiate(weapon.bulletPrefab, spawnPosition, Quaternion.identity);
             var bullet = go.GetComponent<BulletElemental>();
-            bullet.Init(weapon, shotDir, _stats);
+            if (bullet != null)
+                bullet.Init(weapon, shotDir, _stats);
         }
 
         GameAudio.PlayPlayerShoot();

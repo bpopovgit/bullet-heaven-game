@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class BossSpawnDirector : MonoBehaviour
 {
@@ -36,6 +37,9 @@ public class BossSpawnDirector : MonoBehaviour
     [SerializeField] private string bossSpawnMessage = "THE DRAGON DESCENDS";
     [SerializeField] private string bossDefeatedMessage = "DRAGON SLAIN";
     [SerializeField] private float announcementDuration = 2.75f;
+    [SerializeField] private string bossRewardTitle = "Choose a Boss Reward";
+    [SerializeField] private Color bossRewardTitleColor = new Color(1f, 0.88f, 0.35f, 1f);
+    [SerializeField] private Color bossRewardPanelColor = new Color(0.18f, 0.06f, 0.08f, 0.92f);
 
     private bool _hasSpawned;
     private GameObject _activeBoss;
@@ -101,7 +105,11 @@ public class BossSpawnDirector : MonoBehaviour
             return;
         }
 
-        if (!respawnManager.TrySpawnSpecial(prefab, out GameObject spawnedBoss) || spawnedBoss == null)
+        if (!respawnManager.TrySpawnSpecial(
+            prefab,
+            out GameObject spawnedBoss,
+            ignoreEnemySpacing: true,
+            ignorePlayerDistance: true) || spawnedBoss == null)
             return;
 
         GameObject projectilePrefab = ResolveProjectilePrefab(prefab, spawnedBoss);
@@ -146,6 +154,7 @@ public class BossSpawnDirector : MonoBehaviour
 
         ShowAnnouncement(bossDefeatedMessage);
         GameAudio.PlayEliteDefeated();
+        OfferBossReward();
         Debug.Log($"BOSS DEFEATED: {health.name}");
     }
 
@@ -224,6 +233,49 @@ public class BossSpawnDirector : MonoBehaviour
             return;
 
         RunAnnouncementUI.Instance.ShowMessage(message, announcementDuration);
+    }
+
+    private void OfferBossReward()
+    {
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player == null)
+            return;
+
+        List<PlayerUpgradeOption> choices = PickBossRewardChoices();
+        if (choices.Count == 0)
+            return;
+
+        if (LevelUpManager.Instance != null &&
+            LevelUpManager.Instance.ShowCustomChoices(
+                choices,
+                chosen => chosen.Apply(player),
+                bossRewardTitle,
+                bossRewardTitleColor,
+                bossRewardPanelColor))
+        {
+            return;
+        }
+
+        PlayerUpgradeOption fallback = choices[0];
+        Debug.Log($"No LevelUpManager found for boss reward. Auto-picking: {fallback.Title}");
+        fallback.Apply(player);
+    }
+
+    private List<PlayerUpgradeOption> PickBossRewardChoices()
+    {
+        PlayerUpgradeOption[] pool = PlayerUpgradeOption.CreateBossRewardPool();
+        List<PlayerUpgradeOption> available = new List<PlayerUpgradeOption>(pool);
+        List<PlayerUpgradeOption> choices = new List<PlayerUpgradeOption>();
+        int count = Mathf.Min(3, available.Count);
+
+        for (int i = 0; i < count; i++)
+        {
+            int index = Random.Range(0, available.Count);
+            choices.Add(available[index]);
+            available.RemoveAt(index);
+        }
+
+        return choices;
     }
 
     private void FindReferencesIfNeeded()

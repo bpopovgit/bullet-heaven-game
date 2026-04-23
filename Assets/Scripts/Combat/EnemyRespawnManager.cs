@@ -86,12 +86,20 @@ public class EnemyRespawnManager : MonoBehaviour
         return enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];
     }
 
-    public bool TrySpawnSpecial(GameObject prefab, out GameObject spawnedEnemy)
+    public bool TrySpawnSpecial(
+        GameObject prefab,
+        out GameObject spawnedEnemy,
+        bool ignoreEnemySpacing = false,
+        bool ignorePlayerDistance = false)
     {
-        return TrySpawnPrefab(prefab, out spawnedEnemy);
+        return TrySpawnPrefab(prefab, out spawnedEnemy, ignoreEnemySpacing, ignorePlayerDistance);
     }
 
-    private bool TrySpawnPrefab(GameObject prefab, out GameObject spawnedEnemy)
+    private bool TrySpawnPrefab(
+        GameObject prefab,
+        out GameObject spawnedEnemy,
+        bool ignoreEnemySpacing = false,
+        bool ignorePlayerDistance = false)
     {
         spawnedEnemy = null;
 
@@ -104,8 +112,8 @@ public class EnemyRespawnManager : MonoBehaviour
         // ACTIVE MODE:
         // Use spawn points for now because this is easier to balance.
         foundSpawn = preferFarthestSpawn
-            ? TryGetFarthestValidSpawn(out spawnPos)
-            : TryGetRandomValidSpawn(out spawnPos);
+            ? TryGetFarthestValidSpawn(out spawnPos, ignoreEnemySpacing, ignorePlayerDistance)
+            : TryGetRandomValidSpawn(out spawnPos, ignoreEnemySpacing, ignorePlayerDistance);
 
         /*
         // FUTURE MODE:
@@ -163,7 +171,10 @@ public class EnemyRespawnManager : MonoBehaviour
     }
     */
 
-    private bool TryGetRandomValidSpawn(out Vector2 spawnPos)
+    private bool TryGetRandomValidSpawn(
+        out Vector2 spawnPos,
+        bool ignoreEnemySpacing = false,
+        bool ignorePlayerDistance = false)
     {
         spawnPos = default;
 
@@ -178,7 +189,7 @@ public class EnemyRespawnManager : MonoBehaviour
 
             Vector2 pos = sp.Position;
 
-            if (!IsSpawnValid(pos))
+            if (!IsSpawnValid(pos, ignoreEnemySpacing, ignorePlayerDistance))
                 continue;
 
             spawnPos = pos;
@@ -188,7 +199,10 @@ public class EnemyRespawnManager : MonoBehaviour
         return false;
     }
 
-    private bool TryGetFarthestValidSpawn(out Vector2 spawnPos)
+    private bool TryGetFarthestValidSpawn(
+        out Vector2 spawnPos,
+        bool ignoreEnemySpacing = false,
+        bool ignorePlayerDistance = false)
     {
         spawnPos = default;
 
@@ -205,7 +219,7 @@ public class EnemyRespawnManager : MonoBehaviour
 
             Vector2 pos = spawnPoints[i].Position;
 
-            if (!IsSpawnValid(pos))
+            if (!IsSpawnValid(pos, ignoreEnemySpacing, ignorePlayerDistance))
                 continue;
 
             float distToPlayer = _player == null
@@ -244,14 +258,20 @@ public class EnemyRespawnManager : MonoBehaviour
         _alive.RemoveWhere(enemy => enemy == null);
     }
 
-    private bool IsSpawnValid(Vector2 pos)
+    private bool IsSpawnValid(
+        Vector2 pos,
+        bool ignoreEnemySpacing = false,
+        bool ignorePlayerDistance = false)
     {
-        if (_player != null)
+        if (!ignorePlayerDistance && _player != null)
         {
             float distToPlayer = Vector2.Distance(pos, _player.position);
             if (distToPlayer < minDistanceFromPlayer)
                 return false;
         }
+
+        if (ignoreEnemySpacing)
+            return true;
 
         foreach (GameObject enemy in _alive)
         {

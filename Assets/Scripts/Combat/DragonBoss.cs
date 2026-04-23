@@ -10,15 +10,33 @@ public class DragonBoss : MonoBehaviour
     [SerializeField] private float projectileSpeedMultiplier = 1.15f;
     [SerializeField] private float muzzleOffset = 0.8f;
 
+    [Header("Boss Bar")]
+    [SerializeField] private float healthBarHeightPadding = 0.9f;
+    [SerializeField] private Color phaseOneHealthBarColor = new Color(0.78f, 0.12f, 0.16f, 1f);
+
+    [Header("Phase Two")]
+    [SerializeField, Range(0.05f, 0.95f)] private float phaseTwoTriggerRatio = 0.5f;
+    [SerializeField] private float phaseTwoVolleyCooldown = 2.35f;
+    [SerializeField] private int phaseTwoProjectileCount = 9;
+    [SerializeField] private float phaseTwoSpreadAngle = 95f;
+    [SerializeField] private float phaseTwoProjectileSpeedMultiplier = 1.22f;
+    [SerializeField] private Color phaseTwoTintColor = new Color(1f, 0.12f, 0.08f, 1f);
+    [SerializeField] private Color phaseTwoHealthBarColor = new Color(1f, 0.86f, 0.22f, 1f);
+    [SerializeField] private string phaseTwoAnnouncement = "DRAGON ENRAGED";
+
     private EnemyHealth _health;
     private Transform _player;
     private GameObject _projectilePrefab;
     private float _cooldownRemaining;
     private bool _configured;
+    private bool _phaseTwoTriggered;
+    private BossWorldHealthBar _healthBar;
+    private SpriteRenderer[] _renderers;
 
     private void Awake()
     {
         _health = GetComponent<EnemyHealth>();
+        _renderers = GetComponentsInChildren<SpriteRenderer>();
 
         GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
         if (playerObject != null)
@@ -27,7 +45,12 @@ public class DragonBoss : MonoBehaviour
 
     private void Update()
     {
-        if (!_configured || _health == null || _health.IsDead || _player == null || _projectilePrefab == null)
+        if (!_configured || _health == null || _health.IsDead)
+            return;
+
+        TryEnterPhaseTwo();
+
+        if (_player == null || _projectilePrefab == null)
             return;
 
         _cooldownRemaining -= Time.deltaTime;
@@ -66,14 +89,40 @@ public class DragonBoss : MonoBehaviour
 
         transform.localScale *= Mathf.Max(1f, scaleMultiplier);
 
-        SpriteRenderer[] renderers = GetComponentsInChildren<SpriteRenderer>();
-        foreach (SpriteRenderer renderer in renderers)
-        {
-            if (renderer != null)
-                renderer.color = tintColor;
-        }
+        ApplyTint(tintColor);
+
+        if (_health != null)
+            _healthBar = BossWorldHealthBar.Create(transform, _health, new Vector3(0f, GetVisualTopOffset() + healthBarHeightPadding, 0f), phaseOneHealthBarColor);
 
         gameObject.name = $"Dragon Boss {gameObject.name}";
+    }
+
+    private void TryEnterPhaseTwo()
+    {
+        if (_phaseTwoTriggered || _health == null)
+            return;
+
+        float healthRatio = _health.CurrentHealth / (float)Mathf.Max(1, _health.MaxHealth);
+        if (healthRatio > phaseTwoTriggerRatio)
+            return;
+
+        _phaseTwoTriggered = true;
+        specialVolleyCooldown = Mathf.Max(0.5f, phaseTwoVolleyCooldown);
+        volleyProjectileCount = Mathf.Max(3, phaseTwoProjectileCount);
+        volleySpreadAngle = Mathf.Max(5f, phaseTwoSpreadAngle);
+        projectileSpeedMultiplier = Mathf.Max(0.1f, phaseTwoProjectileSpeedMultiplier);
+        _cooldownRemaining = 0.4f;
+
+        ApplyTint(phaseTwoTintColor);
+
+        if (_healthBar != null)
+            _healthBar.SetFillColor(phaseTwoHealthBarColor);
+
+        if (RunAnnouncementUI.Instance != null && !string.IsNullOrWhiteSpace(phaseTwoAnnouncement))
+            RunAnnouncementUI.Instance.ShowMessage(phaseTwoAnnouncement, 2f);
+
+        GameAudio.PlayEliteSpawn();
+        Debug.Log("DRAGON PHASE TWO TRIGGERED");
     }
 
     private void FireBreathVolley()
@@ -99,5 +148,38 @@ public class DragonBoss : MonoBehaviour
         }
 
         GameAudio.PlayEnemyShoot();
+    }
+
+    private float GetVisualTopOffset()
+    {
+        float bestY = 1.5f;
+
+        if (_renderers == null || _renderers.Length == 0)
+            return bestY;
+
+        for (int i = 0; i < _renderers.Length; i++)
+        {
+            SpriteRenderer renderer = _renderers[i];
+            if (renderer == null)
+                continue;
+
+            float localTop = renderer.bounds.max.y - transform.position.y;
+            if (localTop > bestY)
+                bestY = localTop;
+        }
+
+        return bestY;
+    }
+
+    private void ApplyTint(Color tintColor)
+    {
+        if (_renderers == null)
+            return;
+
+        foreach (SpriteRenderer renderer in _renderers)
+        {
+            if (renderer != null)
+                renderer.color = tintColor;
+        }
     }
 }
