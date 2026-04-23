@@ -29,6 +29,11 @@ public class EnemyRespawnManager : MonoBehaviour
     public int MaxAlive => maxAlive;
     public float RespawnDelay => respawnDelay;
 
+    public GameObject[] GetEnemyPrefabs()
+    {
+        return enemyPrefabs;
+    }
+
     private void Awake()
     {
         var playerObj = GameObject.FindGameObjectWithTag("Player");

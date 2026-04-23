@@ -15,6 +15,8 @@ public class RangedShooter : MonoBehaviour
     private Rigidbody2D _rb;
     private float _cd;
 
+    public GameObject EnemyProjectilePrefab => enemyProjectilePrefab;
+
     private void Awake()
     {
         _rb = GetComponent<Rigidbody2D>();
