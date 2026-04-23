@@ -47,6 +47,7 @@ public class PlayerHealth : MonoBehaviour
 
         _hp = Mathf.Max(0, _hp - Mathf.Max(0, amount));
         PublishHealth();
+        GameAudio.PlayPlayerHit();
         Debug.Log($"Player took {amount} damage. HP now: {_hp}");
 
         if (applyKnockback && knockbackForce > 0f && _rb != null)
@@ -159,6 +160,7 @@ public class PlayerHealth : MonoBehaviour
     private void Die()
     {
         Debug.Log("PLAYER DIED");
+        GameAudio.PlayPlayerDeath();
 
         if (RunTimer.Instance != null)
             RunTimer.Instance.StopTimer();

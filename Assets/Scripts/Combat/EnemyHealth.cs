@@ -101,6 +101,7 @@ public class EnemyHealth : MonoBehaviour
         DropExperience();
         DropPickups();
         Died?.Invoke(this);
+        GameAudio.PlayEnemyDeath();
 
         // TODO: add death VFX, score popup, loot drop, etc.
         Destroy(gameObject);

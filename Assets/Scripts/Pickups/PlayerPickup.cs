@@ -65,12 +65,18 @@ public abstract class PlayerPickup : MonoBehaviour
 
         _collected = true;
         OnCollected(player);
+        GameAudio.Play(GetPickupSound());
         Destroy(gameObject);
     }
 
     protected virtual bool CanCollect(GameObject player)
     {
         return player.GetComponent<PlayerHealth>() != null || player.GetComponent<PlayerExperience>() != null;
+    }
+
+    protected virtual GameSfxId GetPickupSound()
+    {
+        return GameSfxId.None;
     }
 
     protected abstract void OnCollected(GameObject player);

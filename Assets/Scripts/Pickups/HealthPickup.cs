@@ -24,6 +24,11 @@ public class HealthPickup : PlayerPickup
             health.Heal(healAmount);
     }
 
+    protected override GameSfxId GetPickupSound()
+    {
+        return GameSfxId.HealthPickup;
+    }
+
     public static HealthPickup SpawnDefault(Vector3 position, int healAmount)
     {
         GameObject go = new GameObject("Health Pickup");

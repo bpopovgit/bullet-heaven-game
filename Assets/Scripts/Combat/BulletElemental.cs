@@ -29,7 +29,7 @@ public class BulletElemental : MonoBehaviour
         _ttl = lifeTime;
 
         if (!_rb) _rb = GetComponent<Rigidbody2D>();
-        _rb.velocity = dir.normalized * weapon.bulletSpeed;
+        _rb.linearVelocity = dir.normalized * weapon.bulletSpeed;
         transform.right = dir; // rotate to direction
     }
 

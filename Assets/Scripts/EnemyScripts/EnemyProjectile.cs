@@ -38,7 +38,7 @@ public class EnemyProjectile : MonoBehaviour
     // Called by RangedShooter when spawning
     public void Fire(Vector2 direction)
     {
-        _rb.velocity = direction.normalized * speed;
+        _rb.linearVelocity = direction.normalized * speed;
         transform.right = direction;  // face travel direction
         Destroy(gameObject, lifeTime);
     }

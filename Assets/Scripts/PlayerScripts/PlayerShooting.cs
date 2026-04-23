@@ -61,6 +61,8 @@ public class PlayerShooting : MonoBehaviour
             bullet.Init(weapon, shotDir, _stats);
         }
 
+        GameAudio.PlayPlayerShoot();
+
         // rotate the muzzle/arm for visuals (optional)
         muzzle.right = dir;
     }

@@ -40,7 +40,7 @@ public class RangedShooter : MonoBehaviour
         else if (dist < preferredRange * 0.9f)
             desired = -toPlayer.normalized;         // back away
 
-        _rb.velocity = desired * moveSpeed;
+        _rb.linearVelocity = desired * moveSpeed;
         transform.right = toPlayer.normalized;
     }
 
@@ -67,6 +67,7 @@ public class RangedShooter : MonoBehaviour
         if (proj != null)
         {
             proj.Fire(dir);
+            GameAudio.PlayEnemyShoot();
         }
         else
         {

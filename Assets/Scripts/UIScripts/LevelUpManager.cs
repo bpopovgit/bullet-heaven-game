@@ -104,6 +104,7 @@ public class LevelUpManager : MonoBehaviour
         PlayerUpgradeOption chosen = _activeChoices[index];
 
         Close();
+        GameAudio.PlayUISelect();
         experience.SelectUpgrade(chosen);
     }
 

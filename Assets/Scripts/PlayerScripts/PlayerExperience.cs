@@ -48,6 +48,7 @@ public class PlayerExperience : MonoBehaviour
             currentLevel++;
             _pendingLevelUps++;
             LevelChanged?.Invoke(currentLevel);
+            GameAudio.PlayLevelUp();
             Debug.Log($"LEVEL UP: {currentLevel}");
         }
 

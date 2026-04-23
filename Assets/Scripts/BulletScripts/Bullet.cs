@@ -39,7 +39,7 @@ public class Bullet : MonoBehaviour
         _pierceRemaining = pierce;
 
         direction = direction.normalized;
-        _rb.velocity = direction * speed;
+        _rb.linearVelocity = direction * speed;
 
         // Optional: rotate sprite to face travel direction
         if (direction.sqrMagnitude > 0.0001f)

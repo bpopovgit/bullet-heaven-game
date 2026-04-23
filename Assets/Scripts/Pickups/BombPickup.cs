@@ -38,6 +38,11 @@ public class BombPickup : PlayerPickup
         Debug.Log($"BOMB PICKUP: Hit {hitCount} enemies for {damage} damage.");
     }
 
+    protected override GameSfxId GetPickupSound()
+    {
+        return GameSfxId.BombPickup;
+    }
+
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;

@@ -59,6 +59,6 @@ public class PlayerMovement : MonoBehaviour
         if (_stats != null)
             mult *= _stats.MoveSpeedMultiplier;
 
-        rb.velocity = movementInput * moveSpeed * mult;
+        rb.linearVelocity = movementInput * moveSpeed * mult;
     }
 }

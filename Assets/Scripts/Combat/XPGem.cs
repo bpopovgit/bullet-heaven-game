@@ -20,6 +20,11 @@ public class XPGem : PlayerPickup
         playerExperience.AddExperience(Mathf.Max(1, experienceValue));
     }
 
+    protected override GameSfxId GetPickupSound()
+    {
+        return GameSfxId.XPGem;
+    }
+
     public static XPGem SpawnDefault(Vector3 position, int value)
     {
         GameObject go = new GameObject("XP Gem");

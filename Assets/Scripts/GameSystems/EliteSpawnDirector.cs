@@ -103,6 +103,7 @@ public class EliteSpawnDirector : MonoBehaviour
             health.Died += HandleEliteDied;
 
         ShowAnnouncement(eliteSpawnMessage);
+        GameAudio.PlayEliteSpawn();
         Debug.Log($"ELITE SPAWNED: {spawnedEnemy.name}");
         return true;
     }
@@ -116,6 +117,7 @@ public class EliteSpawnDirector : MonoBehaviour
         _aliveElites.Remove(health.gameObject);
 
         ShowAnnouncement(eliteDefeatedMessage);
+        GameAudio.PlayEliteDefeated();
         Debug.Log($"ELITE DEFEATED: {health.name}");
     }
 

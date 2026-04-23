@@ -15,6 +15,11 @@ public class MagnetPickup : PlayerPickup
         Debug.Log($"MAGNET PICKUP: Attracting {gems.Length} XP gems.");
     }
 
+    protected override GameSfxId GetPickupSound()
+    {
+        return GameSfxId.MagnetPickup;
+    }
+
     public static MagnetPickup SpawnDefault(Vector3 position)
     {
         GameObject go = new GameObject("Magnet Pickup");
