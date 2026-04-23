@@ -3,14 +3,22 @@ using System.Collections.Generic;
 
 public class BossSpawnDirector : MonoBehaviour
 {
+    private const float DefaultBossSpawnDistance = 12f;
+
     [Header("References")]
     [SerializeField] private RunTimer runTimer;
     [SerializeField] private EnemyRespawnManager respawnManager;
+    [SerializeField] private BossSpawnPoint[] bossSpawnPoints;
 
     [Header("Schedule")]
     [SerializeField] private bool spawnBoss = true;
     [SerializeField] private float firstBossTimeSeconds = 20f;
     [SerializeField] private bool spawnOnlyOnce = true;
+
+    [Header("Boss Spawn")]
+    [SerializeField] private bool useSceneBossSpawnPoints = true;
+    [SerializeField] private float spawnNorthDistance = 12f;
+    [SerializeField] private float spawnTopPadding = 1.75f;
 
     [Header("Boss Selection")]
     [Tooltip("Optional. If empty, the director will try to use a ranged fire enemy from the active spawn pool.")]
@@ -43,6 +51,7 @@ public class BossSpawnDirector : MonoBehaviour
 
     private bool _hasSpawned;
     private GameObject _activeBoss;
+    private Transform _player;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Bootstrap()
@@ -105,11 +114,11 @@ public class BossSpawnDirector : MonoBehaviour
             return;
         }
 
-        if (!respawnManager.TrySpawnSpecial(
-            prefab,
-            out GameObject spawnedBoss,
-            ignoreEnemySpacing: true,
-            ignorePlayerDistance: true) || spawnedBoss == null)
+        if (!TryGetBossSpawnPosition(out Vector3 spawnPosition))
+            return;
+
+        GameObject spawnedBoss = Instantiate(prefab, spawnPosition, Quaternion.identity);
+        if (spawnedBoss == null)
             return;
 
         GameObject projectilePrefab = ResolveProjectilePrefab(prefab, spawnedBoss);
@@ -235,6 +244,66 @@ public class BossSpawnDirector : MonoBehaviour
         RunAnnouncementUI.Instance.ShowMessage(message, announcementDuration);
     }
 
+    private bool TryGetBossSpawnPosition(out Vector3 spawnPosition)
+    {
+        spawnPosition = default;
+
+        if (useSceneBossSpawnPoints && TryGetSceneBossSpawnPoint(out BossSpawnPoint bossSpawnPoint))
+        {
+            spawnPosition = bossSpawnPoint.Position;
+            return true;
+        }
+
+        if (_player == null)
+            return false;
+
+        Camera camera = Camera.main;
+        float northDistance = Mathf.Max(1f, spawnNorthDistance > 0f ? spawnNorthDistance : DefaultBossSpawnDistance);
+        Vector3 playerPosition = _player.position;
+        float spawnY = playerPosition.y + northDistance;
+
+        if (camera != null && camera.orthographic)
+        {
+            float cameraTopY = camera.transform.position.y + camera.orthographicSize + Mathf.Max(0f, spawnTopPadding);
+            spawnY = Mathf.Max(spawnY, cameraTopY);
+        }
+
+        spawnPosition = new Vector3(playerPosition.x, spawnY, 0f);
+        return true;
+    }
+
+    private bool TryGetSceneBossSpawnPoint(out BossSpawnPoint chosenSpawnPoint)
+    {
+        chosenSpawnPoint = null;
+
+        if (bossSpawnPoints == null || bossSpawnPoints.Length == 0)
+            bossSpawnPoints = FindObjectsOfType<BossSpawnPoint>();
+
+        if (bossSpawnPoints == null || bossSpawnPoints.Length == 0)
+            return false;
+
+        float bestScore = float.MinValue;
+
+        for (int i = 0; i < bossSpawnPoints.Length; i++)
+        {
+            BossSpawnPoint spawnPoint = bossSpawnPoints[i];
+            if (spawnPoint == null)
+                continue;
+
+            Vector3 position = spawnPoint.Position;
+            float horizontalPenalty = _player != null ? Mathf.Abs(position.x - _player.position.x) * 0.1f : 0f;
+            float score = spawnPoint.Priority * 1000f + position.y - horizontalPenalty;
+
+            if (score > bestScore)
+            {
+                bestScore = score;
+                chosenSpawnPoint = spawnPoint;
+            }
+        }
+
+        return chosenSpawnPoint != null;
+    }
+
     private void OfferBossReward()
     {
         GameObject player = GameObject.FindGameObjectWithTag("Player");
@@ -285,11 +354,23 @@ public class BossSpawnDirector : MonoBehaviour
 
         if (respawnManager == null)
             respawnManager = FindObjectOfType<EnemyRespawnManager>();
+
+        if (_player == null)
+        {
+            GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
+            if (playerObject != null)
+                _player = playerObject.transform;
+        }
+
+        if ((bossSpawnPoints == null || bossSpawnPoints.Length == 0) && useSceneBossSpawnPoints)
+            bossSpawnPoints = FindObjectsOfType<BossSpawnPoint>();
     }
 
     private void OnValidate()
     {
         firstBossTimeSeconds = Mathf.Max(0f, firstBossTimeSeconds);
+        spawnNorthDistance = Mathf.Max(1f, spawnNorthDistance);
+        spawnTopPadding = Mathf.Max(0f, spawnTopPadding);
         healthMultiplier = Mathf.Max(1f, healthMultiplier);
         rewardMultiplier = Mathf.Max(1f, rewardMultiplier);
         scaleMultiplier = Mathf.Max(1f, scaleMultiplier);
