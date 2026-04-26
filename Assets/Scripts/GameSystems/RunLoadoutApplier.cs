@@ -69,7 +69,7 @@ public class RunLoadoutApplier : MonoBehaviour
         if (RunAnnouncementUI.Instance != null)
         {
             RunAnnouncementUI.Instance.ShowMessage(
-                $"{RunLoadoutState.GetWeaponName(RunLoadoutState.WeaponChoice)} | {RunLoadoutState.GetBombName(RunLoadoutState.BombChoice)}\n{RunLoadoutState.GetPassiveName(RunLoadoutState.PassiveChoice)}",
+                $"{RunLoadoutState.GetWeaponName(RunLoadoutState.WeaponChoice)} | {RunLoadoutState.GetBombName(RunLoadoutState.BombChoice)}\n{RunLoadoutState.GetSkillName(RunLoadoutState.SkillChoice)} | {RunLoadoutState.GetPassiveName(RunLoadoutState.PassiveChoice)}",
                 4f);
             _announcementShown = true;
         }
@@ -95,6 +95,12 @@ public class RunLoadoutApplier : MonoBehaviour
             bomb = player.AddComponent<PlayerActiveBomb>();
 
         bomb.Configure(RunLoadoutState.BombChoice);
+
+        PlayerSecondaryActiveSkill skill = player.GetComponent<PlayerSecondaryActiveSkill>();
+        if (skill == null)
+            skill = player.AddComponent<PlayerSecondaryActiveSkill>();
+
+        skill.Configure(RunLoadoutState.SkillChoice);
 
         Debug.Log($"LOADOUT APPLIED: {RunLoadoutState.BuildSummary()}");
         Debug.Log($"PASSIVE APPLIED: {passiveSummary}");

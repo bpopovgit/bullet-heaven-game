@@ -88,6 +88,7 @@
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\ShaderPropAnimator.cs" />
     <Compile Include="Assets\Scripts\Combat\BossWorldHealthBar.cs" />
     <Compile Include="Assets\Scripts\PlayerScripts\BombExplosionVisual.cs" />
+    <Compile Include="Assets\Scripts\PlayerScripts\SecondaryActiveSkillDefinition.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextInfoDebugTool.cs" />
     <Compile Include="Assets\Scripts\Combat\XPGem.cs" />
     <Compile Include="Assets\Scripts\GameSystems\RunTimer.cs" />
@@ -104,11 +105,13 @@
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TextMeshSpawner.cs" />
     <Compile Include="Assets\Scripts\Combat\AutoDestroyAfterTime.cs" />
     <Compile Include="Assets\Scripts\GameSystems\EnemyWaveDirector.cs" />
+    <Compile Include="Assets\Scripts\PlayerScripts\SecondarySkillVisual.cs" />
     <Compile Include="Assets\Scripts\PlayerScripts\PlayerHealth.cs" />
     <Compile Include="Assets\Scripts\EnemyScripts\EnemyMeleeDamage.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\CameraController.cs" />
     <Compile Include="Assets\Scripts\PlayerScripts\PlayerStats.cs" />
     <Compile Include="Assets\Scripts\PlayerScripts\PlayerActiveBomb.cs" />
+    <Compile Include="Assets\Scripts\PlayerScripts\PlayerSecondaryActiveSkill.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark03.cs" />
     <Compile Include="Assets\Scripts\Pickups\BombPickup.cs" />
     <Compile Include="Assets\Scripts\Combat\BulletElemental.cs" />
@@ -117,6 +120,7 @@
     <Compile Include="Assets\Scripts\GameSystems\BossSpawnPoint.cs" />
     <Compile Include="Assets\Scripts\GameSystems\RunLoadoutApplier.cs" />
     <Compile Include="Assets\Scripts\GameSystems\EliteSpawnDirector.cs" />
+    <Compile Include="Assets\Scripts\UIScripts\SecondarySkillCooldownUI.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\DropdownSample.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\VertexColorCycler.cs" />
     <Compile Include="Assets\Scripts\Combat\EliteEnemy.cs" />

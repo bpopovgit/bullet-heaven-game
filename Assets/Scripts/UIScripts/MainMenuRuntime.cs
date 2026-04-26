@@ -37,6 +37,8 @@ public class MainMenuRuntime : MonoBehaviour
     private TextMeshProUGUI _weaponDescriptionText;
     private TextMeshProUGUI _bombChoiceText;
     private TextMeshProUGUI _bombDescriptionText;
+    private TextMeshProUGUI _skillChoiceText;
+    private TextMeshProUGUI _skillDescriptionText;
     private TextMeshProUGUI _passiveChoiceText;
     private TextMeshProUGUI _passiveDescriptionText;
 
@@ -265,10 +267,11 @@ public class MainMenuRuntime : MonoBehaviour
 
         _weaponChoiceText = CreateChoiceBlock(panel, "Weapon", new Vector2(0f, 8f), CycleWeaponBackward, CycleWeaponForward, out _weaponDescriptionText);
         _bombChoiceText = CreateChoiceBlock(panel, "Bomb Skill", new Vector2(0f, -94f), CycleBombBackward, CycleBombForward, out _bombDescriptionText);
-        _passiveChoiceText = CreateChoiceBlock(panel, "Passive", new Vector2(0f, -196f), CyclePassiveBackward, CyclePassiveForward, out _passiveDescriptionText);
+        _skillChoiceText = CreateChoiceBlock(panel, "Active Skill", new Vector2(0f, -196f), CycleSkillBackward, CycleSkillForward, out _skillDescriptionText);
+        _passiveChoiceText = CreateChoiceBlock(panel, "Passive", new Vector2(0f, -298f), CyclePassiveBackward, CyclePassiveForward, out _passiveDescriptionText);
 
-        CreateButton(panel, "Back to Setup", new Vector2(0f, -286f), new Vector2(260f, 50f), SecondaryButtonColor, true, ShowSinglePlayerSetup, string.Empty);
-        CreateHintLabel(panel, "These choices stay active until you change them here again. The next step is expanding the weapon and bomb families so every loadout feels more distinct.", new Vector2(0f, -354f), 760f);
+        CreateButton(panel, "Back to Setup", new Vector2(0f, -390f), new Vector2(260f, 50f), SecondaryButtonColor, true, ShowSinglePlayerSetup, string.Empty);
+        CreateHintLabel(panel, "These choices stay active until you change them here again. The next step is expanding the weapon, bomb, and skill families so every loadout feels more distinct.", new Vector2(0f, -458f), 760f);
     }
 
     private static void CreatePanelTitle(Transform parent, string label, Vector2 anchoredPosition)
@@ -375,15 +378,15 @@ public class MainMenuRuntime : MonoBehaviour
         UnityEngine.Events.UnityAction onNext,
         out TextMeshProUGUI descriptionText)
     {
-        CreateSectionLabel(parent, label, new Vector2(centerPosition.x, centerPosition.y + 38f));
-        CreateButton(parent, "<", new Vector2(centerPosition.x - 320f, centerPosition.y - 2f), new Vector2(60f, 48f), UtilityButtonColor, true, onPrevious, string.Empty);
-        CreateButton(parent, ">", new Vector2(centerPosition.x + 320f, centerPosition.y - 2f), new Vector2(60f, 48f), UtilityButtonColor, true, onNext, string.Empty);
+        CreateSectionLabel(parent, label, new Vector2(centerPosition.x, centerPosition.y + 30f));
+        CreateButton(parent, "<", new Vector2(centerPosition.x - 320f, centerPosition.y), new Vector2(60f, 48f), UtilityButtonColor, true, onPrevious, string.Empty);
+        CreateButton(parent, ">", new Vector2(centerPosition.x + 320f, centerPosition.y), new Vector2(60f, 48f), UtilityButtonColor, true, onNext, string.Empty);
 
         GameObject choiceObject = new GameObject($"{label}Choice");
         choiceObject.transform.SetParent(parent, false);
 
         TextMeshProUGUI choiceText = choiceObject.AddComponent<TextMeshProUGUI>();
-        choiceText.fontSize = 26f;
+        choiceText.fontSize = 24f;
         choiceText.alignment = TextAlignmentOptions.Center;
         choiceText.color = TitleColor;
 
@@ -391,8 +394,8 @@ public class MainMenuRuntime : MonoBehaviour
         choiceRect.anchorMin = new Vector2(0.5f, 0.5f);
         choiceRect.anchorMax = new Vector2(0.5f, 0.5f);
         choiceRect.pivot = new Vector2(0.5f, 0.5f);
-        choiceRect.anchoredPosition = new Vector2(centerPosition.x, centerPosition.y - 2f);
-        choiceRect.sizeDelta = new Vector2(520f, 40f);
+        choiceRect.anchoredPosition = new Vector2(centerPosition.x, centerPosition.y);
+        choiceRect.sizeDelta = new Vector2(520f, 36f);
 
         GameObject descriptionObject = new GameObject($"{label}Description");
         descriptionObject.transform.SetParent(parent, false);
@@ -407,8 +410,8 @@ public class MainMenuRuntime : MonoBehaviour
         descriptionRect.anchorMin = new Vector2(0.5f, 0.5f);
         descriptionRect.anchorMax = new Vector2(0.5f, 0.5f);
         descriptionRect.pivot = new Vector2(0.5f, 0.5f);
-        descriptionRect.anchoredPosition = new Vector2(centerPosition.x, centerPosition.y - 38f);
-        descriptionRect.sizeDelta = new Vector2(640f, 46f);
+        descriptionRect.anchoredPosition = new Vector2(centerPosition.x, centerPosition.y - 34f);
+        descriptionRect.sizeDelta = new Vector2(640f, 40f);
 
         return choiceText;
     }
@@ -535,6 +538,18 @@ public class MainMenuRuntime : MonoBehaviour
         RefreshLoadoutTexts();
     }
 
+    private void CycleSkillBackward()
+    {
+        RunLoadoutState.CycleSkill(-1);
+        RefreshLoadoutTexts();
+    }
+
+    private void CycleSkillForward()
+    {
+        RunLoadoutState.CycleSkill(1);
+        RefreshLoadoutTexts();
+    }
+
     private void CyclePassiveBackward()
     {
         RunLoadoutState.CyclePassive(-1);
@@ -568,6 +583,12 @@ public class MainMenuRuntime : MonoBehaviour
 
         if (_bombDescriptionText != null)
             _bombDescriptionText.text = RunLoadoutState.GetBombDescription(RunLoadoutState.BombChoice);
+
+        if (_skillChoiceText != null)
+            _skillChoiceText.text = RunLoadoutState.GetSkillName(RunLoadoutState.SkillChoice);
+
+        if (_skillDescriptionText != null)
+            _skillDescriptionText.text = RunLoadoutState.GetSkillDescription(RunLoadoutState.SkillChoice);
 
         if (_passiveChoiceText != null)
             _passiveChoiceText.text = RunLoadoutState.GetPassiveName(RunLoadoutState.PassiveChoice);

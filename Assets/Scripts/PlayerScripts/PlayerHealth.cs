@@ -23,6 +23,7 @@ public class PlayerHealth : MonoBehaviour
     private bool _invuln;
     private Rigidbody2D _rb;
     private StatusReceiver _status;
+    private System.Collections.IEnumerator _invulnerabilityRoutine;
 
     public int CurrentHP => _hp;
     public int MaxHP => maxHP;
@@ -62,7 +63,7 @@ public class PlayerHealth : MonoBehaviour
         }
         else
         {
-            StartCoroutine(Invulnerability());
+            BeginInvulnerability(iFrameTime);
         }
     }
 
@@ -128,6 +129,15 @@ public class PlayerHealth : MonoBehaviour
         Debug.Log($"Player max HP increased by {amount}. Max HP now: {maxHP}");
     }
 
+    public void GrantTemporaryInvulnerability(float duration)
+    {
+        if (_hp <= 0 || duration <= 0f)
+            return;
+
+        BeginInvulnerability(duration);
+        Debug.Log($"Player granted temporary invulnerability for {duration:0.0}s");
+    }
+
     private void PublishHealth()
     {
         HealthChanged?.Invoke(_hp, maxHP);
@@ -171,11 +181,21 @@ public class PlayerHealth : MonoBehaviour
         Time.timeScale = 0f;
     }
 
-    private System.Collections.IEnumerator Invulnerability()
+    private void BeginInvulnerability(float duration)
+    {
+        if (_invulnerabilityRoutine != null)
+            StopCoroutine(_invulnerabilityRoutine);
+
+        _invulnerabilityRoutine = Invulnerability(duration);
+        StartCoroutine(_invulnerabilityRoutine);
+    }
+
+    private System.Collections.IEnumerator Invulnerability(float duration)
     {
         _invuln = true;
-        yield return new WaitForSeconds(iFrameTime);
+        yield return new WaitForSeconds(duration);
         _invuln = false;
+        _invulnerabilityRoutine = null;
     }
 
     public void RestartLevel()

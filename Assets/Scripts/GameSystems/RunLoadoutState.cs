@@ -16,6 +16,13 @@ public enum StartingBombChoice
     ShockBomb
 }
 
+public enum StartingSkillChoice
+{
+    MagneticPulse,
+    ArcaneShield,
+    FrostNova
+}
+
 public enum StartingPassiveChoice
 {
     Vitality,
@@ -28,6 +35,7 @@ public static class RunLoadoutState
 {
     public static StartingWeaponChoice WeaponChoice { get; private set; } = StartingWeaponChoice.EmberRepeater;
     public static StartingBombChoice BombChoice { get; private set; } = StartingBombChoice.FragBomb;
+    public static StartingSkillChoice SkillChoice { get; private set; } = StartingSkillChoice.MagneticPulse;
     public static StartingPassiveChoice PassiveChoice { get; private set; } = StartingPassiveChoice.Vitality;
 
     public static void CycleWeapon(int delta)
@@ -38,6 +46,11 @@ public static class RunLoadoutState
     public static void CycleBomb(int delta)
     {
         BombChoice = CycleEnum(BombChoice, delta);
+    }
+
+    public static void CycleSkill(int delta)
+    {
+        SkillChoice = CycleEnum(SkillChoice, delta);
     }
 
     public static void CyclePassive(int delta)
@@ -113,6 +126,36 @@ public static class RunLoadoutState
         }
     }
 
+    public static string GetSkillName(StartingSkillChoice choice)
+    {
+        switch (choice)
+        {
+            case StartingSkillChoice.MagneticPulse:
+                return "Magnetic Pulse";
+            case StartingSkillChoice.ArcaneShield:
+                return "Arcane Shield";
+            case StartingSkillChoice.FrostNova:
+                return "Frost Nova";
+            default:
+                return choice.ToString();
+        }
+    }
+
+    public static string GetSkillDescription(StartingSkillChoice choice)
+    {
+        switch (choice)
+        {
+            case StartingSkillChoice.MagneticPulse:
+                return "Pushes nearby enemies back and tugs nearby pickups toward you on E.";
+            case StartingSkillChoice.ArcaneShield:
+                return "Grants a short burst of invulnerability on E when the screen gets dangerous.";
+            case StartingSkillChoice.FrostNova:
+                return "Unleashes a cold burst around you that damages and slows nearby enemies.";
+            default:
+                return string.Empty;
+        }
+    }
+
     public static string GetPassiveName(StartingPassiveChoice choice)
     {
         switch (choice)
@@ -149,7 +192,7 @@ public static class RunLoadoutState
 
     public static string BuildSummary()
     {
-        return $"Weapon: {GetWeaponName(WeaponChoice)}  |  Bomb: {GetBombName(BombChoice)}  |  Passive: {GetPassiveName(PassiveChoice)}";
+        return $"Weapon: {GetWeaponName(WeaponChoice)}  |  Bomb: {GetBombName(BombChoice)}  |  Skill: {GetSkillName(SkillChoice)}  |  Passive: {GetPassiveName(PassiveChoice)}";
     }
 
     private static T CycleEnum<T>(T current, int delta) where T : struct

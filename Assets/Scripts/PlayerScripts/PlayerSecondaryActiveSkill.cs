@@ -1,0 +1,254 @@
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+public class PlayerSecondaryActiveSkill : MonoBehaviour
+{
+    private readonly Collider2D[] _enemyHits = new Collider2D[64];
+
+    private SecondaryActiveSkillDefinition _config;
+    private float _cooldownRemaining;
+    private PlayerHealth _playerHealth;
+    private Rigidbody2D _rigidbody2D;
+
+    public bool IsConfigured => _config != null;
+    public float CooldownRemaining => Mathf.Max(0f, _cooldownRemaining);
+    public float CooldownDuration => _config != null ? Mathf.Max(0.01f, _config.cooldown) : 0f;
+    public float CooldownNormalized => _config == null ? 0f : Mathf.Clamp01(_cooldownRemaining / Mathf.Max(0.01f, _config.cooldown));
+    public string SkillDisplayName => _config != null ? _config.displayName : "Skill";
+    public StartingSkillChoice SkillChoice { get; private set; } = StartingSkillChoice.MagneticPulse;
+    public Color SkillPrimaryColor => _config != null ? _config.iconPrimaryColor : Color.white;
+    public Color SkillSecondaryColor => _config != null ? _config.iconSecondaryColor : Color.white;
+
+    private void Awake()
+    {
+        _playerHealth = GetComponent<PlayerHealth>();
+        _rigidbody2D = GetComponent<Rigidbody2D>();
+    }
+
+    private void Update()
+    {
+        if (_cooldownRemaining > 0f)
+            _cooldownRemaining -= Time.deltaTime;
+
+        if (Time.timeScale <= 0f)
+            return;
+
+        if (Keyboard.current == null || !Keyboard.current.eKey.wasPressedThisFrame)
+            return;
+
+        TryActivate();
+    }
+
+    public void Configure(StartingSkillChoice choice)
+    {
+        SkillChoice = choice;
+        _config = CreateConfig(choice);
+        _cooldownRemaining = 0f;
+        Debug.Log($"ACTIVE SKILL READY: {_config.displayName} on E ({_config.cooldown:0.#}s cooldown)");
+    }
+
+    private void TryActivate()
+    {
+        if (_config == null)
+            return;
+
+        if (_cooldownRemaining > 0f)
+        {
+            Debug.Log($"SKILL COOLDOWN: {_config.displayName} ready in {_cooldownRemaining:0.0}s");
+            return;
+        }
+
+        ActivateCurrentSkill();
+        _cooldownRemaining = _config.cooldown;
+        Debug.Log($"ACTIVE SKILL USED: {_config.displayName}");
+    }
+
+    private void ActivateCurrentSkill()
+    {
+        switch (_config.type)
+        {
+            case SecondaryActiveSkillType.ArcaneShield:
+                ActivateArcaneShield();
+                break;
+
+            case SecondaryActiveSkillType.FrostNova:
+                ActivateFrostNova();
+                break;
+
+            default:
+                ActivateMagneticPulse();
+                break;
+        }
+    }
+
+    private void ActivateMagneticPulse()
+    {
+        Vector2 origin = transform.position;
+        int count = Physics2D.OverlapCircleNonAlloc(origin, _config.radius, _enemyHits);
+        int pushed = 0;
+
+        DamagePacket packet = new DamagePacket(
+            _config.damage,
+            DamageElement.Physical,
+            StatusEffect.None,
+            0f,
+            0f,
+            0f,
+            origin);
+
+        for (int i = 0; i < count; i++)
+        {
+            Collider2D hit = _enemyHits[i];
+            if (hit == null || !hit.TryGetComponent<EnemyHealth>(out EnemyHealth enemy))
+                continue;
+
+            enemy.TakeDamage(packet);
+
+            Rigidbody2D enemyBody = hit.attachedRigidbody;
+            if (enemyBody != null)
+            {
+                Vector2 direction = ((Vector2)hit.transform.position - origin).normalized;
+                enemyBody.AddForce(direction * _config.force, ForceMode2D.Impulse);
+            }
+
+            pushed++;
+        }
+
+        PlayerPickup[] pickups = FindObjectsOfType<PlayerPickup>();
+        int attracted = 0;
+        float pickupRadius = _config.radius * 1.8f;
+        for (int i = 0; i < pickups.Length; i++)
+        {
+            PlayerPickup pickup = pickups[i];
+            if (pickup == null)
+                continue;
+
+            if (Vector2.Distance(origin, pickup.transform.position) > pickupRadius)
+                continue;
+
+            pickup.AttractTo(transform);
+            attracted++;
+        }
+
+        SecondarySkillVisual.SpawnPulse(transform.position, _config.iconPrimaryColor, _config.iconSecondaryColor, _config.radius, 0.45f);
+        Debug.Log($"MAGNETIC PULSE: pushed {pushed} enemies and attracted {attracted} pickups.");
+    }
+
+    private void ActivateArcaneShield()
+    {
+        if (_playerHealth != null)
+            _playerHealth.GrantTemporaryInvulnerability(_config.duration);
+
+        EnemyProjectile[] projectiles = FindObjectsOfType<EnemyProjectile>();
+        int cleared = 0;
+
+        for (int i = 0; i < projectiles.Length; i++)
+        {
+            EnemyProjectile projectile = projectiles[i];
+            if (projectile == null)
+                continue;
+
+            if (Vector2.Distance(transform.position, projectile.transform.position) > _config.radius)
+                continue;
+
+            Destroy(projectile.gameObject);
+            cleared++;
+        }
+
+        SecondarySkillVisual.SpawnAura(transform, _config.iconPrimaryColor, _config.iconSecondaryColor, _config.radius, _config.duration);
+        Debug.Log($"ARCANE SHIELD: blocked incoming damage and cleared {cleared} nearby projectiles.");
+    }
+
+    private void ActivateFrostNova()
+    {
+        Vector2 origin = transform.position;
+        int count = Physics2D.OverlapCircleNonAlloc(origin, _config.radius, _enemyHits);
+        int slowed = 0;
+
+        DamagePacket packet = new DamagePacket(
+            _config.damage,
+            DamageElement.Frost,
+            StatusEffect.Slow,
+            _config.statusDuration,
+            _config.statusStrength,
+            0f,
+            origin);
+
+        packet.Clamp();
+
+        for (int i = 0; i < count; i++)
+        {
+            Collider2D hit = _enemyHits[i];
+            if (hit == null || !hit.TryGetComponent<EnemyHealth>(out EnemyHealth enemy))
+                continue;
+
+            enemy.TakeDamage(packet);
+
+            Rigidbody2D enemyBody = hit.attachedRigidbody;
+            if (enemyBody != null)
+            {
+                Vector2 direction = ((Vector2)hit.transform.position - origin).normalized;
+                enemyBody.AddForce(direction * (_config.force * 0.35f), ForceMode2D.Impulse);
+            }
+
+            slowed++;
+        }
+
+        SecondarySkillVisual.SpawnPulse(transform.position, _config.iconPrimaryColor, _config.iconSecondaryColor, _config.radius, 0.55f);
+        Debug.Log($"FROST NOVA: hit {slowed} enemies.");
+    }
+
+    private static SecondaryActiveSkillDefinition CreateConfig(StartingSkillChoice choice)
+    {
+        switch (choice)
+        {
+            case StartingSkillChoice.ArcaneShield:
+                return new SecondaryActiveSkillDefinition
+                {
+                    displayName = "Arcane Shield",
+                    type = SecondaryActiveSkillType.ArcaneShield,
+                    cooldown = 16f,
+                    radius = 3.2f,
+                    duration = 2.4f,
+                    force = 0f,
+                    damage = 0,
+                    statusDuration = 0f,
+                    statusStrength = 0f,
+                    iconPrimaryColor = new Color(0.45f, 0.88f, 1f, 1f),
+                    iconSecondaryColor = new Color(0.76f, 0.95f, 1f, 0.92f)
+                };
+
+            case StartingSkillChoice.FrostNova:
+                return new SecondaryActiveSkillDefinition
+                {
+                    displayName = "Frost Nova",
+                    type = SecondaryActiveSkillType.FrostNova,
+                    cooldown = 13f,
+                    radius = 4.8f,
+                    duration = 0.55f,
+                    force = 6f,
+                    damage = 20,
+                    statusDuration = 2.6f,
+                    statusStrength = 0.45f,
+                    iconPrimaryColor = new Color(0.45f, 0.82f, 1f, 1f),
+                    iconSecondaryColor = new Color(0.82f, 0.96f, 1f, 0.9f)
+                };
+
+            default:
+                return new SecondaryActiveSkillDefinition
+                {
+                    displayName = "Magnetic Pulse",
+                    type = SecondaryActiveSkillType.MagneticPulse,
+                    cooldown = 11f,
+                    radius = 5.5f,
+                    duration = 0.45f,
+                    force = 11f,
+                    damage = 10,
+                    statusDuration = 0f,
+                    statusStrength = 0f,
+                    iconPrimaryColor = new Color(0.42f, 1f, 0.72f, 1f),
+                    iconSecondaryColor = new Color(0.95f, 1f, 0.78f, 0.9f)
+                };
+        }
+    }
+}
