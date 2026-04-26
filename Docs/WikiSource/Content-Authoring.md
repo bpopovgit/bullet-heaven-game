@@ -9,41 +9,23 @@ Assets/Prefabs/Enemies/Melee/
 Assets/Prefabs/Enemies/Ranged/
 ```
 
-2. Rename it clearly:
-
-```text
-MeleeEnemy_FireElite
-RangedEnemy_Poison
-```
-
+2. Rename it clearly.
 3. Configure:
 
 - `EnemyHealth`
 - `EnemyResistances`
-- `EnemyMeleeDamage` or `RangedShooter`
+- `EnemyMovement` or `RangedShooter`
 - projectile prefab if ranged
 
-4. Add it to `EnemyRespawnManager.enemyPrefabs`.
+4. Add it to `EnemyRespawnManager.enemyPrefabs` or to a specific wave stage.
 
-To introduce an enemy later in a run, add it to an `EnemyWaveDirector` stage's `Enemy Prefabs` array instead.
+## Spawn Authoring
 
-If a stage's prefab array is empty, the previous enemy pool remains active.
+Regular enemies use `EnemySpawnPoint`.
 
-To allow an enemy to spawn as an elite, add the prefab to `EliteSpawnDirector.Elite Prefabs`.
+Bosses can use `BossSpawnPoint`.
 
-If `Elite Prefabs` is empty, elites are chosen from the current respawn-manager enemy pool.
-
-## Enemy Resistances
-
-Use `EnemyResistances.overrides`.
-
-Suggested multipliers:
-
-- `0.5`: strong resistance
-- `0.75`: light resistance
-- `1.0`: normal
-- `1.25`: light weakness
-- `1.5`: strong weakness
+Use directional spawn regions when shaping wave flow by map.
 
 ## New Weapon
 
@@ -59,87 +41,44 @@ Recommended folder:
 Assets/GameData/Weapon Definition/
 ```
 
-Configure:
+If the weapon should be selectable in the loadout, also update:
 
-- display name
-- element
-- on-hit effect
-- effect chance
-- status duration
-- status strength
-- base damage
-- shots per second
-- bullet speed
-- splash radius
-- pierce
-- bullet prefab
+- `RunLoadoutState`
+- `RunLoadoutApplier`
 
-Assign the weapon asset to `PlayerShooting.weapon`.
+## New Bomb
 
-## New Upgrade
+Extend:
 
-Edit:
+- `StartingBombChoice`
+- `RunLoadoutState`
+- `PlayerActiveBomb`
 
-```text
-Assets/Scripts/PlayerScripts/PlayerUpgradeOption.cs
-```
+Add or update bomb visuals and SFX as needed.
 
-Add a new entry to `CreateDefaultPool()`.
+## New Secondary Skill
 
-If the upgrade needs a new stat:
+Extend:
 
-1. Add a new `PlayerUpgradeType`.
-2. Add data/methods to `PlayerStats` or `PlayerHealth`.
-3. Add a case in `PlayerUpgradeOption.Apply()`.
-4. Wire the stat into the gameplay script that should use it.
-5. Update documentation.
+- `StartingSkillChoice`
+- `RunLoadoutState`
+- `PlayerSecondaryActiveSkill`
+
+If the skill needs its own sound, add a matching folder under `Assets/Resources/Audio/SFX/`.
 
 ## New Status Effect
 
 1. Add a value to `StatusEffect` in `DamageType.cs`.
 2. Add handling in `StatusReceiver.ApplyStatus()`.
-3. Implement the routine.
-4. Add VFX fields if needed.
-5. Configure weapons or enemy attacks to apply it.
+3. Implement the effect routine.
+4. Update documentation.
 
-## Custom XP Gem Prefab
+## SFX Authoring
 
-Prefab requirements:
-
-- `SpriteRenderer`
-- trigger `Collider2D`
-- optional kinematic `Rigidbody2D`
-- `XPGem`
-
-Assign it to:
+Gameplay SFX are loaded from:
 
 ```text
-EnemyHealth > Experience Gem Prefab
+Assets/Resources/Audio/SFX/
 ```
 
-## Custom Survival Pickups
-
-Custom pickup prefabs are optional. If they are not assigned, runtime placeholder pickups are created.
-
-Health pickup prefab:
-
-- `SpriteRenderer`
-- trigger `Collider2D`
-- optional kinematic `Rigidbody2D`
-- `HealthPickup`
-
-Magnet pickup prefab:
-
-- `SpriteRenderer`
-- trigger `Collider2D`
-- optional kinematic `Rigidbody2D`
-- `MagnetPickup`
-
-Bomb pickup prefab:
-
-- `SpriteRenderer`
-- trigger `Collider2D`
-- optional kinematic `Rigidbody2D`
-- `BombPickup`
-
-Assign them on `EnemyHealth`.
+You can place multiple clips in one folder. The game will pick one at random.

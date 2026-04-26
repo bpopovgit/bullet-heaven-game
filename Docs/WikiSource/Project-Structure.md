@@ -4,17 +4,19 @@
 
 ```text
 Assets/
-  Art/                 Environment sprites and visual art.
-  Audio/               Audio assets.
-  GameData/            ScriptableObject data such as tiles and weapons.
-  Prefabs/             Player bullets, enemies, enemy projectiles, and VFX prefabs.
-  Scenes/              Unity scene files.
-  Scripts/             Gameplay, combat, enemy, player, and UI scripts.
-  TextMesh Pro/        TMP package assets and examples.
-  UIAssets/            UI source assets.
-  VFX/                 Hit VFX prefabs.
-Packages/             Unity package manifest and lock data.
-ProjectSettings/      Unity project configuration.
+  Art/
+  Audio/
+  GameData/
+  Prefabs/
+  Resources/
+  Scenes/
+  Scripts/
+  TextMesh Pro/
+  UIAssets/
+  VFX/
+Packages/
+ProjectSettings/
+Docs/
 ```
 
 ## Script Groups
@@ -25,16 +27,18 @@ ProjectSettings/      Unity project configuration.
 Assets/Scripts/Combat/
 ```
 
-- `DamageType.cs`: `DamageElement`, `StatusEffect`, and `DamagePacket`.
-- `WeaponDefinition.cs`: ScriptableObject data for player weapons.
-- `BulletElemental.cs`: player bullet behavior.
-- `EnemyHealth.cs`: enemy health, score reward, XP drop, and death event.
-- `EliteEnemy.cs`: runtime elite enemy modifier.
-- `EnemyResistances.cs`: element-specific enemy damage multipliers.
-- `StatusReceiver.cs`: burn, poison, slow, shock/stun handling.
-- `EnemyRespawnManager.cs`: enemy respawn/cap logic.
-- `EnemySpawnPoint.cs`: spawn point marker.
-- `XPGem.cs`: XP pickup behavior.
+- `DamageType.cs`
+- `WeaponDefinition.cs`
+- `BulletElemental.cs`
+- `EnemyHealth.cs`
+- `EnemyResistances.cs`
+- `EliteEnemy.cs`
+- `DragonBoss.cs`
+- `BossWorldHealthBar.cs`
+- `EnemyRespawnManager.cs`
+- `EnemySpawnPoint.cs`
+- `StatusReceiver.cs`
+- `XPGem.cs`
 
 ### Player
 
@@ -42,13 +46,16 @@ Assets/Scripts/Combat/
 Assets/Scripts/PlayerScripts/
 ```
 
-- `PlayerMovement.cs`: Rigidbody2D movement.
-- `PlayerShooting.cs`: mouse-aimed shooting.
-- `PlayerHealth.cs`: HP, i-frames, knockback, death, healing, max HP upgrades.
-- `PlayerExperience.cs`: XP, levels, and upgrade choice requests.
-- `PlayerStats.cs`: runtime upgrade bonuses.
-- `PlayerPickupCollector.cs`: XP gem attraction radius.
-- `PlayerUpgradeOption.cs`: upgrade data and application logic.
+- `PlayerMovement.cs`
+- `PlayerShooting.cs`
+- `PlayerHealth.cs`
+- `PlayerExperience.cs`
+- `PlayerStats.cs`
+- `PlayerUpgradeOption.cs`
+- `PlayerPickupCollector.cs`
+- `PlayerActiveBomb.cs`
+- `PlayerBombProjectile.cs`
+- `PlayerSecondaryActiveSkill.cs`
 
 ### Game Systems
 
@@ -56,9 +63,15 @@ Assets/Scripts/PlayerScripts/
 Assets/Scripts/GameSystems/
 ```
 
-- `RunTimer.cs`: active survival timer and time events.
-- `EnemyWaveDirector.cs`: timed spawn-stage controller.
-- `EliteSpawnDirector.cs`: timed elite enemy spawner.
+- `RunTimer.cs`
+- `RunLoadoutState.cs`
+- `RunLoadoutApplier.cs`
+- `EnemyWaveDirector.cs`
+- `EliteSpawnDirector.cs`
+- `BossSpawnDirector.cs`
+- `BossSpawnPoint.cs`
+- `GameAudio.cs`
+- `PlaySessionLogWriter.cs`
 
 ### Enemies
 
@@ -66,10 +79,10 @@ Assets/Scripts/GameSystems/
 Assets/Scripts/EnemyScripts/
 ```
 
-- `EnemyMovement.cs`: simple chase behavior.
-- `EnemyMeleeDamage.cs`: contact damage and statuses.
-- `RangedShooter.cs`: ranged movement and shooting.
-- `EnemyProjectile.cs`: enemy projectile behavior.
+- `EnemyMovement.cs`
+- `EnemyMeleeDamage.cs`
+- `RangedShooter.cs`
+- `EnemyProjectile.cs`
 
 ### Pickups
 
@@ -77,11 +90,11 @@ Assets/Scripts/EnemyScripts/
 Assets/Scripts/Pickups/
 ```
 
-- `PlayerPickup.cs`: shared attraction and collection behavior.
-- `HealthPickup.cs`: heals the player.
-- `MagnetPickup.cs`: pulls active XP gems to the player.
-- `BombPickup.cs`: damages enemies near the player.
-- `PickupSpriteFactory.cs`: creates simple runtime placeholder pickup visuals.
+- `PlayerPickup.cs`
+- `HealthPickup.cs`
+- `MagnetPickup.cs`
+- `BombPickup.cs`
+- `PickupSpriteFactory.cs`
 
 ### UI
 
@@ -89,18 +102,21 @@ Assets/Scripts/Pickups/
 Assets/Scripts/UIScripts/
 ```
 
-- `ScoreManager.cs`: score state and score-changed event.
-- `ScoreTextUI.cs`: TMP score display.
-- `ExperienceUI.cs`: optional XP/level display.
-- `PlayerHealthUI.cs`: optional HP display.
-- `RunTimerUI.cs`: optional survival timer display.
-- `RunAnnouncementUI.cs`: temporary run-event announcement display.
-- `LevelUpManager.cs`: level-up choice popup.
-- `CursorScript.cs`: custom cursor setup.
+- `MainMenuRuntime.cs`
+- `ScoreManager.cs`
+- `ScoreTextUI.cs`
+- `PlayerHealthUI.cs`
+- `ExperienceUI.cs`
+- `RunTimerUI.cs`
+- `RunAnnouncementUI.cs`
+- `LevelUpManager.cs`
+- `BombCooldownUI.cs`
+- `SecondarySkillCooldownUI.cs`
 
-## Important Prefab Areas
+## Important Runtime Asset Areas
 
 ```text
+Assets/Resources/Audio/SFX/
 Assets/Prefabs/Enemies/Melee/
 Assets/Prefabs/Enemies/Ranged/
 Assets/Prefabs/Projectiles/Enemy/

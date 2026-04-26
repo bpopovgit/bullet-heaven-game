@@ -1,6 +1,6 @@
 # Bullet Heaven Game Wiki
 
-Welcome to the development wiki for **Bullet Heaven Game**, a Unity 2D bullet-heaven prototype with elemental combat, score, XP gems, level-up upgrades, enemy spawning, and status effects.
+Welcome to the development wiki for **Bullet Heaven Game**, a Unity 2D bullet-heaven project with elemental combat, timed runs, elites, a dragon boss, pre-run loadouts, and active skills.
 
 ## Quick Links
 
@@ -14,31 +14,32 @@ Welcome to the development wiki for **Bullet Heaven Game**, a Unity 2D bullet-he
 
 ## Current Gameplay Loop
 
-1. The player moves with the Unity Input System.
-2. The player aims and shoots toward the mouse cursor.
-3. Enemies spawn from configured spawn points.
-4. Enemies damage the player through contact or projectiles.
-5. Player bullets damage enemies using elemental `DamagePacket` data.
-6. Dead enemies award score and drop XP gems.
-7. XP gems are pulled toward the player within pickup range.
-8. Level-ups pause the game and offer upgrade choices when `LevelUpManager` is configured.
-9. Survival pickups can heal the player, pull all XP gems, or damage nearby enemies.
-10. A run timer tracks active survival time and stops when the player dies.
-11. A wave director can increase enemy pressure as the run timer advances.
-12. Elite enemies can spawn on timed intervals with boosted health, rewards, scale, and tint.
+1. The player enters through the `Main` menu scene.
+2. Single Player setup leads into a starting loadout.
+3. The player chooses a weapon, bomb, active skill, and passive.
+4. Gameplay loads into `Game.unity`.
+5. The player moves with the Unity Input System and aims with the mouse.
+6. The player shoots with the primary weapon and uses `Q` / `E` active skills.
+7. Enemies spawn from authored spawn points and timed wave stages.
+8. Enemies damage the player through contact or projectiles.
+9. Dead enemies award score, XP, and optional pickups.
+10. Level-ups pause the game and offer upgrade choices when `LevelUpManager` is configured.
+11. Timed elites and the dragon boss interrupt the normal run flow.
+12. Boss kills award a separate boss reward choice.
 
 ## Current Unity Version
 
 ```text
-Unity 2022.3.56f1
+Unity 6000.3.14f1
 ```
 
 ## Documentation Policy
 
-The main repository `README.md` and `Docs/` folder are the source-of-truth developer docs. This wiki is the easier-to-browse documentation space.
+The main repository `README.md` and `Docs/` folder are the source-of-truth developer docs. This wiki is the easier-to-browse documentation mirror.
 
 When a system changes:
 
 1. Update the code.
 2. Update the matching file under `Docs/`.
-3. Update this wiki source if the public documentation changed.
+3. Update `Docs/WikiSource/`.
+4. Copy the wiki source into the GitHub wiki repository.

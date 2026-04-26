@@ -1,5 +1,18 @@
 # Unity Setup
 
+## Required Unity Version
+
+- Unity `6000.3.14f1`
+
+## Scene Flow
+
+Recommended Build Settings order:
+
+1. `Assets/Scenes/Main.unity`
+2. `Assets/Game.unity`
+
+`Main.unity` is the front-end scene. `Game.unity` is the gameplay scene.
+
 ## Player Setup
 
 The `Player` GameObject should have:
@@ -15,48 +28,32 @@ The `Player` GameObject should have:
 - `PlayerExperience`
 - `PlayerPickupCollector`
 
-## Score UI
+## Main Menu
 
-1. Create a scene object named `ScoreManager`.
-2. Add the `ScoreManager` script.
-3. Under the Canvas, create a TMP text object named `ScoreText`.
-4. Add `ScoreTextUI` to `ScoreText`.
-5. Keep the prefix as `Score: ` or customize it.
+The menu is currently created at runtime by `MainMenuRuntime`.
 
-## Run Timer UI
+It provides:
 
-1. Create an empty scene object named `RunTimer`.
-2. Add the `RunTimer` script.
-3. Leave `Start On Awake` enabled.
-4. Under the Canvas, create a TMP text object named `RunTimerText`.
-5. Add `RunTimerUI` to `RunTimerText`.
-6. Leave `Run Timer` empty to use `RunTimer.Instance`, or assign the scene timer object.
+- mode selection
+- single-player setup
+- loadout setup
 
-Recommended HUD order:
+No manually-authored menu canvas is required for the current version.
 
-```text
-Score: 0
-Time: 00:00
-HP: 100 / 100
-```
+## Loadout
 
-## XP and Leveling
+Current loadout categories:
 
-On the Player:
+- weapon
+- bomb
+- active skill
+- passive
 
-1. Add `PlayerExperience`.
-2. Add `PlayerPickupCollector`.
-3. Confirm `PlayerStats` exists.
-
-For faster testing:
-
-```text
-PlayerExperience > Base Experience To Next Level = 3
-```
+The selected values are stored in `RunLoadoutState` and applied by `RunLoadoutApplier` when gameplay loads.
 
 ## Level-Up Popup
 
-Create this hierarchy under the Canvas:
+Create this hierarchy under the gameplay Canvas:
 
 ```text
 LevelUpPanel
@@ -75,7 +72,7 @@ Create an active scene object:
 LevelUpManager
 ```
 
-Add the `LevelUpManager` script and assign:
+Assign:
 
 ```text
 Panel: LevelUpPanel
@@ -90,141 +87,77 @@ Choice Texts:
   Element 2: UpgradeButtonText_3
 ```
 
-Disable only `LevelUpPanel` by default. Keep `LevelUpManager` active.
+## HUD
 
-## Experience UI
+Gameplay UI can include:
 
-`ExperienceUI` is optional.
-
-Assign:
-
-- `Player Experience`
-- `Level Text`
-- `Experience Text`
-- optional `Experience Slider`
-
-If `Player Experience` is empty, the script tries to find one in the scene.
-
-## Enemy Rewards
-
-On each enemy prefab's `EnemyHealth`:
-
-- set `Points On Death`
-- set `Experience On Death`
-- set `Experience Drop Chance`
-- optionally assign `Experience Gem Prefab`
-- set `Health Drop Chance`
-- set `Health Pickup Amount`
-- optionally assign `Health Pickup Prefab`
-- set `Magnet Drop Chance`
-- optionally assign `Magnet Pickup Prefab`
-- set `Bomb Drop Chance`
-- set `Bomb Damage`
-- set `Bomb Radius`
-- optionally assign `Bomb Pickup Prefab`
-
-If no gem prefab is assigned, a simple runtime green gem is created.
-
-If no pickup prefabs are assigned, simple runtime pickups are created.
-
-## Wave Director
-
-1. Create an empty scene object named `EnemyWaveDirector`.
-2. Add the `EnemyWaveDirector` script.
-3. Assign:
-
-```text
-Run Timer: RunTimer
-Respawn Manager: EnemySystems or whichever object has EnemyRespawnManager
-```
-
-4. Configure stages.
-
-Example:
-
-```text
-0 seconds:    maxAlive 8,  respawnDelay 4
-60 seconds:   maxAlive 10, respawnDelay 3.5
-120 seconds:  maxAlive 12, respawnDelay 3
-180 seconds:  maxAlive 15, respawnDelay 2.5
-```
-
-If a stage's enemy prefab array is empty, the current enemy pool remains active.
-
-## Elite Spawn Director
-
-1. Create an empty scene object named `EliteSpawnDirector`.
-2. Add the `EliteSpawnDirector` script.
-3. Assign:
-
-```text
-Run Timer: RunTimer
-Respawn Manager: EnemySystems or whichever object has EnemyRespawnManager
-```
-
-Recommended values:
-
-```text
-Spawn Elites: true
-First Elite Time Seconds: 90
-Elite Interval Seconds: 90
-Max Elites Alive: 1
-Health Multiplier: 4
-Reward Multiplier: 5
-Scale Multiplier: 1.4
-Pickup Drop Chance Bonus: 0.25
-```
-
-For quick testing:
-
-```text
-First Elite Time Seconds: 10
-Elite Interval Seconds: 20
-```
+- score text
+- HP text and optional HP slider
+- level and XP text
+- XP slider
+- run timer text
+- bomb cooldown widget
+- secondary-skill cooldown widget
 
 ## Run Announcement UI
 
-1. Under the Canvas, create a TMP text object named `RunAnnouncementText`.
-2. Add `RunAnnouncementUI`.
-3. Anchor it near the upper-middle of the screen.
+Create a TMP text object named `RunAnnouncementText`, add `RunAnnouncementUI`, and place it near the upper-middle of the gameplay HUD.
 
-Recommended Rect Transform:
+This is used for:
+
+- elite spawn / defeat
+- boss warnings
+- run-start loadout announcements
+
+## Enemy Rewards
+
+On each enemy prefab's `EnemyHealth`, configure:
+
+- score reward
+- XP reward
+- pickup drop chances
+- optional pickup / gem prefabs
+
+If these prefabs are empty, the game creates runtime placeholder versions for testing.
+
+## Wave, Elite, and Boss Directors
+
+Gameplay scene should contain:
+
+- `EnemyRespawnManager`
+- `EnemyWaveDirector`
+- `EliteSpawnDirector`
+- `BossSpawnDirector`
+
+Optional:
+
+- `BossSpawnPoint` objects for authored boss entrances
+
+## Audio
+
+`GameAudio` loads runtime clips from:
 
 ```text
-Anchor: Top Center
-Pivot X: 0.5
-Pivot Y: 1
-Pos X: 0
-Pos Y: -80
-Width: 600
-Height: 80
+Assets/Resources/Audio/SFX/
 ```
 
-Recommended TMP settings:
+Useful folders include:
 
 ```text
-Font Size: 42
-Alignment: Center / Middle
-Color: gold or white
-Text Input: empty
+BombThrow
+BombImpact
+SkillMagneticPulse
+SkillArcaneShield
+SkillFrostNova
+EliteSpawn
+EliteDefeated
 ```
-
-## Health UI
-
-To use `PlayerHealthUI`:
-
-1. Create TMP text for HP.
-2. Optionally create a UI Slider for HP.
-3. Add `PlayerHealthUI` to a UI object.
-4. Assign `Player Health`, `Health Text`, and optional `Health Slider`.
-
-If `Player Health` is empty, the script tries to find one in the scene.
 
 ## EventSystem
 
 If UI buttons do not click, confirm there is an active `EventSystem`.
 
-For the new Input System, use:
+With the new Input System, use:
 
 ```text
 Input System UI Input Module

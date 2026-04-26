@@ -28,9 +28,19 @@ Statuses:
 - `Burn`
 - `Shock`
 - `Slow`
+- `Freeze`
 - `Poison`
 
-Call `DamagePacket.Clamp()` before applying damage from configurable data.
+## Pre-Run Loadout
+
+The run now begins with a chosen loadout:
+
+- starting weapon
+- bomb on `Q`
+- active skill on `E`
+- passive perk
+
+This loadout is selected in the menu scene and applied when gameplay starts.
 
 ## Player Shooting
 
@@ -44,7 +54,32 @@ Upgrade-aware stats:
 - pierce
 - splash radius
 
-Extra projectiles are fired as spread shots.
+Extra projectiles fire as spread shots.
+
+## Bomb Skill on `Q`
+
+`PlayerActiveBomb` handles the first active skill slot.
+
+Current bombs:
+
+- `Frag Bomb`
+- `Frost Bomb`
+- `Fire Bomb`
+- `Shock Bomb`
+
+Bombs use cursor-targeted throws, visible projectile travel, impact visuals, and a cooldown icon in the HUD.
+
+## Secondary Skill on `E`
+
+`PlayerSecondaryActiveSkill` handles the second active slot.
+
+Current options:
+
+- `Magnetic Pulse`
+- `Arcane Shield`
+- `Frost Nova`
+
+`Frost Nova` now freezes enemies in place and uses clear icy visuals rather than acting like a burst-damage kill button.
 
 ## Score System
 
@@ -82,144 +117,84 @@ Choices per level: 3
 
 ## Upgrade System
 
-Default upgrades:
+Default upgrades include:
 
-- `Sharpened Rounds`: +15% damage
-- `Trigger Rhythm`: +15% fire rate
-- `Fleet Footing`: +10% movement speed
-- `Magnetic Field`: +1.5 pickup radius
-- `Split Shot`: +1 projectile
-- `Punch Through`: +1 pierce
-- `Vital Core`: +20 max HP and heal 20
-- `Volatile Payload`: +0.5 splash radius
-
-Upgrades modify either:
-
-- `PlayerStats`
-- `PlayerHealth`
-
-## Level-Up Popup
-
-`LevelUpManager` pauses the game with `Time.timeScale = 0`, shows three choices, applies the clicked upgrade, hides the panel, then restores time scale.
-
-If `LevelUpManager` is missing or not configured, `PlayerExperience` auto-picks an upgrade so the game remains playable.
+- `Sharpened Rounds`
+- `Trigger Rhythm`
+- `Fleet Footing`
+- `Magnetic Field`
+- `Split Shot`
+- `Punch Through`
+- `Vital Core`
+- `Volatile Payload`
 
 ## Survival Pickups
 
-Pickups share movement and attraction behavior through `PlayerPickup`.
-
 Current pickup types:
 
-- `HealthPickup`: heals the player.
-- `MagnetPickup`: pulls every active XP gem to the player.
-- `BombPickup`: damages enemies near the player.
+- `HealthPickup`
+- `MagnetPickup`
+- `BombPickup`
 
-Enemy pickup drops are configured on `EnemyHealth`.
+Pickups use shared attraction/collection behavior through `PlayerPickup`.
 
-If no custom prefab is assigned, the game creates simple runtime pickups:
+## HUD and Timer
 
-- red health pickup
-- cyan magnet pickup
-- yellow/orange bomb pickup
+Current gameplay HUD supports:
 
-## Health UI
+- score
+- HP
+- XP / level
+- run timer
+- bomb cooldown
+- secondary-skill cooldown
 
-`PlayerHealth` raises `HealthChanged` when HP or max HP changes.
-
-`PlayerHealthUI` can show:
-
-- HP text
-- HP slider
-
-## Run Timer
-
-`RunTimer` tracks active survival time using scaled `Time.deltaTime`.
-
-It advances during gameplay, pauses during level-up choices, and stops when the player dies.
-
-Useful events:
-
-- `TimeChanged`
-- `WholeSecondChanged`
-- `MinuteChanged`
-- `RunEnded`
-
-`RunTimerUI` displays:
-
-```text
-Time: 00:00
-```
+`RunTimer` uses scaled `Time.deltaTime`, so it pauses during popups that set `Time.timeScale = 0`.
 
 ## Enemy Spawning
 
-`EnemyRespawnManager`:
+`EnemyRespawnManager` uses authored `EnemySpawnPoint` objects.
 
-- keeps enemies up to `maxAlive`
-- respawns after `respawnDelay`
-- uses `EnemySpawnPoint` positions
-- avoids spawning too close to the player
-- avoids spawning too close to living enemies
-- can prefer the farthest valid spawn point
+Wave stages can now also choose allowed spawn regions such as:
 
-Dynamic spawn-radius mode exists in code but is currently disabled for easier balancing.
-
-## Wave Director
-
-`EnemyWaveDirector` listens to `RunTimer.WholeSecondChanged` and applies stages to `EnemyRespawnManager`.
-
-Each stage can configure:
-
-- start time in seconds
-- max alive enemies
-- respawn delay
-- immediate refill
-- optional enemy prefab pool
-
-Default stages:
-
-```text
-0:00  maxAlive 8   respawnDelay 4.0
-1:00  maxAlive 10  respawnDelay 3.5
-2:00  maxAlive 12  respawnDelay 3.0
-3:00  maxAlive 15  respawnDelay 2.5
-```
+- `North`
+- `East`
+- `South`
+- `West`
+- `Center`
 
 ## Elite Enemies
 
 `EliteSpawnDirector` spawns occasional elite enemies using the current run timer.
 
-Elites reuse normal enemy prefabs and get runtime modifiers through `EliteEnemy`.
-
-Default behavior:
-
-```text
-First elite: 90 seconds
-Interval: 90 seconds
-Max elites alive: 1
-Health multiplier: 4x
-Reward multiplier: 5x
-Scale multiplier: 1.4x
-Tint: gold
-```
-
-If `Elite Prefabs` is empty, the director uses the respawn manager's current enemy pool.
+Elites reuse enemy prefabs and get runtime modifiers through `EliteEnemy`.
 
 Elite spawn and defeat can display messages through `RunAnnouncementUI`.
 
-Default messages:
+## Dragon Boss
 
-```text
-ELITE INCOMING
-ELITE DEFEATED
-```
+The current first boss is a dragon.
 
-## Player Status Effects
+The boss flow supports:
 
-`StatusReceiver` handles:
+- timed spawn
+- boss-only spawn logic from above / north of the player
+- optional authored `BossSpawnPoint` anchors
+- phase two below 50% HP
+- world-space boss HP bar
+- boss reward popup on death
 
-- slow
-- shock/stun
-- burn
-- poison
+## Audio System
 
-Burn and poison use `PlayerHealth.TakeDamageDirect()`.
+`GameAudio` loads clips from `Assets/Resources/Audio/SFX/...`.
+
+If a folder contains multiple clips, one is chosen at random at runtime.
+
+This is used for:
+
+- primary shooting
+- pickups
+- bombs
+- `E` skills
+- elite events
+- enemy death

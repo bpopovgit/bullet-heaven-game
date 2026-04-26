@@ -18,38 +18,39 @@ RangedEnemy_FireElite
 
 3. Configure components:
 
-- `EnemyHealth`: health, score, XP.
-- `EnemyResistances`: optional element multipliers.
-- `EnemyMeleeDamage` or `RangedShooter`: attack behavior.
-- `EnemyProjectile`: only on projectile prefabs.
+- `EnemyHealth`
+- `EnemyResistances` if needed
+- `EnemyMovement` or `RangedShooter`
+- `EnemyMeleeDamage` for contact attackers
+- projectile prefab if ranged
 
-4. Add the prefab to `EnemyRespawnManager.enemyPrefabs` in the scene.
+4. Add the prefab to `EnemyRespawnManager.enemyPrefabs`.
 
 To introduce the enemy later in a run, add it to an `EnemyWaveDirector` stage's `Enemy Prefabs` array instead.
 
-If a wave stage's prefab array is empty, the previous enemy pool remains active.
-
 To allow an enemy to spawn as an elite, add the prefab to `EliteSpawnDirector.Elite Prefabs`.
 
-If `Elite Prefabs` is empty, elites are chosen from the respawn manager's current enemy pool.
+## Adding or Repositioning Spawn Points
+
+Regular enemy spawns currently rely on authored `EnemySpawnPoint` objects.
+
+Each spawn point can now be grouped into regions such as:
+
+- `North`
+- `East`
+- `South`
+- `West`
+- `Center`
+
+Use this when shaping wave flow per map.
+
+Boss spawns should use `BossSpawnPoint` if you want authored entrances. If none exist, the boss falls back to spawning north / above the player.
 
 ## Adding Enemy Resistances
 
 Use `EnemyResistances.overrides`.
 
-Examples:
-
-```text
-Fire enemy:
-  Fire = 0.5
-  Frost = 1.5
-
-Poison enemy:
-  Poison = 0.5
-  Fire = 1.25
-```
-
-Keep multipliers easy to understand at first:
+Suggested multipliers:
 
 - `0.5`: strong resistance
 - `0.75`: light resistance
@@ -59,7 +60,7 @@ Keep multipliers easy to understand at first:
 
 ## Adding a New Weapon
 
-1. In the Project window, create a weapon asset:
+1. Create a weapon asset:
 
 ```text
 Create > Game > Weapon Definition
@@ -86,7 +87,50 @@ Assets/GameData/Weapon Definition/
 - `Pierce`
 - `Bullet Prefab`
 
-4. Assign it to `PlayerShooting.weapon` on the Player.
+4. If the weapon should be selectable in the loadout, update:
+
+- `RunLoadoutState`
+- `RunLoadoutApplier`
+- any matching visuals / SFX / descriptions
+
+## Adding a New Bomb
+
+To add a new bomb family:
+
+1. Extend `StartingBombChoice` in `RunLoadoutState`.
+2. Add display name and description there.
+3. Add bomb config in `PlayerActiveBomb`.
+4. Add or update visuals in:
+
+```text
+Assets/Scripts/PlayerScripts/BombAbilityDefinition.cs
+Assets/Scripts/PlayerScripts/BombExplosionVisual.cs
+Assets/Scripts/PlayerScripts/PlayerBombProjectile.cs
+```
+
+5. Add SFX folders under:
+
+```text
+Assets/Resources/Audio/SFX/BombThrow
+Assets/Resources/Audio/SFX/BombImpact
+```
+
+If the new bomb needs unique SFX logic beyond shared throw / impact folders, update `GameAudio`.
+
+## Adding a New Secondary Skill on `E`
+
+1. Extend `StartingSkillChoice` in `RunLoadoutState`.
+2. Add name and description there.
+3. Add a config entry in `PlayerSecondaryActiveSkill.CreateConfig()`.
+4. Implement the effect branch in `PlayerSecondaryActiveSkill`.
+5. Add icon/color behavior if needed.
+6. Add a dedicated SFX folder if the skill needs its own sound.
+
+Current examples:
+
+- `Magnetic Pulse`
+- `Arcane Shield`
+- `Frost Nova`
 
 ## Adding Player Upgrade Options
 
@@ -98,85 +142,43 @@ Assets/Scripts/PlayerScripts/PlayerUpgradeOption.cs
 
 Add new default upgrades inside `CreateDefaultPool()`.
 
-Example:
-
-```csharp
-new PlayerUpgradeOption(
-    "Heavy Caliber",
-    "+25% damage, slower shots",
-    PlayerUpgradeType.DamagePercent,
-    amount: 0.25f)
-```
-
 If the upgrade needs a new stat:
 
 1. Add a new value to `PlayerUpgradeType`.
 2. Add a field/method in `PlayerStats` or `PlayerHealth`.
 3. Add a case in `PlayerUpgradeOption.Apply()`.
 4. Wire that stat into the relevant gameplay script.
-5. Document the upgrade in `Docs/GAMEPLAY_SYSTEMS.md`.
+5. Update documentation.
 
 ## Adding a New Status Effect
 
 1. Add the enum value in `DamageType.cs`.
 2. Add handling in `StatusReceiver.ApplyStatus()`.
 3. Implement the effect routine.
-4. Add optional VFX fields if needed.
-5. Update enemy projectiles or weapons to apply the new status.
+4. Add optional visuals or VFX.
+5. Update any weapons, projectiles, bombs, or skills that should apply it.
 
-## Adding a Custom XP Gem Prefab
+## Adding Custom XP Gem or Pickup Prefabs
 
-The runtime default gem is useful for testing, but a prefab gives better visuals.
+Runtime placeholders are fine for prototyping, but custom prefabs give better visuals.
 
-Prefab requirements:
+Common requirements:
 
 - `SpriteRenderer`
-- `Collider2D` set as trigger
-- optional `Rigidbody2D` set to kinematic
+- trigger `Collider2D`
+- optional kinematic `Rigidbody2D`
+- matching pickup or gem script
+
+Relevant components:
+
 - `XPGem`
-
-Then assign the prefab to:
-
-```text
-EnemyHealth > Experience Gem Prefab
-```
-
-If this field is empty, the default runtime green gem is used.
-
-## Adding Custom Survival Pickup Prefabs
-
-Custom pickup prefabs are optional. If these fields are empty on `EnemyHealth`, runtime placeholder pickups are spawned.
-
-Health pickup prefab requirements:
-
-- `SpriteRenderer`
-- trigger `Collider2D`
-- optional kinematic `Rigidbody2D`
 - `HealthPickup`
-
-Magnet pickup prefab requirements:
-
-- `SpriteRenderer`
-- trigger `Collider2D`
-- optional kinematic `Rigidbody2D`
 - `MagnetPickup`
-
-Bomb pickup prefab requirements:
-
-- `SpriteRenderer`
-- trigger `Collider2D`
-- optional kinematic `Rigidbody2D`
 - `BombPickup`
 
-Assign custom prefabs on `EnemyHealth`:
+Assign these prefabs on `EnemyHealth`.
 
-```text
-Health Pickup Prefab
-Magnet Pickup Prefab
-Bomb Pickup Prefab
-```
-
-## Adding a New Enemy Projectile
+## Adding Enemy Projectiles
 
 1. Duplicate an existing projectile prefab from:
 
@@ -195,7 +197,31 @@ Assets/Prefabs/Projectiles/Enemy/
 - status duration
 - status strength
 
-3. Assign it to a ranged enemy's `RangedShooter.enemyProjectilePrefab`.
+3. Assign it to the ranged enemy's `RangedShooter.enemyProjectilePrefab`.
+
+## Adding or Updating SFX
+
+Gameplay SFX are loaded from:
+
+```text
+Assets/Resources/Audio/SFX/
+```
+
+Each folder can contain one or many clips. If multiple clips exist, `GameAudio` randomly chooses one at runtime.
+
+Examples:
+
+```text
+PlayerShoot
+BombThrow
+BombImpact
+SkillMagneticPulse
+SkillArcaneShield
+SkillFrostNova
+EnemyDeath
+EliteSpawn
+EliteDefeated
+```
 
 ## Naming Conventions
 
@@ -208,6 +234,7 @@ RangedEnemy_Frost
 EnemyProjectile_Lightning
 Hit_Poison
 Spawn_01
+BossSpawn_North
 ```
 
 Suggested script naming:

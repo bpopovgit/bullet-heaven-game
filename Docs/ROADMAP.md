@@ -1,141 +1,154 @@
 # Roadmap
 
-This roadmap is intentionally practical. It focuses on changes that make the prototype feel more like a complete bullet-heaven run.
+This roadmap stays practical on purpose. It should track the next features that make the game feel more complete, not every possible dream system at once.
 
 ## Completed Foundations
 
-- Top-down player movement.
-- Mouse-aimed shooting.
+- Top-down movement with the new Input System.
+- Mouse-aimed primary shooting.
 - Elemental damage packets.
-- Enemy health and resistances.
+- Enemy health, resistances, and status handling.
 - Melee and ranged enemies.
-- Enemy projectiles.
-- Player damage, i-frames, knockback, and death.
 - Score system.
 - XP gems.
-- Level-up upgrades.
-- Optional level-up choice UI.
+- Level-up upgrades and popup choice UI.
+- Health, XP, score, and timer HUD support.
 - Spawn-point based enemy respawning.
-- Health, magnet, and bomb survival pickups.
-- Optional health UI support.
-- Run timer and timer UI support.
-- Wave director and basic spawn scaling.
+- Region-aware wave stages.
 - Timed elite enemy spawns.
-- Run announcement UI for elite events.
+- Dragon boss with phase two.
+- Boss reward popup.
+- Runtime event announcements.
+- Sound-effect system with random variation by folder.
+- Main menu and pre-run single-player setup flow.
+- Starting loadout selection.
+- Bomb on `Q`.
+- Secondary active skill on `E`.
+- Bomb and secondary-skill cooldown UI.
 
 ## Highest-Value Next Features
 
-### 1. Visible XP Bar and Level Indicator
+### 1. Mobility Skill on `Shift` or `Space`
 
-Add an always-visible UI display for:
+The combat kit now has:
 
-- current level
-- current XP
-- XP needed for next level
+- primary weapon
+- bomb on `Q`
+- active skill on `E`
 
-The `ExperienceUI` script already supports TMP texts and an optional Slider.
+The next clean expansion is a mobility layer:
 
-### 2. Low-Health Feedback
+- dash
+- blink
+- short evasive burst
 
-Health UI support exists. Next, add stronger feedback when the player is in danger:
+This would make positioning feel more deliberate and skillful.
 
-- red screen vignette
-- pulsing HP text
-- warning sound
+### 2. Ultimate / Special on `R`
 
-### 3. More Pickup Variety
+After movement utility, the next satisfying escalation is a longer-cooldown power:
 
-Health, magnet, and bomb pickups exist. Good next pickup additions:
+- screen clear
+- time slow
+- dragon breath
+- empowered storm burst
 
-- temporary shield
-- temporary speed boost
-- temporary fire-rate boost
+This should be rarer, stronger, and more dramatic than the `Q` and `E` slots.
 
-### 4. Advanced Wave Content
+### 3. More Distinct Weapon Families
 
-Basic wave scaling exists. Next, add more interesting timed content:
+Starting weapons exist, but they can become more mechanically different.
 
-- introduce ranged enemies after a delay
-- introduce elemental variants later
-- create special swarm waves
-- add timed elite spawns
+Strong next direction:
 
-Suggested script:
+- tighter fire identity
+- stronger projectile visuals
+- unique hit feel
+- clearer weapon-specific upgrade synergies
 
-```text
-RunTimer
-EnemyWaveDirector
-```
+### 4. More Bomb Families
 
-### 5. Elite Enemy Polish
+Current bombs:
 
-Timed elite spawns exist. Next polish:
+- Frag
+- Frost
+- Fire
+- Shock
 
-- elite death burst
-- guaranteed pickup drop
-- elite-specific sprite or outline
-- warning/death sound
+Good next additions:
 
-### 6. First Mini-Boss
+- Poison Bomb
+- Black Hole Bomb
+- delayed cluster bomb
 
-A first boss should interrupt the normal rhythm.
+### 5. Meta Progression / Profile System
 
-Suggested boss:
+The game now has a proper pre-run loadout flow, so the next structural layer is profile progression across runs.
 
-```text
-Elemental Warden
-```
+Good first goals:
 
-Simple pattern:
+- profile level
+- unlockable starting options
+- milestone-based feature unlocks
 
-- chases slowly
-- fires ring projectiles
-- summons minions at 66% HP
-- fires faster below 33% HP
+### 6. Unlock Structure
 
-Reward:
+Early profile progression should unlock gameplay options:
 
-- big XP burst
-- score bonus
-- guaranteed upgrade choice
+- new weapons
+- new bombs
+- new secondary skills
+- new passives
+- maybe new maps
 
-### 7. Weapon Evolution
+After the important gameplay unlocks are in place, later levels can skew more cosmetic.
 
-After a weapon reaches enough upgrades, allow an evolved version.
+### 7. Cosmetics
 
-Examples:
+Good cosmetic targets:
 
-- Physical pistol evolves into piercing rail shots.
-- Fire evolves into explosions on kill.
-- Frost evolves into freeze bursts.
-- Lightning evolves into chain lightning.
-- Poison evolves into poison pools.
+- player color variants
+- projectile color variants
+- freeze / burn / bomb VFX variants
+- aura / trail
+- boss-announcement style variants
+- profile banners or titles
 
-### 8. Map Architecture
+### 8. Map-Specific Spawn Profiles
 
-Move beyond an empty arena:
+The spawn-point system is now better than the old dynamic-only idea, which means we can lean into authored maps.
 
-- open central space
-- obstacle clusters
-- choke points
-- reward-risk areas
-- spawn points placed around the edges
+Best next map-side step:
 
-This makes movement choices more interesting than walking in circles forever.
+- map-owned spawn groups
+- boss spawn anchors
+- enemy pool by map
+- terrain-aware spawn rules
+
+### 9. More Bosses and Boss Attacks
+
+The dragon is a strong first boss foundation.
+
+Next boss-side growth:
+
+- second attack pattern for the dragon
+- minion summon phase
+- hazard zones
+- second boss type
 
 ## Suggested Immediate Implementation Order
 
-1. XP bar UI.
-2. Low-health feedback.
-3. Temporary shield pickup.
-4. Timed enemy pool changes.
-5. Elite warning/death feedback.
-6. Mini-boss.
-7. Weapon evolution.
+1. Mobility / dash
+2. More distinct weapon identities
+3. One new bomb family
+4. Profile progression foundation
+5. Unlockable loadout options
+6. Cosmetics
+7. Map-specific spawn profiles
 
 ## Design Rule of Thumb
 
-Every minute of play should add at least one of these:
+Every few minutes of play should add at least one of these:
 
 - a new choice
 - a new threat

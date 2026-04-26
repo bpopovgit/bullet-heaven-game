@@ -19,29 +19,31 @@ Check:
 - The pickup radius is large enough.
 - The gem has `XPGem` and a trigger collider.
 
+## Loadout Selections Do Not Apply In Game
+
+Check:
+
+- You started from `Main.unity`, not directly from `Game.unity`, if you expected menu-selected values.
+- `RunLoadoutApplier` exists in the project and the gameplay scene fully loaded.
+- The Console shows `LOADOUT APPLIED`.
+
+## Q or E Ability Has No Sound
+
+Check:
+
+- The correct SFX folder exists under `Assets/Resources/Audio/SFX/`.
+- The clip imported as a usable audio asset.
+- The folder name matches the expected runtime path exactly.
+
 ## Level-Up Auto-Picks Instead of Showing Popup
 
 Check:
 
 - Scene has an active `LevelUpManager`.
-- `LevelUpManager` has the script attached.
 - `Panel` is assigned.
 - `Choice Buttons` has size `3`.
 - Buttons are assigned.
 - `LevelUpManager` is active even though `LevelUpPanel` starts disabled.
-
-## Game Freezes After Choosing Upgrade
-
-Check the Console for red errors.
-
-The expected flow is:
-
-1. Button click.
-2. Upgrade applies.
-3. Panel hides.
-4. `Time.timeScale` returns to `1`.
-
-If the panel remains visible, check button assignments and `LevelUpManager`.
 
 ## Buttons Do Not Click
 
@@ -49,26 +51,16 @@ Check:
 
 - An active `EventSystem` exists.
 - With the new Input System, use `Input System UI Input Module`.
-- The level-up panel is not blocking its own buttons with another UI object.
+- Another UI object is not blocking the buttons.
 
-## Player Does Not Shoot
-
-Check:
-
-- `PlayerShooting.weapon` is assigned.
-- The weapon has a `bulletPrefab`.
-- The bullet prefab has `BulletElemental`.
-- `muzzle` is assigned.
-- `PlayerInput` has a `Fire` action.
-
-## Enemy Projectiles Damage Player Too Often
+## Boss Does Not Spawn
 
 Check:
 
-- `PlayerHealth.iFrameTime`.
-- Enemy projectile damage values.
-- Projectile spawn rate on `RangedShooter`.
-- Whether multiple projectile prefabs overlap.
+- `BossSpawnDirector` exists in the gameplay scene.
+- `RunTimer` is active.
+- `EnemyRespawnManager` is active.
+- The session log does not show a missing prefab or spawn failure.
 
 ## Build Settings Scene Is Wrong
 
@@ -78,5 +70,7 @@ Check:
 File > Build Settings
 ```
 
-Make sure the intended gameplay scene is included.
+Recommended order:
 
+1. `Assets/Scenes/Main.unity`
+2. `Assets/Game.unity`

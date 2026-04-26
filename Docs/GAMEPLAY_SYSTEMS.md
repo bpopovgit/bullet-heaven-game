@@ -2,7 +2,7 @@
 
 ## Damage Model
 
-Damage is passed through `DamagePacket`, defined in `DamageType.cs`.
+Damage flows through `DamagePacket`, defined in `DamageType.cs`.
 
 `DamagePacket` includes:
 
@@ -28,21 +28,29 @@ Statuses:
 - `Burn`
 - `Shock`
 - `Slow`
+- `Freeze`
 - `Poison`
 
 `DamagePacket.Clamp()` should be called before applying damage when a packet is built from configurable data.
 
-## Player Shooting
+## Primary Weapons
 
 `PlayerShooting` reads:
 
-- `WeaponDefinition`
-- `PlayerStats`
+- the active `WeaponDefinition`
 - mouse position from the Input System
+- current `PlayerStats`
 
-It spawns `weapon.bulletPrefab` from the configured muzzle/fire point. Extra projectile upgrades create spread shots using `multiProjectileSpreadAngle`.
+It spawns the weapon's bullet prefab from the configured muzzle/fire point.
 
-Current upgrade-aware shooting stats:
+Current starting weapon identities:
+
+- `Ember Repeater`: fast fire, burn-focused
+- `Frost Lance`: slower frost rounds with crowd-control lean
+- `Venom Caster`: poison splash pressure
+- `Storm Needler`: faster, sharper lightning burst
+
+Current upgrade-aware primary weapon stats:
 
 - fire rate
 - projectile count
@@ -50,30 +58,77 @@ Current upgrade-aware shooting stats:
 - pierce
 - splash radius
 
-## Weapon Definitions
+## Pre-Run Loadout
 
-`WeaponDefinition` is a ScriptableObject created from:
+The run now starts with a selected loadout chosen in the menu scene.
+
+Current loadout categories:
+
+- starting weapon
+- bomb on `Q`
+- active skill on `E`
+- passive perk
+
+`RunLoadoutState` stores the selected choices, and `RunLoadoutApplier` applies them when gameplay loads.
+
+The current front-end flow is:
 
 ```text
-Create > Game > Weapon Definition
+Main Menu -> Single Player Setup -> Loadout -> Start Run
 ```
 
-Important fields:
+## Bomb Skill on `Q`
 
-- `displayName`
-- `element`
-- `onHitEffect`
-- `effectChance`
-- `statusDuration`
-- `statusStrength`
-- `baseDamage`
-- `shotsPerSecond`
-- `bulletSpeed`
-- `splashRadius`
-- `pierce`
-- `bulletPrefab`
+`PlayerActiveBomb` handles the player's first active skill slot.
 
-## Enemy Health, Score, and XP Drops
+Current bomb behavior:
+
+- press `Q`
+- target the mouse position
+- throw a visible bomb projectile
+- clamp throw distance to a max range
+- detonate on arrival
+- apply bomb-specific damage/status behavior
+
+Current bomb options:
+
+- `Frag Bomb`
+- `Frost Bomb`
+- `Fire Bomb`
+- `Shock Bomb`
+
+Bombs have:
+
+- per-bomb visuals
+- per-bomb cooldown
+- bomb-specific SFX folders
+- a bottom-left cooldown widget via `BombCooldownUI`
+
+## Secondary Active Skill on `E`
+
+`PlayerSecondaryActiveSkill` handles the second active slot.
+
+The selected skill is chosen in the loadout screen and shown in its own cooldown widget through `SecondarySkillCooldownUI`.
+
+Current `E` skills:
+
+- `Magnetic Pulse`
+  - pushes nearby enemies away
+  - attracts nearby pickups
+- `Arcane Shield`
+  - grants short invulnerability
+  - clears nearby enemy projectiles
+- `Frost Nova`
+  - freezes nearby enemies in place
+  - applies strong frost visuals rather than direct kill damage
+
+Each `E` skill now has:
+
+- distinct icon colors
+- separate cooldown values
+- separate sound effects
+
+## Enemy Health, Score, XP, and Status
 
 `EnemyHealth` controls:
 
@@ -82,18 +137,45 @@ Important fields:
 - score reward
 - XP reward
 - optional XP gem prefab
-- optional health, magnet, and bomb pickup drops
+- optional pickup drops
 - death event for respawn tracking
 
 On death:
 
 1. Adds score through `ScoreManager`.
 2. Drops XP through `XPGem`.
-3. Rolls optional survival pickup drops.
+3. Rolls optional health, magnet, and bomb pickup drops.
 4. Raises `Died`.
-5. Destroys the enemy GameObject.
+5. Plays enemy death SFX.
+6. Destroys the enemy GameObject.
 
-If no XP prefab is assigned, `XPGem.SpawnDefault()` creates a simple green gem at runtime.
+`EnemyHealth` also forwards status-bearing packets into `StatusReceiver`, so enemies now properly react to:
+
+- slow
+- freeze
+- burn
+- poison
+- shock
+
+## Status Effects
+
+`StatusReceiver` is the shared status system used by the player and now by enemies too.
+
+Current supported behaviors:
+
+- `Slow`: reduces movement speed
+- `Shock`: stun-like lock state
+- `Freeze`: fully locks movement and uses frost visuals
+- `Burn`: damage over time
+- `Poison`: damage over time
+
+Freeze now adds:
+
+- icy blue tint
+- frost ring
+- icy sparkles
+
+That makes `Frost Nova` read as hard crowd control instead of just blue damage.
 
 ## Survival Pickups
 
@@ -101,9 +183,9 @@ Pickups share attraction behavior through `PlayerPickup`.
 
 Current pickup types:
 
-- `HealthPickup`: heals the player.
-- `MagnetPickup`: attracts every active XP gem to the player.
-- `BombPickup`: damages enemies in a radius around the player.
+- `HealthPickup`: heals the player
+- `MagnetPickup`: attracts every active XP gem to the player
+- `BombPickup`: damages enemies in a radius around the player
 
 `EnemyHealth` controls pickup drop chances:
 
@@ -116,8 +198,6 @@ If a pickup prefab is not assigned, the game spawns a simple colored runtime pic
 - red: health
 - cyan: magnet
 - yellow/orange: bomb
-
-`PlayerPickupCollector` attracts all `PlayerPickup` objects, including XP gems.
 
 ## Score System
 
@@ -132,59 +212,17 @@ ScoreManager.Instance.ResetScore();
 
 `ScoreTextUI` subscribes to `ScoreManager.ScoreChanged` and updates TMP text.
 
-Scene requirements:
+## Health, XP, and Timer HUD
 
-- Active `ScoreManager` GameObject.
-- `ScoreTextUI` attached to a TMP text object.
+Current HUD support:
 
-## Health UI
+- `PlayerHealthUI`: HP text and HP slider
+- `ExperienceUI`: level text, XP text, XP slider
+- `RunTimerUI`: `Time: 00:00`
+- `BombCooldownUI`: `Q` cooldown icon
+- `SecondarySkillCooldownUI`: `E` cooldown icon
 
-`PlayerHealth` raises `HealthChanged` whenever HP or max HP changes.
-
-`PlayerHealthUI` can display:
-
-- HP text
-- HP slider
-
-It can auto-find `PlayerHealth` if the field is left empty.
-
-## Run Timer
-
-`RunTimer` tracks active survival time using scaled `Time.deltaTime`.
-
-That means:
-
-- it advances during normal gameplay
-- it pauses during level-up choices because `Time.timeScale` is `0`
-- it stops when the player dies
-
-Core API:
-
-```csharp
-RunTimer.Instance.StartTimer();
-RunTimer.Instance.StopTimer();
-RunTimer.Instance.ResetTimer(startAfterReset: true);
-RunTimer.FormatTime(seconds);
-```
-
-Events:
-
-- `TimeChanged`: raised when the displayed whole second changes.
-- `WholeSecondChanged`: useful for future wave/director logic.
-- `MinuteChanged`: useful for difficulty milestones.
-- `RunEnded`: raised when the timer stops.
-
-`RunTimerUI` displays the time as:
-
-```text
-Time: 00:00
-```
-
-For runs longer than an hour, formatting becomes:
-
-```text
-Time: 1:00:00
-```
+The timer uses scaled time, so it pauses automatically during level-up choices and reward popups.
 
 ## XP and Leveling
 
@@ -208,34 +246,27 @@ Default growth:
 1.25x per level
 ```
 
-When enough XP is collected, the player levels up. If `LevelUpManager` exists and is configured, the game pauses and shows upgrade choices. If not, the system auto-picks the first generated upgrade so leveling still works.
-
-## XP Pickup Flow
-
-1. Enemy dies and drops an XP gem.
-2. `PlayerPickupCollector` finds nearby gems using `OverlapCircleNonAlloc`.
-3. Gems inside range call `AttractTo(playerTransform)`.
-4. `XPGem` moves toward the player.
-5. On contact, `XPGem` calls `PlayerExperience.AddExperience()`.
-
-`Magnetic Field` upgrades increase pickup radius through `PlayerStats.PickupRadiusBonus`.
+When enough XP is collected, the player levels up. If `LevelUpManager` is configured, the game pauses and shows upgrade choices. If not, it auto-picks the first generated upgrade so leveling still works.
 
 ## Upgrade System
 
 Upgrade options are represented by `PlayerUpgradeOption`.
 
-Current default pool:
+Current default pool includes:
 
-- `Sharpened Rounds`: +15% damage
-- `Trigger Rhythm`: +15% fire rate
-- `Fleet Footing`: +10% movement speed
-- `Magnetic Field`: +1.5 pickup radius
-- `Split Shot`: +1 projectile
-- `Punch Through`: +1 pierce
-- `Vital Core`: +20 max HP and heal 20
-- `Volatile Payload`: +0.5 splash radius
+- `Sharpened Rounds`
+- `Trigger Rhythm`
+- `Fleet Footing`
+- `Magnetic Field`
+- `Split Shot`
+- `Punch Through`
+- `Vital Core`
+- `Volatile Payload`
 
-Upgrades currently modify either `PlayerStats` or `PlayerHealth`.
+Upgrades currently modify either:
+
+- `PlayerStats`
+- `PlayerHealth`
 
 ## Level-Up UI
 
@@ -251,92 +282,102 @@ When configured, it:
 6. Hides the panel.
 7. Restores time scale.
 
-## Enemy Spawning
+## Enemy Spawning and Wave Regions
 
-`EnemyRespawnManager` maintains a maximum number of living enemies.
+`EnemyRespawnManager` maintains a maximum number of living enemies and spawns from authored `EnemySpawnPoint` objects.
 
 Current behavior:
 
-- Uses configured `enemyPrefabs`.
-- Uses configured or auto-found `EnemySpawnPoint` objects.
-- Can prefer the farthest valid spawn point.
-- Avoids spawning too close to the player.
-- Avoids spawning too close to existing enemies.
-- Respawns after a delay when an enemy dies.
+- uses configured `enemyPrefabs`
+- uses configured or auto-found `EnemySpawnPoint` objects
+- avoids invalid spawn positions
+- supports stage-based prefab pools
+- supports region-aware filtering
 
-Dynamic spawn-radius mode exists in the script but is currently disabled/commented for balancing simplicity.
+`EnemySpawnPoint` now supports directional grouping such as:
 
-## Wave Director
+- `North`
+- `East`
+- `South`
+- `West`
+- `Center`
 
-`EnemyWaveDirector` listens to `RunTimer.WholeSecondChanged` and applies timed stages to `EnemyRespawnManager`.
-
-Each stage can set:
-
-- start time in seconds
-- `maxAlive`
-- `respawnDelay`
-- whether to fill to the new cap immediately
-- optional enemy prefab pool
-
-If a stage has an empty prefab pool, the current enemy prefab pool remains unchanged.
-
-Default stages:
-
-```text
-0:00  maxAlive 8   respawnDelay 4.0
-1:00  maxAlive 10  respawnDelay 3.5
-2:00  maxAlive 12  respawnDelay 3.0
-3:00  maxAlive 15  respawnDelay 2.5
-```
-
-This is the first step toward timed waves, elites, and bosses.
+`EnemyWaveDirector` can restrict each wave stage to specific spawn regions, which makes runs feel more authored than simple global spawning.
 
 ## Elite Enemies
 
-`EliteSpawnDirector` uses the `RunTimer` and `EnemyRespawnManager` to spawn occasional elite enemies.
+`EliteSpawnDirector` uses the run timer and respawn manager to spawn occasional elite enemies.
 
 Elites reuse existing enemy prefabs and are modified at runtime by `EliteEnemy`.
 
-Elite modifiers:
+Elite modifiers include:
 
 - health multiplier
 - score/XP reward multiplier
 - visual scale multiplier
-- sprite tint color
+- sprite tint
 - pickup drop chance bonus
 
-Default elite behavior:
+Elite spawn and elite defeat can display temporary messages through `RunAnnouncementUI` and play matching audio.
+
+## Dragon Boss
+
+The current first boss is a dragon-themed ranged boss.
+
+The boss flow supports:
+
+- timed boss spawn
+- boss-only spawn logic from above / north of the player
+- optional authored `BossSpawnPoint` anchors
+- boss phase two below 50% HP
+- floating world-space HP bar
+- boss reward popup on death
+
+Phase two currently changes:
+
+- tint
+- attack aggression
+- pressure feel
+
+Boss reward choices are separate from normal level-up upgrades and are intended to feel stronger and more run-defining.
+
+## Main Menu, Setup, and Loadout UI
+
+`MainMenuRuntime` generates the front-end UI at runtime inside `Main.unity`.
+
+Current screens:
+
+- mode select
+- single-player setup
+- multiplayer placeholder
+- loadout setup
+
+That means the front-end is script-driven right now rather than authored from a manually-built persistent menu prefab.
+
+## Audio System
+
+`GameAudio` loads SFX from `Resources` folders and randomly picks one clip when multiple files exist in a folder.
+
+Examples:
 
 ```text
-First elite: 90 seconds
-Interval: 90 seconds
-Max elites alive: 1
-Health multiplier: 4x
-Reward multiplier: 5x
-Scale multiplier: 1.4x
-Tint: gold
+Assets/Resources/Audio/SFX/PlayerShoot
+Assets/Resources/Audio/SFX/BombThrow
+Assets/Resources/Audio/SFX/BombImpact
+Assets/Resources/Audio/SFX/SkillMagneticPulse
+Assets/Resources/Audio/SFX/SkillArcaneShield
+Assets/Resources/Audio/SFX/SkillFrostNova
 ```
 
-If `Elite Prefabs` is empty, the director uses the respawn manager's current enemy pool.
+This allows quick variation without extra code changes.
 
-If `Elite Prefabs` is assigned, only those prefabs can be picked for elite spawns.
+## Session Logging
 
-Elite spawn and elite defeat can display temporary messages through `RunAnnouncementUI`.
+`PlaySessionLogWriter` writes one text log per play session. This is useful for debugging issues such as:
 
-Default messages:
+- boss spawn timing
+- loadout application flow
+- activation/cooldown problems
+- menu/runtime handoff problems
 
-```text
-ELITE INCOMING
-ELITE DEFEATED
-```
-
-If no `RunAnnouncementUI` exists, elite gameplay still works and messages are only logged to the Console.
-
-## Player Status Effects
-
-`StatusReceiver` handles effects applied to the player:
-
-- Slow modifies `SpeedMultiplier`.
-- Shock sets `IsStunned` and forces movement speed to zero.
-- Burn and poison deal damage over time through `PlayerHealth.TakeDamageDirect()`.
-- Optional VFX references can play while effects are active.
+The logger writes to Unity's `persistentDataPath` under a `SessionLogs` folder.

@@ -10,16 +10,13 @@ https://github.com/bpopovgit/bullet-heaven-game.wiki.git
 
 Use these files as the maintained source copy, then publish them to the wiki repo.
 
-## Publishing
+## Publishing From Git Bash
 
-After enabling the Wiki in GitHub:
-
-```powershell
-git clone https://github.com/bpopovgit/bullet-heaven-game.wiki.git
-Copy-Item -Path "Docs\WikiSource\*.md" -Destination "bullet-heaven-game.wiki" -Force
-cd bullet-heaven-game.wiki
+```bash
+cp "/d/Bullet Heaven Game/Docs/WikiSource/"*.md "/d/bullet-heaven-game.wiki/"
+cd "/d/bullet-heaven-game.wiki"
+git status
 git add .
-git commit -m "Add initial project wiki"
+git commit -m "Update wiki for current Unity 6 game systems"
 git push
 ```
-

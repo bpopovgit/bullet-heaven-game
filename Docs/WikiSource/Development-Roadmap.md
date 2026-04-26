@@ -2,99 +2,67 @@
 
 ## Completed Foundations
 
-- Top-down player movement.
-- Mouse-aimed shooting.
-- Elemental damage packets.
-- Enemy health and resistances.
-- Melee and ranged enemies.
-- Enemy projectiles.
-- Player damage, i-frames, knockback, and death.
-- Score system.
-- XP gems.
-- Level-up upgrades.
-- Level-up choice UI.
-- Spawn-point based enemy respawning.
-- Health, magnet, and bomb survival pickups.
-- Optional health UI support.
-- Run timer and timer UI support.
-- Wave director and basic spawn scaling.
-- Timed elite enemy spawns.
-- Run announcement UI for elite events.
+- top-down movement
+- mouse-aimed primary shooting
+- elemental damage packets
+- enemy health and resistances
+- score and XP
+- level-up upgrades
+- pickups
+- timer, elites, and the dragon boss
+- pre-run menu and loadout flow
+- bomb on `Q`
+- active skill on `E`
+- cooldown UI for both active slots
+- SFX system with random variation
 
 ## Recommended Next Features
 
-### 1. XP Bar UI
+### 1. Mobility Skill
 
-Use `ExperienceUI` with:
+Add a movement-focused button on `Shift` or `Space`:
 
-- level text
-- XP text
-- UI Slider
+- dash
+- blink
+- burst reposition
 
-### 2. Low-Health Feedback
+### 2. Ultimate / Special
 
-Add:
+Add a longer-cooldown power on `R`:
 
-- red screen vignette
-- pulsing HP text
-- warning sound
+- screen clear
+- time slow
+- empowered breath / storm burst
 
-### 3. More Survival Pickups
+### 3. More Distinct Weapons
 
-Health, magnet, and bomb pickups exist. Add:
+The loadout weapons exist, but they can still become more mechanically different.
 
-- temporary shield
-- temporary speed boost
-- temporary fire-rate boost
+### 4. More Bomb Families
 
-### 4. Advanced Wave Content
+Strong next additions:
 
-Basic spawn scaling exists. Next, add richer timed content:
+- Poison Bomb
+- Black Hole Bomb
+- cluster-style bomb
 
-- add ranged enemies
-- add elemental variants
-- create special swarm waves
-- spawn elites
+### 5. Profile Progression
 
-### 5. Elite Enemy Polish
+Add account-level progression across runs:
 
-Timed elite spawns exist. Next polish:
+- unlockable starting options
+- profile levels
+- milestone rewards
 
-- elite death burst
-- guaranteed pickup drop
-- elite-specific sprite or outline
-- warning/death sound
+### 6. Cosmetics
 
-### 6. First Mini-Boss
+Later profile levels can reward:
 
-Suggested boss:
+- projectile variants
+- VFX variants
+- aura / trail
+- banner / title cosmetics
 
-```text
-Elemental Warden
-```
+### 7. Map-Specific Spawn Profiles
 
-Patterns:
-
-- slow chase
-- projectile ring
-- summon minions
-- phase change at 66% and 33% HP
-
-### 7. Weapon Evolution
-
-Examples:
-
-- Fire: explosions on kill.
-- Frost: freeze bursts.
-- Lightning: chain lightning.
-- Poison: poison pools.
-- Physical: piercing rail shots.
-
-## Design Rule
-
-Every minute of play should add at least one of:
-
-- a new choice
-- a new threat
-- a new reward
-- a new pattern the player must learn
+Use authored spawn groups and boss spawn points to make different maps feel more intentional.

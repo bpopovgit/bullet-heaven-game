@@ -2,22 +2,28 @@
 
 ## Requirements
 
-- Unity `2022.3.56f1`
+- Unity `6000.3.14f1`
 - Git
 - A C# editor such as Visual Studio, Rider, or VS Code
 
 ## Clone the Project
 
-```powershell
+```bash
 git clone https://github.com/bpopovgit/bullet-heaven-game.git
 cd bullet-heaven-game
 ```
 
-Open the folder in Unity Hub using Unity `2022.3.56f1`.
+Open the folder in Unity Hub using Unity `6000.3.14f1`.
 
-## First Scene to Inspect
+## First Scenes to Inspect
 
-The active gameplay work has been happening in:
+Menu flow starts in:
+
+```text
+Assets/Scenes/Main.unity
+```
+
+Gameplay happens in:
 
 ```text
 Assets/Game.unity
@@ -26,26 +32,25 @@ Assets/Game.unity
 Also check:
 
 ```text
-Assets/Scenes/
 ProjectSettings/EditorBuildSettings.asset
 ```
 
-before making a build, because the scene used during development may differ from the scene currently included in Build Settings.
-
 ## First Test Run
 
-1. Open the gameplay scene.
-2. Confirm the scene has a `Player`.
-3. Confirm the scene has a `ScoreManager`.
-4. Confirm the scene has an enemy spawning object with `EnemyRespawnManager`.
-5. Press Play.
-6. Move, shoot, kill enemies, collect green XP gems.
+1. Open `Assets/Scenes/Main.unity`.
+2. Press Play.
+3. Enter Single Player.
+4. Open Loadout.
+5. Choose a weapon, bomb, active skill, and passive.
+6. Start the run.
+7. Move, shoot, use `Q`, use `E`, kill enemies, collect XP.
 
 ## Expected Behavior
 
+- Menu loads before gameplay.
+- Loadout choices carry into the run.
 - Score increases when enemies die.
 - Green XP gems drop from enemies.
 - XP gems fly toward the player when inside pickup radius.
 - Level-ups show an upgrade popup if `LevelUpManager` is wired.
-- If no `LevelUpManager` exists, the game auto-picks an upgrade and logs it in the Console.
-
+- Timed elites and the dragon boss can appear during the run.
