@@ -18,6 +18,7 @@ public enum StatusEffect
     Burn,
     Shock,
     Slow,
+    Freeze,
     Poison
 }
 
@@ -35,7 +36,7 @@ public struct DamagePacket
     [Header("Status Effect")]
     public StatusEffect status;        // None, Slow, Burn, etc.
     public float statusDuration;       // seconds
-    public float statusStrength;       // 0–1 (e.g. 0.35 = 35%)
+    public float statusStrength;       // 0ï¿½1 (e.g. 0.35 = 35%)
 
     // --------------------------------------------------
     // CONSTRUCTORS
@@ -89,7 +90,7 @@ public struct DamagePacket
     // --------------------------------------------------
 
     /// <summary>
-    /// Clamps values to safe ranges so bad data can’t break gameplay.
+    /// Clamps values to safe ranges so bad data canï¿½t break gameplay.
     /// Call once before applying damage.
     /// </summary>
     public void Clamp()

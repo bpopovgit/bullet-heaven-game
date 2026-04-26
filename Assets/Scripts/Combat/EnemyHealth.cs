@@ -34,6 +34,7 @@ public class EnemyHealth : MonoBehaviour
 
     private int currentHealth;
     private EnemyResistances _resists;
+    private StatusReceiver _statusReceiver;
 
     public event Action<EnemyHealth> Died;
     public bool IsDead { get; private set; }
@@ -44,6 +45,10 @@ public class EnemyHealth : MonoBehaviour
     {
         currentHealth = maxHealth;
         _resists = GetComponent<EnemyResistances>();
+        _statusReceiver = GetComponent<StatusReceiver>();
+
+        if (_statusReceiver == null)
+            _statusReceiver = gameObject.AddComponent<StatusReceiver>();
     }
 
     public void TakeDamage(DamagePacket packet)
@@ -60,6 +65,9 @@ public class EnemyHealth : MonoBehaviour
 
         int finalDamage = Mathf.RoundToInt(packet.amount * multiplier);
         currentHealth -= finalDamage;
+
+        if (_statusReceiver != null && packet.HasStatus && currentHealth > 0)
+            _statusReceiver.ApplyStatus(packet);
 
         if (currentHealth <= 0)
             Die();

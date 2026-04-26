@@ -130,6 +130,7 @@ public class PlayerSecondaryActiveSkill : MonoBehaviour
             attracted++;
         }
 
+        GameAudio.PlaySkillMagneticPulse();
         SecondarySkillVisual.SpawnPulse(transform.position, _config.iconPrimaryColor, _config.iconSecondaryColor, _config.radius, 0.45f);
         Debug.Log($"MAGNETIC PULSE: pushed {pushed} enemies and attracted {attracted} pickups.");
     }
@@ -155,6 +156,7 @@ public class PlayerSecondaryActiveSkill : MonoBehaviour
             cleared++;
         }
 
+        GameAudio.PlaySkillArcaneShield();
         SecondarySkillVisual.SpawnAura(transform, _config.iconPrimaryColor, _config.iconSecondaryColor, _config.radius, _config.duration);
         Debug.Log($"ARCANE SHIELD: blocked incoming damage and cleared {cleared} nearby projectiles.");
     }
@@ -163,12 +165,12 @@ public class PlayerSecondaryActiveSkill : MonoBehaviour
     {
         Vector2 origin = transform.position;
         int count = Physics2D.OverlapCircleNonAlloc(origin, _config.radius, _enemyHits);
-        int slowed = 0;
+        int frozen = 0;
 
         DamagePacket packet = new DamagePacket(
             _config.damage,
             DamageElement.Frost,
-            StatusEffect.Slow,
+            StatusEffect.Freeze,
             _config.statusDuration,
             _config.statusStrength,
             0f,
@@ -183,19 +185,12 @@ public class PlayerSecondaryActiveSkill : MonoBehaviour
                 continue;
 
             enemy.TakeDamage(packet);
-
-            Rigidbody2D enemyBody = hit.attachedRigidbody;
-            if (enemyBody != null)
-            {
-                Vector2 direction = ((Vector2)hit.transform.position - origin).normalized;
-                enemyBody.AddForce(direction * (_config.force * 0.35f), ForceMode2D.Impulse);
-            }
-
-            slowed++;
+            frozen++;
         }
 
+        GameAudio.PlaySkillFrostNova();
         SecondarySkillVisual.SpawnPulse(transform.position, _config.iconPrimaryColor, _config.iconSecondaryColor, _config.radius, 0.55f);
-        Debug.Log($"FROST NOVA: hit {slowed} enemies.");
+        Debug.Log($"FROST NOVA: froze {frozen} enemies.");
     }
 
     private static SecondaryActiveSkillDefinition CreateConfig(StartingSkillChoice choice)
@@ -226,10 +221,10 @@ public class PlayerSecondaryActiveSkill : MonoBehaviour
                     cooldown = 13f,
                     radius = 4.8f,
                     duration = 0.55f,
-                    force = 6f,
-                    damage = 20,
-                    statusDuration = 2.6f,
-                    statusStrength = 0.45f,
+                    force = 0f,
+                    damage = 0,
+                    statusDuration = 2.2f,
+                    statusStrength = 1f,
                     iconPrimaryColor = new Color(0.45f, 0.82f, 1f, 1f),
                     iconSecondaryColor = new Color(0.82f, 0.96f, 1f, 0.9f)
                 };

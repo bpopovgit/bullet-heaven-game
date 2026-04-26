@@ -150,7 +150,7 @@ public static class RunLoadoutState
             case StartingSkillChoice.ArcaneShield:
                 return "Grants a short burst of invulnerability on E when the screen gets dangerous.";
             case StartingSkillChoice.FrostNova:
-                return "Unleashes a cold burst around you that damages and slows nearby enemies.";
+                return "Unleashes a cold burst around you that freezes nearby enemies in place for a short window.";
             default:
                 return string.Empty;
         }

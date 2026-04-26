@@ -17,6 +17,9 @@ public enum GameSfxId
     BombPickup,
     BombThrow,
     BombImpact,
+    SkillMagneticPulse,
+    SkillArcaneShield,
+    SkillFrostNova,
     EliteSpawn,
     EliteDefeated,
     UISelect
@@ -100,6 +103,9 @@ public class GameAudio : MonoBehaviour
     public static void PlayLevelUp() => Play(GameSfxId.LevelUp);
     public static void PlayBombThrow() => Play(GameSfxId.BombThrow);
     public static void PlayBombImpact() => Play(GameSfxId.BombImpact);
+    public static void PlaySkillMagneticPulse() => Play(GameSfxId.SkillMagneticPulse);
+    public static void PlaySkillArcaneShield() => Play(GameSfxId.SkillArcaneShield);
+    public static void PlaySkillFrostNova() => Play(GameSfxId.SkillFrostNova);
     public static void PlayEliteSpawn() => Play(GameSfxId.EliteSpawn);
     public static void PlayEliteDefeated() => Play(GameSfxId.EliteDefeated);
     public static void PlayUISelect() => Play(GameSfxId.UISelect);
@@ -162,6 +168,9 @@ public class GameAudio : MonoBehaviour
             CreateDefault(GameSfxId.BombPickup, "Audio/SFX/BombPickup", 0.95f, 0.98f, 1.02f),
             CreateDefault(GameSfxId.BombThrow, "Audio/SFX/BombThrow", 0.95f, 0.96f, 1.04f),
             CreateDefault(GameSfxId.BombImpact, "Audio/SFX/BombImpact", 1f, 0.96f, 1.04f),
+            CreateDefault(GameSfxId.SkillMagneticPulse, "Audio/SFX/SkillMagneticPulse", 0.95f, 0.97f, 1.03f),
+            CreateDefault(GameSfxId.SkillArcaneShield, "Audio/SFX/SkillArcaneShield", 1f, 0.98f, 1.02f),
+            CreateDefault(GameSfxId.SkillFrostNova, "Audio/SFX/SkillFrostNova", 1f, 0.97f, 1.03f),
             CreateDefault(GameSfxId.EliteSpawn, "Audio/SFX/EliteSpawn", 1f, 1f, 1f),
             CreateDefault(GameSfxId.EliteDefeated, "Audio/SFX/EliteDefeated", 1f, 1f, 1f),
             CreateDefault(GameSfxId.UISelect, "Audio/SFX/UISelect", 0.7f, 1f, 1f)

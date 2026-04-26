@@ -13,6 +13,7 @@ public class RangedShooter : MonoBehaviour
 
     private Transform _player;
     private Rigidbody2D _rb;
+    private StatusReceiver _status;
     private float _cd;
 
     public GameObject EnemyProjectilePrefab => enemyProjectilePrefab;
@@ -20,10 +21,14 @@ public class RangedShooter : MonoBehaviour
     private void Awake()
     {
         _rb = GetComponent<Rigidbody2D>();
+        _status = GetComponent<StatusReceiver>();
     }
 
     private void Start()
     {
+        if (_status == null)
+            _status = GetComponent<StatusReceiver>();
+
         var playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj) _player = playerObj.transform;
     }
@@ -42,13 +47,17 @@ public class RangedShooter : MonoBehaviour
         else if (dist < preferredRange * 0.9f)
             desired = -toPlayer.normalized;         // back away
 
-        _rb.linearVelocity = desired * moveSpeed;
+        float speedMultiplier = _status != null ? _status.SpeedMultiplier : 1f;
+        _rb.linearVelocity = desired * moveSpeed * speedMultiplier;
         transform.right = toPlayer.normalized;
     }
 
     private void Update()
     {
         if (!_player) return;
+
+        if (_status != null && _status.IsStunned)
+            return;
 
         _cd -= Time.deltaTime;
         if (_cd <= 0f)

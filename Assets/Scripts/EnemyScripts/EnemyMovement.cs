@@ -8,9 +8,18 @@ public class EnemyMovement : MonoBehaviour
     [SerializeField] private float speed = 2f; // Movement speed of the enemy
 
     private Transform player; // Reference to the player's transform
+    private StatusReceiver _status;
+
+    private void Awake()
+    {
+        _status = GetComponent<StatusReceiver>();
+    }
 
     private void Start()
     {
+        if (_status == null)
+            _status = GetComponent<StatusReceiver>();
+
         // Find the player GameObject by tag
         GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
         if (playerObject != null)
@@ -35,8 +44,9 @@ public class EnemyMovement : MonoBehaviour
     {
         // Calculate the direction to the player
         Vector2 direction = (player.position - transform.position).normalized;
+        float speedMultiplier = _status != null ? _status.SpeedMultiplier : 1f;
 
         // Move the enemy toward the player
-        transform.position = Vector2.MoveTowards(transform.position, player.position, speed * Time.deltaTime);
+        transform.position = Vector2.MoveTowards(transform.position, player.position, speed * speedMultiplier * Time.deltaTime);
     }
 }
