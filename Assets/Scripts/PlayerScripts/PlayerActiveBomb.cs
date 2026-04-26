@@ -58,6 +58,7 @@ public class PlayerActiveBomb : MonoBehaviour
         _cooldownRemaining = _config.cooldown;
         Vector3 targetPosition = GetTargetPosition();
         PlayerBombProjectile.Spawn(transform.position, targetPosition, _config);
+        GameAudio.PlayBombThrow();
         Debug.Log($"ACTIVE BOMB THROWN: {_config.displayName} toward {targetPosition}");
     }
 

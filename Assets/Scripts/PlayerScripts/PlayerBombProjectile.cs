@@ -87,7 +87,7 @@ public class PlayerBombProjectile : MonoBehaviour
         }
 
         BombExplosionVisual.Spawn(transform.position, _config.explosionPrimaryColor, _config.explosionSecondaryColor, _config.radius);
-        GameAudio.Play(GameSfxId.BombPickup);
+        GameAudio.PlayBombImpact();
         Debug.Log($"ACTIVE BOMB USED: {_config.displayName} hit {hitCount} enemies at {transform.position}.");
         Destroy(gameObject);
     }

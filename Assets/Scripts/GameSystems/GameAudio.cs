@@ -15,6 +15,8 @@ public enum GameSfxId
     HealthPickup,
     MagnetPickup,
     BombPickup,
+    BombThrow,
+    BombImpact,
     EliteSpawn,
     EliteDefeated,
     UISelect
@@ -96,6 +98,8 @@ public class GameAudio : MonoBehaviour
     public static void PlayPlayerDeath() => Play(GameSfxId.PlayerDeath);
     public static void PlayXPGem() => Play(GameSfxId.XPGem);
     public static void PlayLevelUp() => Play(GameSfxId.LevelUp);
+    public static void PlayBombThrow() => Play(GameSfxId.BombThrow);
+    public static void PlayBombImpact() => Play(GameSfxId.BombImpact);
     public static void PlayEliteSpawn() => Play(GameSfxId.EliteSpawn);
     public static void PlayEliteDefeated() => Play(GameSfxId.EliteDefeated);
     public static void PlayUISelect() => Play(GameSfxId.UISelect);
@@ -156,6 +160,8 @@ public class GameAudio : MonoBehaviour
             CreateDefault(GameSfxId.HealthPickup, "Audio/SFX/HealthPickup", 0.85f, 0.98f, 1.02f),
             CreateDefault(GameSfxId.MagnetPickup, "Audio/SFX/MagnetPickup", 0.85f, 0.98f, 1.02f),
             CreateDefault(GameSfxId.BombPickup, "Audio/SFX/BombPickup", 0.95f, 0.98f, 1.02f),
+            CreateDefault(GameSfxId.BombThrow, "Audio/SFX/BombThrow", 0.95f, 0.96f, 1.04f),
+            CreateDefault(GameSfxId.BombImpact, "Audio/SFX/BombImpact", 1f, 0.96f, 1.04f),
             CreateDefault(GameSfxId.EliteSpawn, "Audio/SFX/EliteSpawn", 1f, 1f, 1f),
             CreateDefault(GameSfxId.EliteDefeated, "Audio/SFX/EliteDefeated", 1f, 1f, 1f),
             CreateDefault(GameSfxId.UISelect, "Audio/SFX/UISelect", 0.7f, 1f, 1f)
@@ -204,7 +210,12 @@ public class GameAudio : MonoBehaviour
     private AudioClip GetRandomClip(SfxDefinition definition)
     {
         if (definition.cachedClips == null || definition.cachedClips.Length == 0)
+        {
             definition.cachedClips = LoadClips(definition.resourcesPath);
+
+            if ((definition.cachedClips == null || definition.cachedClips.Length == 0) && definition.id == GameSfxId.BombImpact)
+                definition.cachedClips = LoadClips("Audio/SFX/BombPickup");
+        }
 
         if (definition.cachedClips == null || definition.cachedClips.Length == 0)
             return null;
