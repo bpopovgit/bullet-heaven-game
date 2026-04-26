@@ -56,6 +56,7 @@
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\EnvMapAnimator.cs" />
     <Compile Include="Assets\Scripts\PlayerScripts\PlayerUpgradeOption.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextSelector_A.cs" />
+    <Compile Include="Assets\Scripts\UIScripts\MainMenuRuntime.cs" />
     <Compile Include="Assets\Scripts\Combat\EnemyResistances.cs" />
     <Compile Include="Assets\Scripts\UIScripts\LevelUpManager.cs" />
     <Compile Include="Assets\Scripts\PlayerScripts\PlayerPickupCollector.cs" />
