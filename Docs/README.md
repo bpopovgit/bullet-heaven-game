@@ -15,6 +15,8 @@ The GitHub Wiki is useful as the browsable external mirror, but the repo docs sh
 - [Unity Setup Guide](UNITY_SETUP_GUIDE.md): scene wiring steps for the current menu and gameplay flow.
 - [Content Authoring](CONTENT_AUTHORING.md): how to add enemies, weapons, status effects, projectiles, pickups, and SFX content.
 - [Roadmap](ROADMAP.md): practical next features from the current project state.
+- [System Handoff](SYSTEM_HANDOFF.md): scene-by-scene and script-by-script ownership map for onboarding.
+- [System Graph](SYSTEM_GRAPH.md): Mermaid diagrams for the current scene and system architecture.
 
 ## Documentation Rules
 

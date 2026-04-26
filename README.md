@@ -51,6 +51,8 @@ Assets/Game.unity
 - [Unity Setup Guide](Docs/UNITY_SETUP_GUIDE.md)
 - [Content Authoring](Docs/CONTENT_AUTHORING.md)
 - [Roadmap](Docs/ROADMAP.md)
+- [System Handoff](Docs/SYSTEM_HANDOFF.md)
+- [System Graph](Docs/SYSTEM_GRAPH.md)
 
 ## Unity Version
 
