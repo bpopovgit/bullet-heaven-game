@@ -16,6 +16,21 @@ public class PlayerShooting : MonoBehaviour
     private PlayerStats _stats;
     private float _cooldown;
 
+    public WeaponDefinition GetWeaponDefinition()
+    {
+        return weapon;
+    }
+
+    public void SetWeaponDefinition(WeaponDefinition weaponDefinition)
+    {
+        weapon = weaponDefinition;
+    }
+
+    public void ResetCooldown()
+    {
+        _cooldown = 0f;
+    }
+
     private void Awake()
     {
         _playerInput = GetComponent<PlayerInput>();

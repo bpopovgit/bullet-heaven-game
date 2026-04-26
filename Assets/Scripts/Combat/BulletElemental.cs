@@ -31,6 +31,8 @@ public class BulletElemental : MonoBehaviour
         if (!_rb) _rb = GetComponent<Rigidbody2D>();
         _rb.linearVelocity = dir.normalized * weapon.bulletSpeed;
         transform.right = dir; // rotate to direction
+
+        ApplyElementVisuals();
     }
 
     private void Awake()
@@ -106,6 +108,35 @@ public class BulletElemental : MonoBehaviour
             return false;
 
         return Random.value <= _weapon.effectChance;
+    }
+
+    private void ApplyElementVisuals()
+    {
+        if (_weapon == null)
+            return;
+
+        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer == null)
+            return;
+
+        switch (_weapon.element)
+        {
+            case DamageElement.Fire:
+                spriteRenderer.color = new Color(1f, 0.42f, 0.12f, 1f);
+                break;
+            case DamageElement.Frost:
+                spriteRenderer.color = new Color(0.58f, 0.9f, 1f, 1f);
+                break;
+            case DamageElement.Poison:
+                spriteRenderer.color = new Color(0.44f, 1f, 0.45f, 1f);
+                break;
+            case DamageElement.Lightning:
+                spriteRenderer.color = new Color(1f, 0.96f, 0.32f, 1f);
+                break;
+            default:
+                spriteRenderer.color = Color.white;
+                break;
+        }
     }
 
     private void OnDrawGizmosSelected()

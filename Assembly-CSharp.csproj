@@ -51,12 +51,14 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\GameSystems\PlaySessionLogWriter.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextEventHandler.cs" />
+    <Compile Include="Assets\Scripts\PlayerScripts\BombAbilityDefinition.cs" />
     <Compile Include="Assets\Scripts\Pickups\HealthPickup.cs" />
     <Compile Include="Assets\Scripts\Combat\EnemyRespawnManager.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\EnvMapAnimator.cs" />
     <Compile Include="Assets\Scripts\PlayerScripts\PlayerUpgradeOption.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextSelector_A.cs" />
     <Compile Include="Assets\Scripts\UIScripts\MainMenuRuntime.cs" />
+    <Compile Include="Assets\Scripts\UIScripts\BombCooldownUI.cs" />
     <Compile Include="Assets\Scripts\Combat\EnemyResistances.cs" />
     <Compile Include="Assets\Scripts\UIScripts\LevelUpManager.cs" />
     <Compile Include="Assets\Scripts\PlayerScripts\PlayerPickupCollector.cs" />
@@ -67,6 +69,7 @@
     <Compile Include="Assets\Scripts\UIScripts\ScoreManager.cs" />
     <Compile Include="Assets\Scripts\Combat\WeaponDefinition.cs" />
     <Compile Include="Assets\Scripts\Pickups\PickupSpriteFactory.cs" />
+    <Compile Include="Assets\Scripts\GameSystems\RunLoadoutState.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_ExampleScript_01.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMPro_InstructionOverlay.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\VertexShakeB.cs" />
@@ -84,6 +87,7 @@
     <Compile Include="Assets\Scripts\UIScripts\CursorScript.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\ShaderPropAnimator.cs" />
     <Compile Include="Assets\Scripts\Combat\BossWorldHealthBar.cs" />
+    <Compile Include="Assets\Scripts\PlayerScripts\BombExplosionVisual.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextInfoDebugTool.cs" />
     <Compile Include="Assets\Scripts\Combat\XPGem.cs" />
     <Compile Include="Assets\Scripts\GameSystems\RunTimer.cs" />
@@ -104,12 +108,14 @@
     <Compile Include="Assets\Scripts\EnemyScripts\EnemyMeleeDamage.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\CameraController.cs" />
     <Compile Include="Assets\Scripts\PlayerScripts\PlayerStats.cs" />
+    <Compile Include="Assets\Scripts\PlayerScripts\PlayerActiveBomb.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark03.cs" />
     <Compile Include="Assets\Scripts\Pickups\BombPickup.cs" />
     <Compile Include="Assets\Scripts\Combat\BulletElemental.cs" />
     <Compile Include="Assets\Scripts\UIScripts\ExperienceUI.cs" />
     <Compile Include="Assets\Scripts\UIScripts\ScoreTextUI.cs" />
     <Compile Include="Assets\Scripts\GameSystems\BossSpawnPoint.cs" />
+    <Compile Include="Assets\Scripts\GameSystems\RunLoadoutApplier.cs" />
     <Compile Include="Assets\Scripts\GameSystems\EliteSpawnDirector.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\DropdownSample.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\VertexColorCycler.cs" />
@@ -125,6 +131,7 @@
     <Compile Include="Assets\Scripts\GameSystems\GameAudio.cs" />
     <Compile Include="Assets\Scripts\Combat\StatusReceiver.cs" />
     <Compile Include="Assets\Scripts\Pickups\MagnetPickup.cs" />
+    <Compile Include="Assets\Scripts\PlayerScripts\PlayerBombProjectile.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TextMeshProFloatingText.cs" />
     <Compile Include="Assets\Scripts\UIScripts\PlayerHealthUI.cs" />
     <Compile Include="Assets\Scripts\PlayerScripts\PlayerShooting.cs" />

@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class BossSpawnDirector : MonoBehaviour
 {
@@ -57,9 +58,23 @@ public class BossSpawnDirector : MonoBehaviour
     private float _nextRetryTime;
     private bool _thresholdReached;
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    private static bool _sceneHookRegistered;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Bootstrap()
     {
+        if (_sceneHookRegistered)
+            return;
+
+        SceneManager.sceneLoaded += HandleSceneLoadedStatic;
+        _sceneHookRegistered = true;
+    }
+
+    private static void HandleSceneLoadedStatic(Scene scene, LoadSceneMode mode)
+    {
+        if (!scene.IsValid() || scene.name != "Game")
+            return;
+
         if (FindObjectOfType<BossSpawnDirector>() != null)
             return;
 
