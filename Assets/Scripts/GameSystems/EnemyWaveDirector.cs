@@ -12,6 +12,7 @@ public class EnemyWaveStage
     public float respawnDelay = 4f;
     public bool fillImmediately = true;
     public GameObject[] enemyPrefabs;
+    public EnemySpawnRegion allowedSpawnRegions = EnemySpawnRegion.Any;
 }
 
 public class EnemyWaveDirector : MonoBehaviour
@@ -23,10 +24,10 @@ public class EnemyWaveDirector : MonoBehaviour
     [Header("Stages")]
     [SerializeField] private EnemyWaveStage[] stages =
     {
-        new EnemyWaveStage { startTimeSeconds = 0f, maxAlive = 8, respawnDelay = 4f },
-        new EnemyWaveStage { startTimeSeconds = 60f, maxAlive = 10, respawnDelay = 3.5f },
-        new EnemyWaveStage { startTimeSeconds = 120f, maxAlive = 12, respawnDelay = 3f },
-        new EnemyWaveStage { startTimeSeconds = 180f, maxAlive = 15, respawnDelay = 2.5f }
+        new EnemyWaveStage { startTimeSeconds = 0f, maxAlive = 8, respawnDelay = 4f, allowedSpawnRegions = EnemySpawnRegion.Any },
+        new EnemyWaveStage { startTimeSeconds = 60f, maxAlive = 10, respawnDelay = 3.5f, allowedSpawnRegions = EnemySpawnRegion.Any },
+        new EnemyWaveStage { startTimeSeconds = 120f, maxAlive = 12, respawnDelay = 3f, allowedSpawnRegions = EnemySpawnRegion.Any },
+        new EnemyWaveStage { startTimeSeconds = 180f, maxAlive = 15, respawnDelay = 2.5f, allowedSpawnRegions = EnemySpawnRegion.Any }
     };
 
     private int _activeStageIndex = -1;
@@ -75,9 +76,11 @@ public class EnemyWaveDirector : MonoBehaviour
             stage.enemyPrefabs,
             stage.maxAlive,
             stage.respawnDelay,
-            stage.fillImmediately);
+            stage.fillImmediately,
+            stage.allowedSpawnRegions);
 
-        Debug.Log($"WAVE STAGE {stageIndex + 1}: maxAlive={stage.maxAlive}, respawnDelay={stage.respawnDelay:0.##}");
+        Debug.Log(
+            $"WAVE STAGE {stageIndex + 1}: maxAlive={stage.maxAlive}, respawnDelay={stage.respawnDelay:0.##}, regions={stage.allowedSpawnRegions}");
     }
 
     private int GetStageIndexForTime(int wholeSecond)
@@ -124,6 +127,9 @@ public class EnemyWaveDirector : MonoBehaviour
             stages[i].startTimeSeconds = Mathf.Max(0f, stages[i].startTimeSeconds);
             stages[i].maxAlive = Mathf.Max(0, stages[i].maxAlive);
             stages[i].respawnDelay = Mathf.Max(0.05f, stages[i].respawnDelay);
+
+            if (stages[i].allowedSpawnRegions == EnemySpawnRegion.None)
+                stages[i].allowedSpawnRegions = EnemySpawnRegion.Any;
         }
     }
 }

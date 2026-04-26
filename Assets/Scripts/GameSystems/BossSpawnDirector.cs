@@ -14,6 +14,8 @@ public class BossSpawnDirector : MonoBehaviour
     [SerializeField] private bool spawnBoss = true;
     [SerializeField] private float firstBossTimeSeconds = 20f;
     [SerializeField] private bool spawnOnlyOnce = true;
+    [SerializeField] private bool retrySpawnAfterThreshold = true;
+    [SerializeField] private float retryIntervalSeconds = 0.5f;
 
     [Header("Boss Spawn")]
     [SerializeField] private bool useSceneBossSpawnPoints = true;
@@ -52,6 +54,8 @@ public class BossSpawnDirector : MonoBehaviour
     private bool _hasSpawned;
     private GameObject _activeBoss;
     private Transform _player;
+    private float _nextRetryTime;
+    private bool _thresholdReached;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Bootstrap()
@@ -82,6 +86,18 @@ public class BossSpawnDirector : MonoBehaviour
         HandleWholeSecondChanged(currentSecond);
     }
 
+    private void Update()
+    {
+        if (!retrySpawnAfterThreshold || !ShouldAttemptSpawn())
+            return;
+
+        if (Time.unscaledTime < _nextRetryTime)
+            return;
+
+        _nextRetryTime = Time.unscaledTime + Mathf.Max(0.1f, retryIntervalSeconds);
+        TrySpawnBoss("retry");
+    }
+
     private void OnDisable()
     {
         if (runTimer != null)
@@ -90,36 +106,57 @@ public class BossSpawnDirector : MonoBehaviour
 
     private void HandleWholeSecondChanged(int wholeSecond)
     {
-        if (!spawnBoss || respawnManager == null)
-            return;
-
-        if (_activeBoss != null)
-            return;
-
-        if (spawnOnlyOnce && _hasSpawned)
-            return;
-
         if (wholeSecond < Mathf.FloorToInt(Mathf.Max(0f, firstBossTimeSeconds)))
             return;
 
-        TrySpawnBoss();
+        _thresholdReached = true;
+        TrySpawnBoss("timer");
     }
 
-    private void TrySpawnBoss()
+    private bool ShouldAttemptSpawn()
     {
+        if (!spawnBoss || respawnManager == null)
+            return false;
+
+        if (_activeBoss != null)
+            return false;
+
+        if (spawnOnlyOnce && _hasSpawned)
+            return false;
+
+        if (_thresholdReached)
+            return true;
+
+        if (runTimer == null)
+            return false;
+
+        return runTimer.ElapsedSeconds >= Mathf.Max(0f, firstBossTimeSeconds);
+    }
+
+    private void TrySpawnBoss(string source)
+    {
+        if (!ShouldAttemptSpawn())
+            return;
+
         GameObject prefab = ResolveBossPrefab();
         if (prefab == null)
         {
-            Debug.LogWarning("BossSpawnDirector could not find a suitable boss prefab.");
+            Debug.LogWarning($"BossSpawnDirector could not find a suitable boss prefab. Source={source}");
             return;
         }
 
         if (!TryGetBossSpawnPosition(out Vector3 spawnPosition))
+        {
+            Debug.LogWarning($"BossSpawnDirector could not resolve a spawn position. Source={source}");
             return;
+        }
 
         GameObject spawnedBoss = Instantiate(prefab, spawnPosition, Quaternion.identity);
         if (spawnedBoss == null)
+        {
+            Debug.LogWarning($"BossSpawnDirector failed to instantiate boss prefab '{prefab.name}'. Source={source}");
             return;
+        }
 
         GameObject projectilePrefab = ResolveProjectilePrefab(prefab, spawnedBoss);
         if (projectilePrefab == null)
@@ -147,10 +184,11 @@ public class BossSpawnDirector : MonoBehaviour
 
         _activeBoss = spawnedBoss;
         _hasSpawned = true;
+        _thresholdReached = false;
 
         ShowAnnouncement(bossSpawnMessage);
         GameAudio.PlayEliteSpawn();
-        Debug.Log($"BOSS SPAWNED: {spawnedBoss.name}");
+        Debug.Log($"BOSS SPAWNED: {spawnedBoss.name} at {spawnPosition} via {source}");
     }
 
     private void HandleBossDied(EnemyHealth health)
@@ -255,7 +293,10 @@ public class BossSpawnDirector : MonoBehaviour
         }
 
         if (_player == null)
+        {
+            Debug.LogWarning("BossSpawnDirector has no player reference when trying to calculate fallback spawn position.");
             return false;
+        }
 
         Camera camera = Camera.main;
         float northDistance = Mathf.Max(1f, spawnNorthDistance > 0f ? spawnNorthDistance : DefaultBossSpawnDistance);
@@ -369,6 +410,7 @@ public class BossSpawnDirector : MonoBehaviour
     private void OnValidate()
     {
         firstBossTimeSeconds = Mathf.Max(0f, firstBossTimeSeconds);
+        retryIntervalSeconds = Mathf.Max(0.1f, retryIntervalSeconds);
         spawnNorthDistance = Mathf.Max(1f, spawnNorthDistance);
         spawnTopPadding = Mathf.Max(0f, spawnTopPadding);
         healthMultiplier = Mathf.Max(1f, healthMultiplier);

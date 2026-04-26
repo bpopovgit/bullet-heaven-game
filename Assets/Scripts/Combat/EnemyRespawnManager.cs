@@ -25,6 +25,7 @@ public class EnemyRespawnManager : MonoBehaviour
 
     private readonly HashSet<GameObject> _alive = new HashSet<GameObject>();
     private Transform _player;
+    private EnemySpawnRegion _allowedSpawnRegions = EnemySpawnRegion.Any;
 
     public int MaxAlive => maxAlive;
     public float RespawnDelay => respawnDelay;
@@ -57,13 +58,21 @@ public class EnemyRespawnManager : MonoBehaviour
         }
     }
 
-    public void ApplyWaveSettings(GameObject[] waveEnemyPrefabs, int waveMaxAlive, float waveRespawnDelay, bool fillImmediately)
+    public void ApplyWaveSettings(
+        GameObject[] waveEnemyPrefabs,
+        int waveMaxAlive,
+        float waveRespawnDelay,
+        bool fillImmediately,
+        EnemySpawnRegion allowedSpawnRegions = EnemySpawnRegion.Any)
     {
         if (waveEnemyPrefabs != null && waveEnemyPrefabs.Length > 0)
             enemyPrefabs = waveEnemyPrefabs;
 
         maxAlive = Mathf.Max(0, waveMaxAlive);
         respawnDelay = Mathf.Max(0.05f, waveRespawnDelay);
+        _allowedSpawnRegions = allowedSpawnRegions == EnemySpawnRegion.None
+            ? EnemySpawnRegion.Any
+            : allowedSpawnRegions;
 
         if (fillImmediately)
             FillToCap();
@@ -181,9 +190,13 @@ public class EnemyRespawnManager : MonoBehaviour
         if (spawnPoints == null || spawnPoints.Length == 0)
             return false;
 
+        List<EnemySpawnPoint> candidates = GetCandidateSpawnPoints();
+        if (candidates.Count == 0)
+            return false;
+
         for (int i = 0; i < triesPerSpawn; i++)
         {
-            EnemySpawnPoint sp = spawnPoints[Random.Range(0, spawnPoints.Length)];
+            EnemySpawnPoint sp = candidates[Random.Range(0, candidates.Count)];
             if (sp == null)
                 continue;
 
@@ -209,15 +222,19 @@ public class EnemyRespawnManager : MonoBehaviour
         if (spawnPoints == null || spawnPoints.Length == 0)
             return false;
 
+        List<EnemySpawnPoint> candidates = GetCandidateSpawnPoints();
+        if (candidates.Count == 0)
+            return false;
+
         float bestScore = float.MinValue;
         bool found = false;
 
-        for (int i = 0; i < spawnPoints.Length; i++)
+        for (int i = 0; i < candidates.Count; i++)
         {
-            if (spawnPoints[i] == null)
+            if (candidates[i] == null)
                 continue;
 
-            Vector2 pos = spawnPoints[i].Position;
+            Vector2 pos = candidates[i].Position;
 
             if (!IsSpawnValid(pos, ignoreEnemySpacing, ignorePlayerDistance))
                 continue;
@@ -235,6 +252,45 @@ public class EnemyRespawnManager : MonoBehaviour
         }
 
         return found;
+    }
+
+    private List<EnemySpawnPoint> GetCandidateSpawnPoints()
+    {
+        List<EnemySpawnPoint> candidates = new List<EnemySpawnPoint>();
+
+        if (spawnPoints == null || spawnPoints.Length == 0)
+            return candidates;
+
+        for (int i = 0; i < spawnPoints.Length; i++)
+        {
+            EnemySpawnPoint spawnPoint = spawnPoints[i];
+            if (spawnPoint == null)
+                continue;
+
+            if (!IsSpawnPointAllowed(spawnPoint))
+                continue;
+
+            candidates.Add(spawnPoint);
+        }
+
+        if (candidates.Count > 0)
+            return candidates;
+
+        for (int i = 0; i < spawnPoints.Length; i++)
+        {
+            if (spawnPoints[i] != null)
+                candidates.Add(spawnPoints[i]);
+        }
+
+        return candidates;
+    }
+
+    private bool IsSpawnPointAllowed(EnemySpawnPoint spawnPoint)
+    {
+        if (_allowedSpawnRegions == EnemySpawnRegion.Any)
+            return true;
+
+        return (spawnPoint.SpawnRegions & _allowedSpawnRegions) != 0;
     }
 
     private void OnEnemyDied(EnemyHealth hp)
