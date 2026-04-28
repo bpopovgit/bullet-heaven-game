@@ -76,6 +76,25 @@ This is the foundation for:
 - zombies attacking everyone
 - future playable factions and map-specific faction setups
 
+## Friendly Ally Test Squad
+
+`AllySquadSpawner` currently bootstraps a small runtime Human squad when `Game.unity` starts.
+
+Current behavior:
+
+- spawns three Human allies near the player
+- allies follow the player in a loose formation
+- allies use `FriendlyAlly` to search for hostile faction targets
+- allies fire simple physical `FactionProjectile` shots
+- zombies can target and damage allies
+- ally deaths do not award score, XP, or pickups
+
+This is placeholder content, but it proves the intended battlefield direction:
+
+- the player is no longer the only meaningful combat target
+- friendly units can exist on the map
+- enemies can split attention naturally through faction targeting
+
 ## Primary Weapons
 
 `PlayerShooting` reads:

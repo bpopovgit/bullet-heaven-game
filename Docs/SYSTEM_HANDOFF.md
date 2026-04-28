@@ -288,6 +288,37 @@ Default runtime assumptions:
 - player defaults to `Human`
 - existing enemies default to `Zombie`
 
+#### `FactionProjectile.cs`
+
+Purpose:
+
+- simple faction-aware projectile used by runtime allies and future non-player combatants
+
+Responsibilities:
+
+- carries a `DamagePacket`
+- stores the firing actor's `FactionMember`
+- applies damage only when `FactionCombat` says the target is hostile
+- destroys itself after impact or lifetime expiry
+
+#### `FriendlyAlly.cs`
+
+Purpose:
+
+- first-pass Human ally combatant
+
+Responsibilities:
+
+- follows the player in a formation offset
+- scans for hostile faction targets
+- fires simple faction projectiles
+- respects status movement/stun effects
+
+Current status:
+
+- placeholder runtime unit
+- intended to be replaced or supplemented by authored Human/Angel/Demon ally prefabs later
+
 #### `FactionTargeting.cs`
 
 Purpose:
@@ -511,6 +542,23 @@ Responsibilities:
 - expose projectile prefab so the dragon can reuse it
 
 ### `Assets/Scripts/GameSystems`
+
+#### `AllySquadSpawner.cs`
+
+Purpose:
+
+- runtime bootstrapper for the first friendly Human ally squad
+
+Responsibilities:
+
+- waits for `Game.unity`
+- finds the player
+- spawns a small Human squad near the player
+- gives each ally:
+  - `FactionMember` set to `Human`
+  - `EnemyHealth` with rewards disabled
+  - `FriendlyAlly`
+  - simple generated placeholder visuals and physics
 
 #### `BossSpawnDirector.cs`
 
@@ -1053,6 +1101,9 @@ Responsibilities:
 - `FactionMember.cs`
 - `FactionTargeting.cs`
 - `FactionCombat.cs`
+- `FactionProjectile.cs`
+- `FriendlyAlly.cs`
+- `AllySquadSpawner.cs`
 - `EnemyMovement.cs`
 - `RangedShooter.cs`
 - `EnemyMeleeDamage.cs`

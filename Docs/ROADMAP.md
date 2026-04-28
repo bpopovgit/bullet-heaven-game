@@ -27,24 +27,11 @@ This roadmap stays practical on purpose. It should track the next features that 
 - Bomb and secondary-skill cooldown UI.
 - Faction identity foundation for Humans, Angels, Demons, Zombies, and Neutral actors.
 - Faction-aware enemy targeting and damage routing.
+- Runtime Human ally squad that follows the player and shoots hostile targets.
 
 ## Highest-Value Next Features
 
-### 1. Allied Minions Around The Player
-
-The next best step for the new roguelike battlefield direction is to let the player spawn into combat with friendly units.
-
-Good first version:
-
-- simple Human ally prefab
-- ally starts near the player
-- ally has `FactionMember` set to `Human`
-- zombies target the ally or player depending on distance
-- ally attacks nearby Zombies
-
-This proves the faction system with actual battlefield behavior.
-
-### 2. Faction-Configured Enemy Prefabs
+### 1. Faction-Configured Enemy Prefabs
 
 Existing enemies default to Zombies. The next content pass should introduce authored prefabs for:
 
@@ -59,6 +46,16 @@ Each prefab should include:
 - faction-specific visuals
 - faction-specific health/damage tuning
 - optional faction-specific weapons or abilities
+
+### 2. Author-Friendly Ally Prefabs
+
+The current Human squad is runtime-generated placeholder content.
+
+Next improvement:
+
+- create one authored Human ally prefab
+- expose health, weapon range, fire rate, and projectile damage in the Inspector
+- replace runtime circles with prefab references when available
 
 ### 3. Character Selection
 
@@ -216,9 +213,9 @@ Next boss-side growth:
 
 ## Suggested Immediate Implementation Order
 
-1. Spawn a small Human ally squad near the player.
-2. Add a simple ally attack script.
-3. Add Angel and Demon test prefabs and verify faction aggro.
+1. Create authored Human, Angel, Demon, and Zombie test prefabs.
+2. Replace the runtime ally circles with an optional Human ally prefab.
+3. Add Angel and Demon test spawns and verify faction aggro.
 4. Add character selection data to the pre-run flow.
 5. Create the first visible talent-tree data structure.
 6. Add a two-map run handoff prototype.

@@ -94,6 +94,13 @@ flowchart TD
 
     S["Current Defaults"] --> T["Player = Human"]
     S --> U["Existing Enemies = Zombie"]
+
+    V["AllySquadSpawner"] --> W["Human Allies"]
+    W --> B
+    W --> X["FriendlyAlly"]
+    X --> E
+    X --> Y["FactionProjectile"]
+    Y --> O
 ```
 
 ## UI Ownership Graph

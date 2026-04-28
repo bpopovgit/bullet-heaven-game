@@ -19,6 +19,7 @@ A Unity 2D top-down bullet-heaven project with elemental combat, pre-run loadout
 - gameplay SFX loaded from `Resources` folders with random clip variation
 - faction identity foundation for Humans, Angels, Demons, Zombies, and Neutral actors
 - first-pass faction-aware targeting and damage routing
+- runtime Human ally squad that follows the player and shoots hostile targets
 
 ## Current Gameplay Loop
 

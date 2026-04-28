@@ -52,6 +52,7 @@
     <Compile Include="Assets\Scripts\GameSystems\PlaySessionLogWriter.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextEventHandler.cs" />
     <Compile Include="Assets\Scripts\PlayerScripts\BombAbilityDefinition.cs" />
+    <Compile Include="Assets\Scripts\Combat\FactionProjectile.cs" />
     <Compile Include="Assets\Scripts\Pickups\HealthPickup.cs" />
     <Compile Include="Assets\Scripts\Combat\EnemyRespawnManager.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\EnvMapAnimator.cs" />
@@ -78,12 +79,15 @@
     <Compile Include="Assets\Scripts\PlayerScripts\PlayerExperience.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\VertexJitter.cs" />
     <Compile Include="Assets\Scripts\EnemyScripts\EnemyMovement.cs" />
+    <Compile Include="Assets\Scripts\Combat\FactionType.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_UiFrameRateCounter.cs" />
     <Compile Include="Assets\Scripts\UIScripts\RunTimerUI.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\VertexZoom.cs" />
+    <Compile Include="Assets\Scripts\GameSystems\AllySquadSpawner.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextSelector_B.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\SkewTextExample.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\WarpTextExample.cs" />
+    <Compile Include="Assets\Scripts\Combat\FactionTargeting.cs" />
     <Compile Include="Assets\Scripts\UIScripts\CursorScript.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\ShaderPropAnimator.cs" />
     <Compile Include="Assets\Scripts\Combat\BossWorldHealthBar.cs" />
@@ -92,7 +96,9 @@
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextInfoDebugTool.cs" />
     <Compile Include="Assets\Scripts\Combat\XPGem.cs" />
     <Compile Include="Assets\Scripts\GameSystems\RunTimer.cs" />
+    <Compile Include="Assets\Scripts\Combat\FactionCombat.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\VertexShakeA.cs" />
+    <Compile Include="Assets\Scripts\Combat\FriendlyAlly.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark01_UGUI.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\SimpleScript.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark04.cs" />
@@ -126,6 +132,7 @@
     <Compile Include="Assets\Scripts\Combat\EliteEnemy.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\ObjectSpin.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_PhoneNumberValidator.cs" />
+    <Compile Include="Assets\Scripts\Combat\FactionMember.cs" />
     <Compile Include="Assets\Scripts\PlayerScripts\PlayerMovement.cs" />
     <Compile Include="Assets\Scripts\Combat\EnemySpawnPoint.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TextConsoleSimulator.cs" />
@@ -133,10 +140,6 @@
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextEventCheck.cs" />
     <Compile Include="Assets\Scripts\Pickups\PlayerPickup.cs" />
     <Compile Include="Assets\Scripts\GameSystems\GameAudio.cs" />
-    <Compile Include="Assets\Scripts\Combat\FactionCombat.cs" />
-    <Compile Include="Assets\Scripts\Combat\FactionMember.cs" />
-    <Compile Include="Assets\Scripts\Combat\FactionTargeting.cs" />
-    <Compile Include="Assets\Scripts\Combat\FactionType.cs" />
     <Compile Include="Assets\Scripts\Combat\StatusReceiver.cs" />
     <Compile Include="Assets\Scripts\Pickups\MagnetPickup.cs" />
     <Compile Include="Assets\Scripts\PlayerScripts\PlayerBombProjectile.cs" />

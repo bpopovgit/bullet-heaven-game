@@ -10,6 +10,7 @@ public class EnemyHealth : MonoBehaviour
     [SerializeField] private int maxHealth = 20;
 
     [Header("Reward")]
+    [SerializeField] private bool awardRewardsOnDeath = true;
     [Min(1)]
     [SerializeField] private int pointsOnDeath = 10;
     [Min(1)]
@@ -40,6 +41,19 @@ public class EnemyHealth : MonoBehaviour
     public bool IsDead { get; private set; }
     public int CurrentHealth => currentHealth;
     public int MaxHealth => maxHealth;
+
+    public void ConfigureHealth(int health, bool refill = true)
+    {
+        maxHealth = Mathf.Max(1, health);
+
+        if (refill || currentHealth > maxHealth)
+            currentHealth = maxHealth;
+    }
+
+    public void SetRewardsEnabled(bool enabled)
+    {
+        awardRewardsOnDeath = enabled;
+    }
 
     private void Awake()
     {
@@ -100,15 +114,19 @@ public class EnemyHealth : MonoBehaviour
 
         IsDead = true;
 
-        int reward = pointsOnDeath > 0 ? pointsOnDeath : DefaultPointsOnDeath;
+        if (awardRewardsOnDeath)
+        {
+            int reward = pointsOnDeath > 0 ? pointsOnDeath : DefaultPointsOnDeath;
 
-        if (ScoreManager.Instance != null)
-            ScoreManager.Instance.AddScore(reward);
-        else
-            Debug.LogWarning($"{name} died, but no ScoreManager was found in the scene.", this);
+            if (ScoreManager.Instance != null)
+                ScoreManager.Instance.AddScore(reward);
+            else
+                Debug.LogWarning($"{name} died, but no ScoreManager was found in the scene.", this);
 
-        DropExperience();
-        DropPickups();
+            DropExperience();
+            DropPickups();
+        }
+
         Died?.Invoke(this);
         GameAudio.PlayEnemyDeath();
 
