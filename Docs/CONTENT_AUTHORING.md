@@ -23,6 +23,15 @@ It also creates simple marker sprites under:
 Assets/Art/Sprites/Factions/
 ```
 
+Generated faction prefabs include `FactionVisualIdentity`, which adds a small readable badge above the unit:
+
+- `H`: Human
+- `A`: Angel
+- `D`: Demon
+- `Z`: Zombie
+
+Keep this enabled while prototyping. Once real character art clearly communicates faction at gameplay zoom, disable `Show Badge` on the prefab if the badge feels too busy.
+
 `AllySquadSpawner` automatically tries to load:
 
 ```text

@@ -11,6 +11,10 @@ public class FactionMember : MonoBehaviour
     public void Configure(FactionType newFaction)
     {
         faction = newFaction;
+
+        FactionVisualIdentity visualIdentity = GetComponent<FactionVisualIdentity>();
+        if (visualIdentity != null)
+            visualIdentity.Refresh();
     }
 
     public static FactionMember Ensure(GameObject target, FactionType defaultFaction)

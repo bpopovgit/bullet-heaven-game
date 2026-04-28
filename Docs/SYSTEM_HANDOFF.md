@@ -177,6 +177,7 @@ When debugging, remember that not every important object exists in the hierarchy
 7. `RunTimer`, `EnemyWaveDirector`, `EliteSpawnDirector`, and `BossSpawnDirector` drive the run structure.
 8. Player fights enemies, levels up, uses active skills, and progresses into elite and boss events.
 9. Combat actors carry `FactionMember`, so targeting and damage can support Humans, Angels, Demons, Zombies, and allied units.
+10. `FactionVisualIdentity` adds readable faction badges above prototype actors so faction roles stay visible before final art exists.
 
 ## Script Responsibility Map
 
@@ -287,6 +288,23 @@ Default runtime assumptions:
 
 - player defaults to `Human`
 - existing enemies default to `Zombie`
+
+#### `FactionVisualIdentity.cs`
+
+Purpose:
+
+- temporary faction readability layer for prototype actors
+
+Responsibilities:
+
+- creates a small child badge above the actor
+- colors and labels the badge by faction:
+  - `H`: Human
+  - `A`: Angel
+  - `D`: Demon
+  - `Z`: Zombie
+- refreshes automatically if `FactionMember` changes faction at runtime
+- can be disabled per prefab through the `Show Badge` field once final art is readable enough
 
 #### `FactionProjectile.cs`
 
@@ -1145,6 +1163,7 @@ Responsibilities:
 
 - `FactionType.cs`
 - `FactionMember.cs`
+- `FactionVisualIdentity.cs`
 - `FactionTargeting.cs`
 - `FactionCombat.cs`
 - `FactionProjectile.cs`

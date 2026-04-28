@@ -27,6 +27,7 @@ This roadmap stays practical on purpose. It should track the next features that 
 - Bomb and secondary-skill cooldown UI.
 - Faction identity foundation for Humans, Angels, Demons, Zombies, and Neutral actors.
 - Faction-aware enemy targeting and damage routing.
+- Faction visual badges for readable Human, Angel, Demon, and Zombie actors during prototyping.
 - Runtime Human ally squad that follows the player and shoots hostile targets.
 - Editor helper that generates starter Human, Angel, Demon, and Zombie faction prefabs.
 - Starter Angel/Demon/Zombie skirmish that makes faction aggro visible in-game.
@@ -45,6 +46,7 @@ Existing enemies default to Zombies. The next content pass should introduce auth
 Each prefab should include:
 
 - `FactionMember`
+- `FactionVisualIdentity` while placeholder art is still in use
 - faction-specific visuals
 - faction-specific health/damage tuning
 - optional faction-specific weapons or abilities

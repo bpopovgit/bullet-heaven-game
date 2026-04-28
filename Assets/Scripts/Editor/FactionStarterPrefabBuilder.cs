@@ -84,6 +84,7 @@ public static class FactionStarterPrefabBuilder
         enemyHealth.SetRewardsEnabled(rewardsEnabled);
 
         go.AddComponent<StatusReceiver>();
+        go.AddComponent<FactionVisualIdentity>();
         return go;
     }
 

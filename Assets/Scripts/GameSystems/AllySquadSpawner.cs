@@ -116,6 +116,7 @@ public class AllySquadSpawner : MonoBehaviour
         health.ConfigureHealth(allyHealth);
         health.SetRewardsEnabled(false);
 
+        FactionVisualIdentity.Ensure(ally);
         ally.AddComponent<FriendlyAlly>();
         return ally;
     }
@@ -150,6 +151,7 @@ public class AllySquadSpawner : MonoBehaviour
 
         FactionMember faction = FactionMember.Ensure(ally, FactionType.Human);
         faction.Configure(FactionType.Human);
+        FactionVisualIdentity.Ensure(ally);
 
         if (!ally.TryGetComponent<EnemyHealth>(out EnemyHealth health))
             health = ally.AddComponent<EnemyHealth>();

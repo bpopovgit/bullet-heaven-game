@@ -128,6 +128,7 @@ public class FactionSkirmishDirector : MonoBehaviour
 
         FactionMember member = FactionMember.Ensure(actor, faction);
         member.Configure(faction);
+        FactionVisualIdentity.Ensure(actor);
 
         if (!actor.TryGetComponent<EnemyHealth>(out EnemyHealth health))
             health = actor.AddComponent<EnemyHealth>();

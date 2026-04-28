@@ -69,6 +69,7 @@
     <Compile Include="Assets\Scripts\GameSystems\BossSpawnDirector.cs" />
     <Compile Include="Assets\Scripts\UIScripts\ScoreManager.cs" />
     <Compile Include="Assets\Scripts\Combat\WeaponDefinition.cs" />
+    <Compile Include="Assets\Scripts\Combat\FactionVisualIdentity.cs" />
     <Compile Include="Assets\Scripts\Pickups\PickupSpriteFactory.cs" />
     <Compile Include="Assets\Scripts\GameSystems\FactionSkirmishDirector.cs" />
     <Compile Include="Assets\Scripts\GameSystems\RunLoadoutState.cs" />

@@ -73,6 +73,8 @@ flowchart TD
 flowchart TD
     A["Player / Enemy / Future Ally"] --> B["FactionMember"]
     B --> C["FactionType"]
+    B --> BA["FactionVisualIdentity"]
+    BA --> BB["Readable H / A / D / Z Badge"]
 
     D["EnemyMovement"] --> E["FactionTargeting"]
     F["RangedShooter"] --> E
@@ -182,5 +184,6 @@ flowchart TD
 - the current faction-aware combat path uses:
   - `FactionType`
   - `FactionMember`
+  - `FactionVisualIdentity`
   - `FactionTargeting`
   - `FactionCombat`

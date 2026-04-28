@@ -69,6 +69,17 @@ Damage routing is handled by `FactionCombat`.
 
 This means hostile checks are now centralized before damage is applied to `PlayerHealth` or `EnemyHealth`. Player bullets, enemy projectiles, and melee contact damage all respect faction hostility.
 
+Faction readability is handled by `FactionVisualIdentity`.
+
+Current prototype badges:
+
+- `H`: Human
+- `A`: Angel
+- `D`: Demon
+- `Z`: Zombie
+
+These badges sit above actors and are meant as a clear temporary layer while final character art is still missing. Later, once faction silhouettes are strong enough, the badge can be disabled per prefab through the `Show Badge` field.
+
 This is the foundation for:
 
 - allied minions around the player

@@ -59,6 +59,7 @@ public class EnemyHealth : MonoBehaviour
     {
         currentHealth = maxHealth;
         FactionMember.Ensure(gameObject, FactionType.Zombie);
+        FactionVisualIdentity.Ensure(gameObject);
         _resists = GetComponent<EnemyResistances>();
         _statusReceiver = GetComponent<StatusReceiver>();
 
