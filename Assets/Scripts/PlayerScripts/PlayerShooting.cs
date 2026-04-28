@@ -14,6 +14,7 @@ public class PlayerShooting : MonoBehaviour
     private PlayerInput _playerInput;
     private InputAction _fire;
     private PlayerStats _stats;
+    private FactionMember _faction;
     private float _cooldown;
 
     public WeaponDefinition GetWeaponDefinition()
@@ -35,6 +36,7 @@ public class PlayerShooting : MonoBehaviour
     {
         _playerInput = GetComponent<PlayerInput>();
         _stats = GetComponent<PlayerStats>();
+        _faction = FactionMember.Ensure(gameObject, FactionType.Human);
         if (!mainCam) mainCam = Camera.main;
     }
 
@@ -78,7 +80,7 @@ public class PlayerShooting : MonoBehaviour
             var go = Instantiate(weapon.bulletPrefab, spawnPosition, Quaternion.identity);
             var bullet = go.GetComponent<BulletElemental>();
             if (bullet != null)
-                bullet.Init(weapon, shotDir, _stats);
+                bullet.Init(weapon, shotDir, _stats, _faction);
         }
 
         GameAudio.PlayPlayerShoot();

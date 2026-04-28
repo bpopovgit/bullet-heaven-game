@@ -176,6 +176,7 @@ When debugging, remember that not every important object exists in the hierarchy
 6. `RunLoadoutApplier` waits for the player to exist, then applies the chosen loadout.
 7. `RunTimer`, `EnemyWaveDirector`, `EliteSpawnDirector`, and `BossSpawnDirector` drive the run structure.
 8. Player fights enemies, levels up, uses active skills, and progresses into elite and boss events.
+9. Combat actors carry `FactionMember`, so targeting and damage can support Humans, Angels, Demons, Zombies, and allied units.
 
 ## Script Responsibility Map
 
@@ -224,12 +225,13 @@ Responsibilities:
 
 - projectile lifetime
 - wall collision
-- enemy hit detection
+- hostile enemy hit detection
 - elemental bullet color
 - damage
 - splash damage
 - pierce
 - status effect chance
+- faction-safe damage through `FactionCombat`
 
 #### `DamageType.cs`
 
@@ -250,6 +252,66 @@ This is the shared combat payload format for:
 - enemy projectiles
 - bombs
 - freeze/slow/burn/poison/shock interactions
+
+#### `FactionCombat.cs`
+
+Purpose:
+
+- centralized faction-aware damage router
+
+Responsibilities:
+
+- check whether an attacker and target are hostile
+- prevent friendly fire unless a future system explicitly changes that rule
+- route valid damage packets into `PlayerHealth` or `EnemyHealth`
+- support child-collider prefabs by searching parent objects for health/faction components
+
+#### `FactionMember.cs`
+
+Purpose:
+
+- faction identity component for anything that can be targeted or damaged as a battlefield actor
+
+Responsibilities:
+
+- stores the actor faction:
+  - `Human`
+  - `Angel`
+  - `Demon`
+  - `Zombie`
+  - `Neutral`
+- controls whether the actor is targetable
+- provides `Ensure(...)` helper calls so old prefabs keep working without manual setup
+
+Default runtime assumptions:
+
+- player defaults to `Human`
+- existing enemies default to `Zombie`
+
+#### `FactionTargeting.cs`
+
+Purpose:
+
+- shared target selection rules for faction combat
+
+Responsibilities:
+
+- decides whether two factions are hostile
+- assigns target priority by faction matchup
+- finds the best target by priority first, then distance
+
+Current design rules:
+
+- Demons prefer Angels, then Humans, then Zombies.
+- Angels prefer Demons, then Humans, then Zombies.
+- Humans prefer Zombies, then Angels/Demons.
+- Zombies attack any other faction.
+
+#### `FactionType.cs`
+
+Purpose:
+
+- shared enum for the game's current faction set
 
 #### `DragonBoss.cs`
 
@@ -403,9 +465,10 @@ Purpose:
 
 Responsibilities:
 
-- detects player collision
+- detects hostile player/enemy collision
 - applies repeating timed damage while in contact
 - can attach elemental/status payloads to melee hits
+- respects faction hostility through `FactionCombat`
 
 #### `EnemyMovement.cs`
 
@@ -415,8 +478,8 @@ Purpose:
 
 Responsibilities:
 
-- finds player by tag
-- moves toward player
+- finds the best hostile faction target
+- moves toward that target
 - respects `StatusReceiver.SpeedMultiplier`
 
 #### `EnemyProjectile.cs`
@@ -430,7 +493,8 @@ Responsibilities:
 - travel speed
 - lifetime
 - wall collision
-- apply damage and status to player on hit
+- apply damage and status to hostile actors on hit
+- preserve the firing actor's faction so projectiles do not damage allies
 
 #### `RangedShooter.cs`
 
@@ -440,7 +504,7 @@ Purpose:
 
 Responsibilities:
 
-- maintain preferred range from player
+- maintain preferred range from the best hostile faction target
 - move in/out to hold that range
 - stop acting while stunned/frozen
 - spawn `EnemyProjectile`
@@ -983,6 +1047,18 @@ Responsibilities:
 - `DragonBoss.cs`
 - `BossWorldHealthBar.cs`
 
+### Faction targeting and battlefield AI
+
+- `FactionType.cs`
+- `FactionMember.cs`
+- `FactionTargeting.cs`
+- `FactionCombat.cs`
+- `EnemyMovement.cs`
+- `RangedShooter.cs`
+- `EnemyMeleeDamage.cs`
+- `EnemyProjectile.cs`
+- `BulletElemental.cs`
+
 ### Status effects
 
 - `DamageType.cs`
@@ -1009,6 +1085,7 @@ Responsibilities:
 - The active front-end scene is `Assets/Scenes/Main.unity`.
 - Several important systems bootstrap themselves at runtime, so not everything appears in the hierarchy before Play mode.
 - The current enemy spawning system is authored spawn-point based, not fully dynamic.
+- The current faction system is a foundation layer. Existing enemies default to Zombies and the player defaults to Human, so old gameplay continues while new faction prefabs can be introduced gradually.
 - `Bullet.cs` looks like a legacy/simple projectile path; current player weapon behavior uses `BulletElemental.cs`.
 - `SampleScene.unity` is not part of the current game flow.
 

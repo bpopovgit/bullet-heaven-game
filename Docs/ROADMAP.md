@@ -25,10 +25,88 @@ This roadmap stays practical on purpose. It should track the next features that 
 - Bomb on `Q`.
 - Secondary active skill on `E`.
 - Bomb and secondary-skill cooldown UI.
+- Faction identity foundation for Humans, Angels, Demons, Zombies, and Neutral actors.
+- Faction-aware enemy targeting and damage routing.
 
 ## Highest-Value Next Features
 
-### 1. Mobility Skill on `Shift` or `Space`
+### 1. Allied Minions Around The Player
+
+The next best step for the new roguelike battlefield direction is to let the player spawn into combat with friendly units.
+
+Good first version:
+
+- simple Human ally prefab
+- ally starts near the player
+- ally has `FactionMember` set to `Human`
+- zombies target the ally or player depending on distance
+- ally attacks nearby Zombies
+
+This proves the faction system with actual battlefield behavior.
+
+### 2. Faction-Configured Enemy Prefabs
+
+Existing enemies default to Zombies. The next content pass should introduce authored prefabs for:
+
+- Human allies
+- Angel units
+- Demon units
+- Zombie units
+
+Each prefab should include:
+
+- `FactionMember`
+- faction-specific visuals
+- faction-specific health/damage tuning
+- optional faction-specific weapons or abilities
+
+### 3. Character Selection
+
+The menu/loadout scene should eventually choose a playable character before the run.
+
+Useful first character data:
+
+- faction
+- starting HP
+- move speed
+- default weapon family
+- starting active skill
+- passive trait
+
+### 4. Multi-Map Run Structure
+
+The GDD direction describes one run as multiple maps/districts.
+
+Good first version:
+
+- Map 1 -> reward choice -> Map 2
+- preserve run build between maps
+- reset local enemies/pickups per map
+- increase pressure per district
+
+### 5. Talent Trees With Prerequisites
+
+The current level-up system offers flat choices. The future system should move toward visible trees similar to the design reference.
+
+Good first version:
+
+- upgrade nodes have IDs
+- upgrade nodes can require previous nodes
+- selected nodes unlock deeper options
+- the menu can preview the full tree before the run
+
+### 6. Quartermaster / NPC Shops
+
+NPCs on the map can become run shops.
+
+Good first version:
+
+- interactable NPC
+- pauses or slows combat while shopping
+- spends run currency
+- offers health, weapon, or faction-themed upgrades
+
+### 7. Mobility Skill on `Shift` or `Space`
 
 The combat kit now has:
 
@@ -44,7 +122,7 @@ The next clean expansion is a mobility layer:
 
 This would make positioning feel more deliberate and skillful.
 
-### 2. Ultimate / Special on `R`
+### 8. Ultimate / Special on `R`
 
 After movement utility, the next satisfying escalation is a longer-cooldown power:
 
@@ -55,7 +133,7 @@ After movement utility, the next satisfying escalation is a longer-cooldown powe
 
 This should be rarer, stronger, and more dramatic than the `Q` and `E` slots.
 
-### 3. More Distinct Weapon Families
+### 9. More Distinct Weapon Families
 
 Starting weapons exist, but they can become more mechanically different.
 
@@ -66,7 +144,7 @@ Strong next direction:
 - unique hit feel
 - clearer weapon-specific upgrade synergies
 
-### 4. More Bomb Families
+### 10. More Bomb Families
 
 Current bombs:
 
@@ -81,7 +159,7 @@ Good next additions:
 - Black Hole Bomb
 - delayed cluster bomb
 
-### 5. Meta Progression / Profile System
+### 11. Meta Progression / Profile System
 
 The game now has a proper pre-run loadout flow, so the next structural layer is profile progression across runs.
 
@@ -91,7 +169,7 @@ Good first goals:
 - unlockable starting options
 - milestone-based feature unlocks
 
-### 6. Unlock Structure
+### 12. Unlock Structure
 
 Early profile progression should unlock gameplay options:
 
@@ -103,7 +181,7 @@ Early profile progression should unlock gameplay options:
 
 After the important gameplay unlocks are in place, later levels can skew more cosmetic.
 
-### 7. Cosmetics
+### 13. Cosmetics
 
 Good cosmetic targets:
 
@@ -114,7 +192,7 @@ Good cosmetic targets:
 - boss-announcement style variants
 - profile banners or titles
 
-### 8. Map-Specific Spawn Profiles
+### 14. Map-Specific Spawn Profiles
 
 The spawn-point system is now better than the old dynamic-only idea, which means we can lean into authored maps.
 
@@ -125,7 +203,7 @@ Best next map-side step:
 - enemy pool by map
 - terrain-aware spawn rules
 
-### 9. More Bosses and Boss Attacks
+### 15. More Bosses and Boss Attacks
 
 The dragon is a strong first boss foundation.
 
@@ -138,13 +216,13 @@ Next boss-side growth:
 
 ## Suggested Immediate Implementation Order
 
-1. Mobility / dash
-2. More distinct weapon identities
-3. One new bomb family
-4. Profile progression foundation
-5. Unlockable loadout options
-6. Cosmetics
-7. Map-specific spawn profiles
+1. Spawn a small Human ally squad near the player.
+2. Add a simple ally attack script.
+3. Add Angel and Demon test prefabs and verify faction aggro.
+4. Add character selection data to the pre-run flow.
+5. Create the first visible talent-tree data structure.
+6. Add a two-map run handoff prototype.
+7. Add a basic quartermaster NPC.
 
 ## Design Rule of Thumb
 

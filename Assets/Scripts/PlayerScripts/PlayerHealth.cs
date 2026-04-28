@@ -33,6 +33,7 @@ public class PlayerHealth : MonoBehaviour
     private void Awake()
     {
         _hp = maxHP;
+        FactionMember.Ensure(gameObject, FactionType.Human);
         _rb = GetComponent<Rigidbody2D>();
         _status = GetComponent<StatusReceiver>();
     }

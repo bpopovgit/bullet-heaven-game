@@ -1,18 +1,21 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class EnemyMovement : MonoBehaviour
 {
     [Header("Movement Settings")]
-    [SerializeField] private float speed = 2f; // Movement speed of the enemy
+    [SerializeField] private float speed = 2f;
+    [SerializeField] private float targetRefreshInterval = 0.25f;
+    [SerializeField] private float maxTargetRange = 0f;
 
-    private Transform player; // Reference to the player's transform
+    private Transform _target;
     private StatusReceiver _status;
+    private FactionMember _faction;
+    private float _nextTargetRefreshTime;
 
     private void Awake()
     {
         _status = GetComponent<StatusReceiver>();
+        _faction = FactionMember.Ensure(gameObject, FactionType.Zombie);
     }
 
     private void Start()
@@ -20,33 +23,32 @@ public class EnemyMovement : MonoBehaviour
         if (_status == null)
             _status = GetComponent<StatusReceiver>();
 
-        // Find the player GameObject by tag
-        GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
-        if (playerObject != null)
-        {
-            player = playerObject.transform;
-        }
-        else
-        {
-            Debug.LogError("Player not found! Make sure the player has the 'Player' tag assigned.");
-        }
+        RefreshTarget();
     }
 
     private void Update()
     {
-        if (player != null)
-        {
-            MoveTowardsPlayer();
-        }
+        if (_target == null || Time.time >= _nextTargetRefreshTime)
+            RefreshTarget();
+
+        if (_target != null)
+            MoveTowardsTarget();
     }
 
-    private void MoveTowardsPlayer()
+    private void MoveTowardsTarget()
     {
-        // Calculate the direction to the player
-        Vector2 direction = (player.position - transform.position).normalized;
         float speedMultiplier = _status != null ? _status.SpeedMultiplier : 1f;
+        transform.position = Vector2.MoveTowards(transform.position, _target.position, speed * speedMultiplier * Time.deltaTime);
+    }
 
-        // Move the enemy toward the player
-        transform.position = Vector2.MoveTowards(transform.position, player.position, speed * speedMultiplier * Time.deltaTime);
+    private void RefreshTarget()
+    {
+        _nextTargetRefreshTime = Time.time + Mathf.Max(0.05f, targetRefreshInterval);
+
+        if (_faction == null)
+            _faction = FactionMember.Ensure(gameObject, FactionType.Zombie);
+
+        FactionMember target = FactionTargeting.FindBestTarget(_faction, transform.position, maxTargetRange);
+        _target = target != null ? target.transform : null;
     }
 }

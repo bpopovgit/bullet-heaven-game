@@ -25,6 +25,7 @@ public class EnemyProjectile : MonoBehaviour
 
     private Rigidbody2D _rb;
     private Collider2D _col;
+    private FactionMember _ownerFaction;
 
     private void Awake()
     {
@@ -36,8 +37,9 @@ public class EnemyProjectile : MonoBehaviour
     }
 
     // Called by RangedShooter when spawning
-    public void Fire(Vector2 direction, float speedMultiplier = 1f)
+    public void Fire(Vector2 direction, float speedMultiplier = 1f, FactionMember ownerFaction = null)
     {
+        _ownerFaction = ownerFaction;
         _rb.linearVelocity = direction.normalized * speed * Mathf.Max(0.1f, speedMultiplier);
         transform.right = direction;  // face travel direction
         Destroy(gameObject, lifeTime);
@@ -55,25 +57,23 @@ public class EnemyProjectile : MonoBehaviour
             return;
         }
 
-        // Hit player?
-        if (other.TryGetComponent<PlayerHealth>(out var player))
+        var packet = new DamagePacket
         {
-            Debug.Log($"PROJECTILE HIT PLAYER. Element = {element}, Status = {status}");
+            amount = damage,
+            element = element,
+            splashRadius = 0f,
+            sourcePos = transform.position,
 
-            var packet = new DamagePacket
-            {
-                amount = damage,
-                element = element,
-                splashRadius = 0f,
-                sourcePos = transform.position,
+            status = status,
+            statusDuration = statusDuration,
+            statusStrength = statusStrength
+        };
 
-                status = status,
-                statusDuration = statusDuration,
-                statusStrength = statusStrength
-            };
+        packet.Clamp();
 
-            packet.Clamp();
-            player.TakeDamage(packet, applyKnockback: false);
+        if (FactionCombat.TryApplyDamage(other.gameObject, packet, _ownerFaction, applyPlayerKnockback: false))
+        {
+            Debug.Log($"PROJECTILE HIT HOSTILE. Element = {element}, Status = {status}");
             Destroy(gameObject);
             return;
         }

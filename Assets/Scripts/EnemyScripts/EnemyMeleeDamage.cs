@@ -14,11 +14,17 @@ public class EnemyMeleeDamage : MonoBehaviour
 
 
     private float _damageTimer;
-    private PlayerHealth _playerInContact;
+    private GameObject _targetInContact;
+    private FactionMember _faction;
+
+    private void Awake()
+    {
+        _faction = FactionMember.Ensure(gameObject, FactionType.Zombie);
+    }
 
     private void Update()
     {
-        if (_playerInContact == null) return;
+        if (_targetInContact == null) return;
 
         _damageTimer -= Time.deltaTime;
 
@@ -37,7 +43,7 @@ public class EnemyMeleeDamage : MonoBehaviour
             };
 
             packet.Clamp();
-            _playerInContact.TakeDamage(packet, applyKnockback: true);
+            FactionCombat.TryApplyDamage(_targetInContact, packet, _faction, applyPlayerKnockback: true);
             _damageTimer = damageInterval;
         }
     }
@@ -46,22 +52,29 @@ public class EnemyMeleeDamage : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.collider.TryGetComponent<PlayerHealth>(out var player))
+        if (CanDamage(collision.collider.gameObject))
         {
-            _playerInContact = player;
+            _targetInContact = collision.collider.gameObject;
             _damageTimer = 0f; // deal damage immediately on contact
         }
     }
 
     private void OnCollisionExit2D(Collision2D collision)
     {
-        if (collision.collider.TryGetComponent<PlayerHealth>(out var player))
-        {
-            if (_playerInContact == player)
-            {
-                _playerInContact = null;
-            }
-        }
+        if (_targetInContact == collision.collider.gameObject)
+            _targetInContact = null;
+    }
+
+    private bool CanDamage(GameObject target)
+    {
+        if (target == null)
+            return false;
+
+        if (target.GetComponentInParent<PlayerHealth>() == null && target.GetComponentInParent<EnemyHealth>() == null)
+            return false;
+
+        FactionMember targetFaction = target.GetComponentInParent<FactionMember>();
+        return _faction == null || targetFaction == null || FactionTargeting.AreHostile(_faction, targetFaction);
     }
 
     // --- TRIGGER VERSION (ONLY if you switch to trigger colliders) ---

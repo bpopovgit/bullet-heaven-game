@@ -67,6 +67,35 @@ flowchart TD
     AI --> N
 ```
 
+## Faction Combat Graph
+
+```mermaid
+flowchart TD
+    A["Player / Enemy / Future Ally"] --> B["FactionMember"]
+    B --> C["FactionType"]
+
+    D["EnemyMovement"] --> E["FactionTargeting"]
+    F["RangedShooter"] --> E
+    E --> G["Best Hostile Target"]
+
+    H["PlayerShooting"] --> I["BulletElemental"]
+    F --> J["EnemyProjectile"]
+    K["EnemyMeleeDamage"] --> L["Contact Damage"]
+    M["PlayerActiveBomb / PlayerSecondaryActiveSkill"] --> N["Area Effects"]
+
+    I --> O["FactionCombat"]
+    J --> O
+    L --> O
+    N --> O
+
+    O --> P["Hostility Check"]
+    P --> Q["PlayerHealth"]
+    P --> R["EnemyHealth"]
+
+    S["Current Defaults"] --> T["Player = Human"]
+    S --> U["Existing Enemies = Zombie"]
+```
+
 ## UI Ownership Graph
 
 ```mermaid
@@ -136,3 +165,8 @@ flowchart TD
   - `PlayerShooting`
   - `WeaponDefinition`
   - `BulletElemental`
+- the current faction-aware combat path uses:
+  - `FactionType`
+  - `FactionMember`
+  - `FactionTargeting`
+  - `FactionCombat`

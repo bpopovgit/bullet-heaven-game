@@ -33,6 +33,49 @@ Statuses:
 
 `DamagePacket.Clamp()` should be called before applying damage when a packet is built from configurable data.
 
+## Faction Battlefield Foundation
+
+The game now has a first-pass faction identity layer for the roguelike battlefield direction.
+
+Current factions are defined by `FactionType`:
+
+- `Neutral`
+- `Human`
+- `Angel`
+- `Demon`
+- `Zombie`
+
+Actors use `FactionMember` to declare:
+
+- which faction they belong to
+- whether they can currently be targeted
+
+Default behavior:
+
+- the player is automatically treated as `Human`
+- existing enemies are automatically treated as `Zombie`
+- authored prefabs can override this by adding `FactionMember` directly
+
+Target selection is handled by `FactionTargeting`.
+
+Current priority rules:
+
+- Demons prefer Angels, then Humans, then Zombies.
+- Angels prefer Demons, then Humans, then Zombies.
+- Humans prefer Zombies, then Angels/Demons.
+- Zombies attack any other faction, choosing by distance when priority is equal.
+
+Damage routing is handled by `FactionCombat`.
+
+This means hostile checks are now centralized before damage is applied to `PlayerHealth` or `EnemyHealth`. Player bullets, enemy projectiles, and melee contact damage all respect faction hostility.
+
+This is the foundation for:
+
+- allied minions around the player
+- angel vs demon fights happening without the player
+- zombies attacking everyone
+- future playable factions and map-specific faction setups
+
 ## Primary Weapons
 
 `PlayerShooting` reads:

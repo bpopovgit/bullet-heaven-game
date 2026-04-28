@@ -17,6 +17,8 @@ A Unity 2D top-down bullet-heaven project with elemental combat, pre-run loadout
 - timed elite spawns with announcements
 - dragon boss with phase two and boss reward choices
 - gameplay SFX loaded from `Resources` folders with random clip variation
+- faction identity foundation for Humans, Angels, Demons, Zombies, and Neutral actors
+- first-pass faction-aware targeting and damage routing
 
 ## Current Gameplay Loop
 
@@ -28,10 +30,11 @@ A Unity 2D top-down bullet-heaven project with elemental combat, pre-run loadout
 6. The player shoots with the primary weapon and uses `Q` / `E` active abilities.
 7. Enemies spawn from authored spawn points and timed wave stages.
 8. Enemies damage the player through contact or projectiles.
-9. Dead enemies award score, XP, and optional pickups.
-10. Level-ups pause the game and offer upgrade choices.
-11. Timed elites and the dragon boss interrupt the normal run flow.
-12. Boss kills award a separate boss reward choice.
+9. Faction-aware targeting lets future allies and hostile factions fight each other.
+10. Dead enemies award score, XP, and optional pickups.
+11. Level-ups pause the game and offer upgrade choices.
+12. Timed elites and the dragon boss interrupt the normal run flow.
+13. Boss kills award a separate boss reward choice.
 
 ## Main Scenes
 

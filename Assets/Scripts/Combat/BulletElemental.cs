@@ -17,10 +17,12 @@ public class BulletElemental : MonoBehaviour
     private float _splashRadius;
     private float _ttl;
     private int _pierceLeft;
+    private FactionMember _ownerFaction;
 
-    public void Init(WeaponDefinition weapon, Vector2 dir, PlayerStats ownerStats = null)
+    public void Init(WeaponDefinition weapon, Vector2 dir, PlayerStats ownerStats = null, FactionMember ownerFaction = null)
     {
         _weapon = weapon;
+        _ownerFaction = ownerFaction;
         float damageMultiplier = ownerStats != null ? ownerStats.DamageMultiplier : 1f;
 
         _damage = Mathf.Max(0, Mathf.RoundToInt(weapon.baseDamage * damageMultiplier));
@@ -59,8 +61,8 @@ public class BulletElemental : MonoBehaviour
             return;
         }
 
-        // 2) Only damage enemies
-        if (!other.TryGetComponent<EnemyHealth>(out var enemy)) return;
+        // 2) Only damage hostile enemies
+        if (other.GetComponentInParent<EnemyHealth>() == null) return;
 
         // Build the damage packet
         var packet = new DamagePacket
@@ -75,7 +77,8 @@ public class BulletElemental : MonoBehaviour
         };
 
         // Single target damage first
-        enemy.TakeDamage(packet);
+        if (!FactionCombat.TryApplyDamage(other.gameObject, packet, _ownerFaction, applyPlayerKnockback: false))
+            return;
 
         // Optional splash damage
         if (_splashRadius > 0.01f)
@@ -84,10 +87,8 @@ public class BulletElemental : MonoBehaviour
             foreach (var hit in hits)
             {
                 if (hit == other) continue; // skip the primary we already hit
-                if (hit.TryGetComponent<EnemyHealth>(out var e2))
-                {
-                    e2.TakeDamage(packet);
-                }
+                if (hit.GetComponentInParent<EnemyHealth>() != null)
+                    FactionCombat.TryApplyDamage(hit.gameObject, packet, _ownerFaction, applyPlayerKnockback: false);
             }
         }
 

@@ -27,6 +27,7 @@ public class DragonBoss : MonoBehaviour
     private EnemyHealth _health;
     private Transform _player;
     private GameObject _projectilePrefab;
+    private FactionMember _faction;
     private float _cooldownRemaining;
     private bool _configured;
     private bool _phaseTwoTriggered;
@@ -37,6 +38,7 @@ public class DragonBoss : MonoBehaviour
     {
         _health = GetComponent<EnemyHealth>();
         _renderers = GetComponentsInChildren<SpriteRenderer>();
+        _faction = FactionMember.Ensure(gameObject, FactionType.Zombie);
 
         GameObject playerObject = GameObject.FindGameObjectWithTag("Player");
         if (playerObject != null)
@@ -144,7 +146,7 @@ public class DragonBoss : MonoBehaviour
 
             GameObject projectile = Instantiate(_projectilePrefab, spawnPosition, Quaternion.identity);
             if (projectile.TryGetComponent<EnemyProjectile>(out EnemyProjectile enemyProjectile))
-                enemyProjectile.Fire(shotDirection, projectileSpeedMultiplier);
+                enemyProjectile.Fire(shotDirection, projectileSpeedMultiplier, _faction);
         }
 
         GameAudio.PlayEnemyShoot();
