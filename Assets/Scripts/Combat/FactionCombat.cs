@@ -24,7 +24,7 @@ public static class FactionCombat
         EnemyHealth enemyHealth = target.GetComponentInParent<EnemyHealth>();
         if (enemyHealth != null)
         {
-            enemyHealth.TakeDamage(packet);
+            enemyHealth.TakeDamage(packet, attacker);
             return true;
         }
 

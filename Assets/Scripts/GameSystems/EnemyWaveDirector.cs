@@ -13,6 +13,7 @@ public class EnemyWaveStage
     public bool fillImmediately = true;
     public GameObject[] enemyPrefabs;
     public EnemySpawnRegion allowedSpawnRegions = EnemySpawnRegion.Any;
+    public FactionSpawnRule[] factionSpawnRules;
 }
 
 public class EnemyWaveDirector : MonoBehaviour
@@ -22,6 +23,7 @@ public class EnemyWaveDirector : MonoBehaviour
     [SerializeField] private EnemyRespawnManager respawnManager;
 
     [Header("Stages")]
+    [SerializeField] private bool useGeneratedFactionDefaults = true;
     [SerializeField] private EnemyWaveStage[] stages =
     {
         new EnemyWaveStage { startTimeSeconds = 0f, maxAlive = 8, respawnDelay = 4f, allowedSpawnRegions = EnemySpawnRegion.Any },
@@ -71,6 +73,20 @@ public class EnemyWaveDirector : MonoBehaviour
 
         _activeStageIndex = stageIndex;
         EnemyWaveStage stage = stages[stageIndex];
+        FactionSpawnRule[] factionRules = GetFactionRulesForStage(stage, stageIndex);
+
+        if (HasAnyFactionSpawnRules(factionRules))
+        {
+            respawnManager.ApplyFactionWaveSettings(
+                factionRules,
+                stage.respawnDelay,
+                stage.fillImmediately,
+                stage.allowedSpawnRegions);
+
+            Debug.Log(
+                $"WAVE STAGE {stageIndex + 1}: factionRules={factionRules.Length}, totalCap={GetFactionRuleTotalCap(factionRules)}, respawnDelay={stage.respawnDelay:0.##}, regions={stage.allowedSpawnRegions}");
+            return;
+        }
 
         respawnManager.ApplyWaveSettings(
             stage.enemyPrefabs,
@@ -114,6 +130,102 @@ public class EnemyWaveDirector : MonoBehaviour
             respawnManager = FindObjectOfType<EnemyRespawnManager>();
     }
 
+    private FactionSpawnRule[] GetFactionRulesForStage(EnemyWaveStage stage, int stageIndex)
+    {
+        if (stage != null && HasAnyFactionSpawnRules(stage.factionSpawnRules))
+            return stage.factionSpawnRules;
+
+        if (!useGeneratedFactionDefaults)
+            return null;
+
+        return CreateGeneratedFactionRules(stageIndex);
+    }
+
+    private FactionSpawnRule[] CreateGeneratedFactionRules(int stageIndex)
+    {
+        switch (stageIndex)
+        {
+            case 0:
+                return new[]
+                {
+                    CreateRule(FactionUnitArchetypeType.ZombieMelee, 7, EnemySpawnRegion.Any),
+                    CreateRule(FactionUnitArchetypeType.ZombieRanged, 1, EnemySpawnRegion.East | EnemySpawnRegion.West)
+                };
+            case 1:
+                return new[]
+                {
+                    CreateRule(FactionUnitArchetypeType.ZombieMelee, 8, EnemySpawnRegion.Any),
+                    CreateRule(FactionUnitArchetypeType.ZombieRanged, 2, EnemySpawnRegion.East | EnemySpawnRegion.West),
+                    CreateRule(FactionUnitArchetypeType.DemonMelee, 2, EnemySpawnRegion.North | EnemySpawnRegion.East)
+                };
+            case 2:
+                return new[]
+                {
+                    CreateRule(FactionUnitArchetypeType.ZombieMelee, 9, EnemySpawnRegion.Any),
+                    CreateRule(FactionUnitArchetypeType.ZombieRanged, 2, EnemySpawnRegion.East | EnemySpawnRegion.West),
+                    CreateRule(FactionUnitArchetypeType.DemonMelee, 3, EnemySpawnRegion.North | EnemySpawnRegion.East),
+                    CreateRule(FactionUnitArchetypeType.DemonRanged, 1, EnemySpawnRegion.East),
+                    CreateRule(FactionUnitArchetypeType.AngelMelee, 2, EnemySpawnRegion.North | EnemySpawnRegion.West),
+                    CreateRule(FactionUnitArchetypeType.AngelRanged, 1, EnemySpawnRegion.West)
+                };
+            default:
+                return new[]
+                {
+                    CreateRule(FactionUnitArchetypeType.ZombieMelee, 10, EnemySpawnRegion.Any),
+                    CreateRule(FactionUnitArchetypeType.ZombieRanged, 3, EnemySpawnRegion.East | EnemySpawnRegion.West),
+                    CreateRule(FactionUnitArchetypeType.DemonMelee, 4, EnemySpawnRegion.North | EnemySpawnRegion.East),
+                    CreateRule(FactionUnitArchetypeType.DemonRanged, 2, EnemySpawnRegion.East | EnemySpawnRegion.South),
+                    CreateRule(FactionUnitArchetypeType.AngelMelee, 3, EnemySpawnRegion.North | EnemySpawnRegion.West),
+                    CreateRule(FactionUnitArchetypeType.AngelRanged, 2, EnemySpawnRegion.West | EnemySpawnRegion.South)
+                };
+        }
+    }
+
+    private FactionSpawnRule CreateRule(
+        FactionUnitArchetypeType archetype,
+        int maxAlive,
+        EnemySpawnRegion allowedSpawnRegions)
+    {
+        return new FactionSpawnRule
+        {
+            archetype = archetype,
+            maxAlive = Mathf.Max(0, maxAlive),
+            allowedSpawnRegions = allowedSpawnRegions == EnemySpawnRegion.None
+                ? EnemySpawnRegion.Any
+                : allowedSpawnRegions,
+            rewardsEnabled = FactionUnitArchetype.GetFaction(archetype) == FactionType.Zombie
+        };
+    }
+
+    private bool HasAnyFactionSpawnRules(FactionSpawnRule[] rules)
+    {
+        if (rules == null || rules.Length == 0)
+            return false;
+
+        for (int i = 0; i < rules.Length; i++)
+        {
+            if (rules[i] != null && rules[i].maxAlive > 0)
+                return true;
+        }
+
+        return false;
+    }
+
+    private int GetFactionRuleTotalCap(FactionSpawnRule[] rules)
+    {
+        if (rules == null)
+            return 0;
+
+        int total = 0;
+        for (int i = 0; i < rules.Length; i++)
+        {
+            if (rules[i] != null)
+                total += Mathf.Max(0, rules[i].maxAlive);
+        }
+
+        return total;
+    }
+
     private void OnValidate()
     {
         if (stages == null)
@@ -130,6 +242,21 @@ public class EnemyWaveDirector : MonoBehaviour
 
             if (stages[i].allowedSpawnRegions == EnemySpawnRegion.None)
                 stages[i].allowedSpawnRegions = EnemySpawnRegion.Any;
+
+            if (stages[i].factionSpawnRules == null)
+                continue;
+
+            for (int j = 0; j < stages[i].factionSpawnRules.Length; j++)
+            {
+                FactionSpawnRule rule = stages[i].factionSpawnRules[j];
+                if (rule == null)
+                    continue;
+
+                rule.maxAlive = Mathf.Max(0, rule.maxAlive);
+
+                if (rule.allowedSpawnRegions == EnemySpawnRegion.None)
+                    rule.allowedSpawnRegions = EnemySpawnRegion.Any;
+            }
         }
     }
 }

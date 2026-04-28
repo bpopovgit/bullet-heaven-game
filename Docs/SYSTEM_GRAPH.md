@@ -161,12 +161,15 @@ flowchart TD
 
     B --> E["EnemyRespawnManager"]
     E --> F["Spawn_01-04 / EnemySpawnPoint"]
-    E --> G["Regular Enemy Pool"]
+    E --> G["Faction Spawn Rules"]
+    G --> GA["Per-Archetype Max Alive"]
+    G --> GB["Zombie / Demon / Angel Roles"]
+    E --> H["Legacy Regular Enemy Pool"]
 
-    C --> H["EliteEnemy"]
-    D --> I["DragonBoss"]
-    I --> J["BossWorldHealthBar"]
-    I --> K["Boss Reward Choice"]
+    C --> I["EliteEnemy"]
+    D --> J["DragonBoss"]
+    J --> K["BossWorldHealthBar"]
+    J --> L["Boss Reward Choice"]
 ```
 
 ## Notes

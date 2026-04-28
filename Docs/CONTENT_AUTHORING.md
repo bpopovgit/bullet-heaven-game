@@ -138,7 +138,59 @@ Each spawn point can now be grouped into regions such as:
 
 Use this when shaping wave flow per map.
 
+`EnemyRespawnManager` now merges any manually assigned spawn points with all active `EnemySpawnPoint` objects found in the scene at runtime. This means adding `Spawn_05`, `Spawn_06`, and so on will automatically make them available to normal waves, as long as they have the `EnemySpawnPoint` component.
+
 Boss spawns should use `BossSpawnPoint` if you want authored entrances. If none exist, the boss falls back to spawning north / above the player.
+
+## Tuning Faction Wave Spawns
+
+Regular waves can now be tuned by faction archetype instead of only one global enemy pool.
+
+Open:
+
+```text
+Assets/Game.unity
+EnemyWaveDirector
+Stages
+```
+
+Each stage can use `Faction Spawn Rules`.
+
+Useful fields:
+
+- `Archetype`: the unit role to spawn, such as `ZombieMelee`, `ZombieRanged`, `DemonMelee`, `DemonRanged`, `AngelMelee`, or `AngelRanged`
+- `Max Alive`: how many of that exact archetype can exist at once
+- `Prefab Override`: optional manual prefab override
+- `Allowed Spawn Regions`: where this archetype is allowed to enter from
+- `Rewards Enabled`: whether deaths award score, XP, and pickups
+
+Reward behavior is faction-aware:
+
+- if `Rewards Enabled` is checked, the unit rewards on any death
+- if unchecked on Human allies, rewards are fully disabled
+- if unchecked on hostile Angels/Demons/Zombies, rewards are limited to player/Human-side kills
+
+This prevents Angel-vs-Demon background fights from producing free XP, while still allowing the player to earn XP from enemies they personally fight.
+
+Example early wave:
+
+```text
+ZombieMelee   Max Alive 7   Regions Any
+ZombieRanged  Max Alive 1   Regions East, West
+```
+
+Example later wave:
+
+```text
+ZombieMelee   Max Alive 10
+ZombieRanged  Max Alive 3
+DemonMelee    Max Alive 4
+DemonRanged   Max Alive 2
+AngelMelee    Max Alive 3
+AngelRanged   Max Alive 2
+```
+
+If a stage has no faction rules and `Use Generated Faction Defaults` is checked, the game creates starter faction rules automatically. Uncheck it when you want fully hand-authored stage composition.
 
 ## Adding Enemy Resistances
 

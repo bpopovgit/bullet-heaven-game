@@ -20,12 +20,13 @@ Welcome to the development wiki for **Bullet Heaven Game**, a Unity 2D bullet-he
 4. Gameplay loads into `Game.unity`.
 5. The player moves with the Unity Input System and aims with the mouse.
 6. The player shoots with the primary weapon and uses `Q` / `E` active skills.
-7. Enemies spawn from authored spawn points and timed wave stages.
+7. Enemies spawn from authored spawn points and timed faction wave stages.
 8. Enemies damage the player through contact or projectiles.
-9. Dead enemies award score, XP, and optional pickups.
-10. Level-ups pause the game and offer upgrade choices when `LevelUpManager` is configured.
-11. Timed elites and the dragon boss interrupt the normal run flow.
-12. Boss kills award a separate boss reward choice.
+9. Human allies, Angels, Demons, and Zombies use faction-aware targeting.
+10. Dead reward-enabled enemies award score, XP, and optional pickups.
+11. Level-ups pause the game and offer upgrade choices when `LevelUpManager` is configured.
+12. Timed elites and the dragon boss interrupt the normal run flow.
+13. Boss kills award a separate boss reward choice.
 
 ## Current Unity Version
 

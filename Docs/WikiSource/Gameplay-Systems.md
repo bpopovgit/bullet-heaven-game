@@ -1,10 +1,10 @@
 # Gameplay Systems
 
-## Combat and Damage
+## Damage Model
 
-Damage flows through `DamagePacket`.
+Damage flows through `DamagePacket`, defined in `DamageType.cs`.
 
-Key fields:
+`DamagePacket` includes:
 
 - `amount`
 - `element`
@@ -31,93 +31,403 @@ Statuses:
 - `Freeze`
 - `Poison`
 
+`DamagePacket.Clamp()` should be called before applying damage when a packet is built from configurable data.
+
+## Faction Battlefield Foundation
+
+The game now has a first-pass faction identity layer for the roguelike battlefield direction.
+
+Current factions are defined by `FactionType`:
+
+- `Neutral`
+- `Human`
+- `Angel`
+- `Demon`
+- `Zombie`
+
+Actors use `FactionMember` to declare:
+
+- which faction they belong to
+- whether they can currently be targeted
+
+Default behavior:
+
+- the player is automatically treated as `Human`
+- existing enemies are automatically treated as `Zombie`
+- authored prefabs can override this by adding `FactionMember` directly
+
+Target selection is handled by `FactionTargeting`.
+
+Current priority rules:
+
+- Demons prefer Angels, then Humans, then Zombies.
+- Angels prefer Demons, then Humans, then Zombies.
+- Humans prefer Zombies, then Angels/Demons.
+- Zombies attack any other faction, choosing by distance when priority is equal.
+
+Damage routing is handled by `FactionCombat`.
+
+This means hostile checks are now centralized before damage is applied to `PlayerHealth` or `EnemyHealth`. Player bullets, enemy projectiles, and melee contact damage all respect faction hostility.
+
+Faction readability is handled by `FactionVisualIdentity`.
+
+Current prototype badges:
+
+- `H`: Human
+- `A`: Angel
+- `D`: Demon
+- `Z`: Zombie
+
+These badges sit above actors and are meant as a clear temporary layer while final character art is still missing. Later, once faction silhouettes are strong enough, the badge can be disabled per prefab through the `Show Badge` field.
+
+This is the foundation for:
+
+- allied minions around the player
+- angel vs demon fights happening without the player
+- zombies attacking everyone
+- future playable factions and map-specific faction setups
+
+## Friendly Ally Test Squad
+
+`AllySquadSpawner` currently bootstraps a small runtime Human squad when `Game.unity` starts.
+
+Current behavior:
+
+- spawns three Human allies near the player
+- uses `Resources/Prefabs/Factions/HumanAlly_Melee` and `Resources/Prefabs/Factions/HumanAlly_Ranged` when those prefabs exist
+- falls back to generated placeholder circles when no prefab exists
+- allies follow the player in a loose formation
+- allies use `FriendlyAlly` to search for hostile faction targets
+- allies fire simple physical `FactionProjectile` shots
+- zombies can target and damage allies
+- ally deaths do not award score, XP, or pickups
+- ranged allies use `HumanRangedAlly`
+- melee allies use `HumanMeleeAlly`
+
+This is placeholder content, but it proves the intended battlefield direction:
+
+- the player is no longer the only meaningful combat target
+- friendly units can exist on the map
+- enemies can split attention naturally through faction targeting
+
+Starter faction prefabs can be generated from:
+
+```text
+Tools > Bullet Heaven > Factions > Create Starter Prefabs
+```
+
+## Faction Unit Archetypes
+
+`FactionUnitArchetype` gives faction actors an explicit gameplay role instead of only a faction label.
+
+Current archetypes:
+
+- `HumanSupport`
+  - legacy alias for `HumanRangedAlly`
+- `HumanRangedAlly`
+  - Human ally
+  - follows the player
+  - shoots hostile targets from range
+  - does not award score, XP, or pickups on death
+- `HumanMeleeAlly`
+  - Human ally
+  - melee combatant built from the old melee enemy prefab family
+  - chases hostile targets and fights on the player's side
+- `AngelMarksman`
+  - legacy alias for `AngelRanged`
+- `AngelRanged`
+  - Angel ranged unit
+  - keeps distance
+  - fires lightning-colored faction projectiles
+  - naturally prioritizes Demons through `FactionTargeting`
+- `AngelMelee`
+  - Angel melee unit
+  - applies lightning/shock contact pressure
+  - naturally prioritizes Demons
+- `DemonRaider`
+  - legacy alias for `DemonMelee`
+- `DemonMelee`
+  - fast Demon melee unit
+  - burns targets on contact
+  - naturally prioritizes Angels through `FactionTargeting`
+- `DemonRanged`
+  - Demon ranged unit
+  - throws fire/burn projectiles
+  - naturally prioritizes Angels
+- `ZombieGrunt`
+  - legacy alias for `ZombieMelee`
+- `ZombieMelee`
+  - slower melee swarm unit
+  - lower health and damage
+  - applies light poison pressure
+  - attacks the closest hostile target when priority is equal
+- `ZombieRanged`
+  - slower ranged spitter
+  - applies poison projectiles
+  - attacks the closest hostile target when priority is equal
+
+`FactionRangedAttacker` supports non-player ranged faction units such as Angel marksmen. It uses `FactionProjectile`, so its shots respect the same faction-safe damage routing as other combat.
+
+## Starter Faction Skirmish
+
+`FactionSkirmishDirector` currently spawns a small faction test fight shortly after `Game.unity` starts.
+
+Current starter skirmish:
+
+- Angel melee and ranged units near the upper-left of the player
+- Demon melee and ranged units near the upper-right of the player
+- Zombie melee and ranged units below the player
+
+The director tries to load these prefabs:
+
+```text
+Resources/Prefabs/Factions/Angel_Melee
+Resources/Prefabs/Factions/Angel_Ranged
+Resources/Prefabs/Factions/Demon_Melee
+Resources/Prefabs/Factions/Demon_Ranged
+Resources/Prefabs/Factions/Zombie_Melee
+Resources/Prefabs/Factions/Zombie_Ranged
+```
+
+If those prefabs do not exist, it tries the older `AngelTestUnit`, `DemonTestUnit`, and `ZombieTestUnit` fallbacks before creating generated placeholder actors.
+
+The goal is to make faction targeting visible:
+
+- Angels should prioritize Demons.
+- Demons should prioritize Angels.
+- Zombies should attack whatever hostile actor is closest.
+- Human allies and the player should care most about Zombies.
+- Angels should behave like ranged marksmen, Demons like fast melee raiders, and Zombies like slower swarm grunts.
+
+## Primary Weapons
+
+`PlayerShooting` reads:
+
+- the active `WeaponDefinition`
+- mouse position from the Input System
+- current `PlayerStats`
+
+It spawns the weapon's bullet prefab from the configured muzzle/fire point.
+
+Current starting weapon identities:
+
+- `Ember Repeater`: fast fire, burn-focused
+- `Frost Lance`: slower frost rounds with crowd-control lean
+- `Venom Caster`: poison splash pressure
+- `Storm Needler`: faster, sharper lightning burst
+
+Current upgrade-aware primary weapon stats:
+
+- fire rate
+- projectile count
+- damage multiplier
+- pierce
+- splash radius
+
 ## Pre-Run Loadout
 
-The run now begins with a chosen loadout:
+The run now starts with a selected loadout chosen in the menu scene.
+
+Current loadout categories:
 
 - starting weapon
 - bomb on `Q`
 - active skill on `E`
 - passive perk
 
-This loadout is selected in the menu scene and applied when gameplay starts.
+`RunLoadoutState` stores the selected choices, and `RunLoadoutApplier` applies them when gameplay loads.
 
-## Player Shooting
+The current front-end flow is:
 
-`PlayerShooting` reads the active `WeaponDefinition`, mouse position, and `PlayerStats`.
-
-Upgrade-aware stats:
-
-- damage multiplier
-- fire rate
-- projectile count
-- pierce
-- splash radius
-
-Extra projectiles fire as spread shots.
+```text
+Main Menu -> Single Player Setup -> Loadout -> Start Run
+```
 
 ## Bomb Skill on `Q`
 
-`PlayerActiveBomb` handles the first active skill slot.
+`PlayerActiveBomb` handles the player's first active skill slot.
 
-Current bombs:
+Current bomb behavior:
+
+- press `Q`
+- target the mouse position
+- throw a visible bomb projectile
+- clamp throw distance to a max range
+- detonate on arrival
+- apply bomb-specific damage/status behavior
+
+Current bomb options:
 
 - `Frag Bomb`
 - `Frost Bomb`
 - `Fire Bomb`
 - `Shock Bomb`
 
-Bombs use cursor-targeted throws, visible projectile travel, impact visuals, and a cooldown icon in the HUD.
+Bombs have:
 
-## Secondary Skill on `E`
+- per-bomb visuals
+- per-bomb cooldown
+- bomb-specific SFX folders
+- a bottom-left cooldown widget via `BombCooldownUI`
+
+## Secondary Active Skill on `E`
 
 `PlayerSecondaryActiveSkill` handles the second active slot.
 
-Current options:
+The selected skill is chosen in the loadout screen and shown in its own cooldown widget through `SecondarySkillCooldownUI`.
+
+Current `E` skills:
 
 - `Magnetic Pulse`
+  - pushes nearby enemies away
+  - attracts nearby pickups
 - `Arcane Shield`
+  - grants short invulnerability
+  - clears nearby enemy projectiles
 - `Frost Nova`
+  - freezes nearby enemies in place
+  - applies strong frost visuals rather than direct kill damage
 
-`Frost Nova` now freezes enemies in place and uses clear icy visuals rather than acting like a burst-damage kill button.
+Each `E` skill now has:
+
+- distinct icon colors
+- separate cooldown values
+- separate sound effects
+
+## Enemy Health, Score, XP, and Status
+
+`EnemyHealth` controls:
+
+- max health
+- death state
+- score reward
+- XP reward
+- reward mode
+- optional XP gem prefab
+- optional pickup drops
+- death event for respawn tracking
+
+On death:
+
+1. Adds score through `ScoreManager`.
+2. Drops XP through `XPGem`.
+3. Rolls optional health, magnet, and bomb pickup drops.
+4. Raises `Died`.
+5. Plays enemy death SFX.
+6. Destroys the enemy GameObject.
+
+`EnemyHealth` also forwards status-bearing packets into `StatusReceiver`, so enemies now properly react to:
+
+- slow
+- freeze
+- burn
+- poison
+- shock
+
+Faction enemies use reward modes so NPC faction fights do not flood the map with free XP:
+
+- `Always`: rewards drop no matter who killed the enemy
+- `HumanOnly`: rewards drop when the player/Human side caused the kill
+- `Disabled`: no score, XP, or pickup rewards
+
+Regular Zombie wave rules currently use normal rewards. Angels and Demons can still reward the player, but deaths caused only by other non-Human factions are filtered out.
+
+## Status Effects
+
+`StatusReceiver` is the shared status system used by the player and now by enemies too.
+
+Current supported behaviors:
+
+- `Slow`: reduces movement speed
+- `Shock`: stun-like lock state
+- `Freeze`: fully locks movement and uses frost visuals
+- `Burn`: damage over time
+- `Poison`: damage over time
+
+Freeze now adds:
+
+- icy blue tint
+- frost ring
+- icy sparkles
+
+That makes `Frost Nova` read as hard crowd control instead of just blue damage.
+
+## Survival Pickups
+
+Pickups share attraction behavior through `PlayerPickup`.
+
+Current pickup types:
+
+- `HealthPickup`: heals the player
+- `MagnetPickup`: attracts every active XP gem to the player
+- `BombPickup`: damages enemies in a radius around the player
+
+`EnemyHealth` controls pickup drop chances:
+
+- `healthDropChance`
+- `magnetDropChance`
+- `bombDropChance`
+
+If a pickup prefab is not assigned, the game spawns a simple colored runtime pickup:
+
+- red: health
+- cyan: magnet
+- yellow/orange: bomb
 
 ## Score System
 
-`ScoreManager` is a scene singleton.
+`ScoreManager` is a scene-level singleton.
 
-Enemies call:
+Core API:
 
 ```csharp
-ScoreManager.Instance.AddScore(points);
+ScoreManager.Instance.AddScore(amount);
+ScoreManager.Instance.ResetScore();
 ```
 
-`ScoreTextUI` listens for score changes and updates the TMP score text.
+`ScoreTextUI` subscribes to `ScoreManager.ScoreChanged` and updates TMP text.
+
+## Health, XP, and Timer HUD
+
+Current HUD support:
+
+- `PlayerHealthUI`: HP text and HP slider
+- `ExperienceUI`: level text, XP text, XP slider
+- `RunTimerUI`: `Time: 00:00`
+- `BombCooldownUI`: `Q` cooldown icon
+- `SecondarySkillCooldownUI`: `E` cooldown icon
+
+The timer uses scaled time, so it pauses automatically during level-up choices and reward popups.
 
 ## XP and Leveling
 
-`EnemyHealth` drops XP gems on death.
+`PlayerExperience` tracks:
 
-`PlayerPickupCollector` attracts nearby XP gems.
+- current level
+- current XP
+- XP needed for the next level
+- pending level-ups
+- upgrade choices
 
-`XPGem` calls:
-
-```csharp
-PlayerExperience.AddExperience(amount);
-```
-
-`PlayerExperience` handles level thresholds and upgrade choices.
-
-Default values:
+Default first threshold:
 
 ```text
-First level-up: 10 XP
-Growth: 1.25x per level
-Choices per level: 3
+10 XP
 ```
+
+Default growth:
+
+```text
+1.25x per level
+```
+
+When enough XP is collected, the player levels up. If `LevelUpManager` is configured, the game pauses and shows upgrade choices. If not, it auto-picks the first generated upgrade so leveling still works.
 
 ## Upgrade System
 
-Default upgrades include:
+Upgrade options are represented by `PlayerUpgradeOption`.
+
+Current default pool includes:
 
 - `Sharpened Rounds`
 - `Trigger Rhythm`
@@ -128,34 +438,40 @@ Default upgrades include:
 - `Vital Core`
 - `Volatile Payload`
 
-## Survival Pickups
+Upgrades currently modify either:
 
-Current pickup types:
+- `PlayerStats`
+- `PlayerHealth`
 
-- `HealthPickup`
-- `MagnetPickup`
-- `BombPickup`
+## Level-Up UI
 
-Pickups use shared attraction/collection behavior through `PlayerPickup`.
+`LevelUpManager` is optional but recommended.
 
-## HUD and Timer
+When configured, it:
 
-Current gameplay HUD supports:
+1. Stores the current `Time.timeScale`.
+2. Sets `Time.timeScale = 0`.
+3. Shows the level-up panel.
+4. Fills choice buttons with upgrade titles and descriptions.
+5. Applies the chosen upgrade.
+6. Hides the panel.
+7. Restores time scale.
 
-- score
-- HP
-- XP / level
-- run timer
-- bomb cooldown
-- secondary-skill cooldown
+## Enemy Spawning and Wave Regions
 
-`RunTimer` uses scaled `Time.deltaTime`, so it pauses during popups that set `Time.timeScale = 0`.
+`EnemyRespawnManager` maintains a maximum number of living enemies and spawns from authored `EnemySpawnPoint` objects.
 
-## Enemy Spawning
+Current behavior:
 
-`EnemyRespawnManager` uses authored `EnemySpawnPoint` objects.
+- uses configured `enemyPrefabs`
+- uses configured or auto-found `EnemySpawnPoint` objects
+- avoids invalid spawn positions
+- supports stage-based prefab pools
+- supports region-aware filtering
+- supports faction spawn rules with per-archetype alive caps
+- keeps trying to fill missing enemies over time, not only when something dies
 
-Wave stages can now also choose allowed spawn regions such as:
+`EnemySpawnPoint` now supports directional grouping such as:
 
 - `North`
 - `East`
@@ -163,38 +479,103 @@ Wave stages can now also choose allowed spawn regions such as:
 - `West`
 - `Center`
 
+`EnemyWaveDirector` can restrict each wave stage to specific spawn regions, which makes runs feel more authored than simple global spawning.
+
+Wave stages can now also drive faction-based spawning through `FactionSpawnRule`.
+
+Each faction spawn rule can define:
+
+- archetype, such as `ZombieMelee`, `DemonRanged`, or `AngelMelee`
+- max alive for that archetype
+- optional prefab override
+- allowed spawn regions
+- whether deaths should award score, XP, and pickups
+
+If a stage has no explicit faction rules and `Use Generated Faction Defaults` is enabled, `EnemyWaveDirector` creates starter rules automatically. This keeps the current scene playable immediately while still letting designers tune each wave in the Inspector later.
+
+Current generated wave direction:
+
+- early stage: mostly Zombies
+- second stage: Zombies plus light Demon pressure
+- third stage: Zombies, Demons, and Angels
+- later stage: larger mixed-faction battlefield
+
+This is the first regular-wave bridge from the old enemy prefab pool into the new faction battlefield model.
+
 ## Elite Enemies
 
-`EliteSpawnDirector` spawns occasional elite enemies using the current run timer.
+`EliteSpawnDirector` uses the run timer and respawn manager to spawn occasional elite enemies.
 
-Elites reuse enemy prefabs and get runtime modifiers through `EliteEnemy`.
+Elites reuse existing enemy prefabs and are modified at runtime by `EliteEnemy`.
 
-Elite spawn and defeat can display messages through `RunAnnouncementUI`.
+Elite modifiers include:
+
+- health multiplier
+- score/XP reward multiplier
+- visual scale multiplier
+- sprite tint
+- pickup drop chance bonus
+
+Elite spawn and elite defeat can display temporary messages through `RunAnnouncementUI` and play matching audio.
 
 ## Dragon Boss
 
-The current first boss is a dragon.
+The current first boss is a dragon-themed ranged boss.
 
 The boss flow supports:
 
-- timed spawn
+- timed boss spawn
 - boss-only spawn logic from above / north of the player
 - optional authored `BossSpawnPoint` anchors
-- phase two below 50% HP
-- world-space boss HP bar
+- boss phase two below 50% HP
+- floating world-space HP bar
 - boss reward popup on death
+
+Phase two currently changes:
+
+- tint
+- attack aggression
+- pressure feel
+
+Boss reward choices are separate from normal level-up upgrades and are intended to feel stronger and more run-defining.
+
+## Main Menu, Setup, and Loadout UI
+
+`MainMenuRuntime` generates the front-end UI at runtime inside `Main.unity`.
+
+Current screens:
+
+- mode select
+- single-player setup
+- multiplayer placeholder
+- loadout setup
+
+That means the front-end is script-driven right now rather than authored from a manually-built persistent menu prefab.
 
 ## Audio System
 
-`GameAudio` loads clips from `Assets/Resources/Audio/SFX/...`.
+`GameAudio` loads SFX from `Resources` folders and randomly picks one clip when multiple files exist in a folder.
 
-If a folder contains multiple clips, one is chosen at random at runtime.
+Examples:
 
-This is used for:
+```text
+Assets/Resources/Audio/SFX/PlayerShoot
+Assets/Resources/Audio/SFX/BombThrow
+Assets/Resources/Audio/SFX/BombImpact
+Assets/Resources/Audio/SFX/SkillMagneticPulse
+Assets/Resources/Audio/SFX/SkillArcaneShield
+Assets/Resources/Audio/SFX/SkillFrostNova
+```
 
-- primary shooting
-- pickups
-- bombs
-- `E` skills
-- elite events
-- enemy death
+This allows quick variation without extra code changes.
+
+## Session Logging
+
+`PlaySessionLogWriter` writes one text log per play session. This is useful for debugging issues such as:
+
+- boss spawn timing
+- loadout application flow
+- activation/cooldown problems
+- menu/runtime handoff problems
+
+The logger writes to Unity's `persistentDataPath` under a `SessionLogs` folder.

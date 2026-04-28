@@ -37,6 +37,15 @@ Assets/Scripts/Combat/
 - `BossWorldHealthBar.cs`
 - `EnemyRespawnManager.cs`
 - `EnemySpawnPoint.cs`
+- `FactionType.cs`
+- `FactionMember.cs`
+- `FactionTargeting.cs`
+- `FactionCombat.cs`
+- `FactionUnitArchetype.cs`
+- `FactionVisualIdentity.cs`
+- `FactionRangedAttacker.cs`
+- `FactionProjectile.cs`
+- `FriendlyAlly.cs`
 - `StatusReceiver.cs`
 - `XPGem.cs`
 
@@ -70,6 +79,8 @@ Assets/Scripts/GameSystems/
 - `EliteSpawnDirector.cs`
 - `BossSpawnDirector.cs`
 - `BossSpawnPoint.cs`
+- `AllySquadSpawner.cs`
+- `FactionSkirmishDirector.cs`
 - `GameAudio.cs`
 - `PlaySessionLogWriter.cs`
 
@@ -117,6 +128,7 @@ Assets/Scripts/UIScripts/
 
 ```text
 Assets/Resources/Audio/SFX/
+Assets/Resources/Prefabs/Factions/
 Assets/Prefabs/Enemies/Melee/
 Assets/Prefabs/Enemies/Ranged/
 Assets/Prefabs/Projectiles/Enemy/

@@ -302,6 +302,7 @@ Each `E` skill now has:
 - death state
 - score reward
 - XP reward
+- reward mode
 - optional XP gem prefab
 - optional pickup drops
 - death event for respawn tracking
@@ -322,6 +323,14 @@ On death:
 - burn
 - poison
 - shock
+
+Faction enemies use reward modes so NPC faction fights do not flood the map with free XP:
+
+- `Always`: rewards drop no matter who killed the enemy
+- `HumanOnly`: rewards drop when the player/Human side caused the kill
+- `Disabled`: no score, XP, or pickup rewards
+
+Regular Zombie wave rules currently use normal rewards. Angels and Demons can still reward the player, but deaths caused only by other non-Human factions are filtered out.
 
 ## Status Effects
 
@@ -459,6 +468,8 @@ Current behavior:
 - avoids invalid spawn positions
 - supports stage-based prefab pools
 - supports region-aware filtering
+- supports faction spawn rules with per-archetype alive caps
+- keeps trying to fill missing enemies over time, not only when something dies
 
 `EnemySpawnPoint` now supports directional grouping such as:
 
@@ -469,6 +480,27 @@ Current behavior:
 - `Center`
 
 `EnemyWaveDirector` can restrict each wave stage to specific spawn regions, which makes runs feel more authored than simple global spawning.
+
+Wave stages can now also drive faction-based spawning through `FactionSpawnRule`.
+
+Each faction spawn rule can define:
+
+- archetype, such as `ZombieMelee`, `DemonRanged`, or `AngelMelee`
+- max alive for that archetype
+- optional prefab override
+- allowed spawn regions
+- whether deaths should award score, XP, and pickups
+
+If a stage has no explicit faction rules and `Use Generated Faction Defaults` is enabled, `EnemyWaveDirector` creates starter rules automatically. This keeps the current scene playable immediately while still letting designers tune each wave in the Inspector later.
+
+Current generated wave direction:
+
+- early stage: mostly Zombies
+- second stage: Zombies plus light Demon pressure
+- third stage: Zombies, Demons, and Angels
+- later stage: larger mixed-faction battlefield
+
+This is the first regular-wave bridge from the old enemy prefab pool into the new faction battlefield model.
 
 ## Elite Enemies
 

@@ -13,6 +13,7 @@ The current game loop supports:
 - level-ups with upgrade choices
 - score, XP, pickups, elites, and a dragon boss
 - run timer, announcements, and combat SFX
+- faction identity, aggro priorities, Human allies, and faction-aware regular waves
 
 ## Current Unity Version
 
@@ -78,6 +79,15 @@ Shared combat and enemy-state systems:
 - `DragonBoss.cs`: boss behavior extension and phase logic.
 - `BossWorldHealthBar.cs`: world-space boss HP bar above the dragon.
 - `EnemyRespawnManager.cs`: manages living enemy cap and spawn attempts.
+- `FactionType.cs`: shared faction enum.
+- `FactionMember.cs`: actor faction identity.
+- `FactionTargeting.cs`: aggro priority and target selection.
+- `FactionCombat.cs`: faction-safe damage routing.
+- `FactionUnitArchetype.cs`: Human/Angel/Demon/Zombie role tuning.
+- `FactionVisualIdentity.cs`: prototype faction badges.
+- `FactionRangedAttacker.cs`: ranged AI for non-player faction units.
+- `FactionProjectile.cs`: faction-aware projectile for allies and faction units.
+- `FriendlyAlly.cs`: first-pass Human ally behavior.
 - `EnemySpawnPoint.cs`: spawn point marker with region grouping.
 - `StatusReceiver.cs`: shared status handling, including slow, burn, poison, shock, and freeze visuals.
 - `XPGem.cs`: XP pickup behavior.
@@ -122,6 +132,8 @@ Run-level orchestration, menu handoff, audio, and logging:
 - `BossSpawnPoint.cs`: optional authored boss-only spawn anchors.
 - `GameAudio.cs`: runtime-loaded SFX system with random variation per folder.
 - `PlaySessionLogWriter.cs`: writes one play-session log file per run for debugging.
+- `AllySquadSpawner.cs`: runtime Human ally squad spawner.
+- `FactionSkirmishDirector.cs`: starter Angel/Demon/Zombie skirmish spawner.
 
 ### Enemy Scripts
 
@@ -174,6 +186,7 @@ HUD, popups, cooldown widgets, and menu runtime:
 
 ```text
 Assets/Resources/Audio/SFX/
+Assets/Resources/Prefabs/Factions/
 Assets/Prefabs/Enemies/Melee/
 Assets/Prefabs/Enemies/Ranged/
 Assets/Prefabs/Projectiles/Enemy/
@@ -198,6 +211,7 @@ The gameplay scene should contain or auto-bootstrap the following:
 - `EnemySpawnPoint` objects
 - optional `BossSpawnPoint` objects
 - `RunAnnouncementUI`
+- generated or authored faction prefabs under `Assets/Resources/Prefabs/Factions/`
 
 The menu scene should contain:
 

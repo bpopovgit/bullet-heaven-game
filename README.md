@@ -24,6 +24,7 @@ A Unity 2D top-down bullet-heaven project with elemental combat, pre-run loadout
 - editor helper that builds faction prefab variants from existing enemy prefabs
 - runtime Human ally squad that follows the player and shoots hostile targets
 - starter Angel/Demon/Zombie skirmish for visible faction aggro testing
+- faction-aware regular waves with separate alive caps per archetype
 
 ## Current Gameplay Loop
 
@@ -33,9 +34,9 @@ A Unity 2D top-down bullet-heaven project with elemental combat, pre-run loadout
 4. Gameplay loads into the survival arena.
 5. The player moves with the Unity Input System and aims with the mouse.
 6. The player shoots with the primary weapon and uses `Q` / `E` active abilities.
-7. Enemies spawn from authored spawn points and timed wave stages.
+7. Enemies spawn from authored spawn points and timed faction wave stages.
 8. Enemies damage the player through contact or projectiles.
-9. Faction-aware targeting lets future allies and hostile factions fight each other.
+9. Faction-aware targeting lets allies and hostile factions fight each other.
 10. Dead enemies award score, XP, and optional pickups.
 11. Level-ups pause the game and offer upgrade choices.
 12. Timed elites and the dragon boss interrupt the normal run flow.

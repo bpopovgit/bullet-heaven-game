@@ -32,6 +32,8 @@ This roadmap stays practical on purpose. It should track the next features that 
 - Runtime Human ally squad that follows the player and shoots hostile targets.
 - Editor helper that builds Human, Angel, Demon, and Zombie faction prefabs from the existing melee/ranged enemy prefabs.
 - Starter Angel/Demon/Zombie skirmish that makes faction aggro visible in-game.
+- Faction-aware regular wave spawning with per-archetype alive caps.
+- Runtime spawn-point discovery so new authored spawn markers automatically contribute to regular waves.
 
 ## Highest-Value Next Features
 
@@ -205,6 +207,7 @@ Best next map-side step:
 - boss spawn anchors
 - enemy pool by map
 - terrain-aware spawn rules
+- per-map faction wave profiles
 
 ### 15. More Bosses and Boss Attacks
 

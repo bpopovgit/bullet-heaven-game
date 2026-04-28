@@ -1,6 +1,13 @@
 using System;
 using UnityEngine;
 
+public enum EnemyRewardMode
+{
+    Disabled,
+    Always,
+    HumanOnly
+}
+
 public class EnemyHealth : MonoBehaviour
 {
     private const int DefaultPointsOnDeath = 10;
@@ -11,6 +18,7 @@ public class EnemyHealth : MonoBehaviour
 
     [Header("Reward")]
     [SerializeField] private bool awardRewardsOnDeath = true;
+    [SerializeField] private EnemyRewardMode rewardMode = EnemyRewardMode.Always;
     [Min(1)]
     [SerializeField] private int pointsOnDeath = 10;
     [Min(1)]
@@ -36,6 +44,8 @@ public class EnemyHealth : MonoBehaviour
     private int currentHealth;
     private EnemyResistances _resists;
     private StatusReceiver _statusReceiver;
+    private bool _hasLastDamageSourceFaction;
+    private FactionType _lastDamageSourceFaction;
 
     public event Action<EnemyHealth> Died;
     public bool IsDead { get; private set; }
@@ -53,6 +63,13 @@ public class EnemyHealth : MonoBehaviour
     public void SetRewardsEnabled(bool enabled)
     {
         awardRewardsOnDeath = enabled;
+        rewardMode = enabled ? EnemyRewardMode.Always : EnemyRewardMode.Disabled;
+    }
+
+    public void SetRewardMode(EnemyRewardMode mode)
+    {
+        rewardMode = mode;
+        awardRewardsOnDeath = mode != EnemyRewardMode.Disabled;
     }
 
     private void Awake()
@@ -67,10 +84,16 @@ public class EnemyHealth : MonoBehaviour
             _statusReceiver = gameObject.AddComponent<StatusReceiver>();
     }
 
-    public void TakeDamage(DamagePacket packet)
+    public void TakeDamage(DamagePacket packet, FactionMember attacker = null)
     {
         if (IsDead)
             return;
+
+        if (attacker != null)
+        {
+            _hasLastDamageSourceFaction = true;
+            _lastDamageSourceFaction = attacker.Faction;
+        }
 
         packet.Clamp();
 
@@ -115,7 +138,7 @@ public class EnemyHealth : MonoBehaviour
 
         IsDead = true;
 
-        if (awardRewardsOnDeath)
+        if (ShouldAwardRewardsOnDeath())
         {
             int reward = pointsOnDeath > 0 ? pointsOnDeath : DefaultPointsOnDeath;
 
@@ -133,6 +156,20 @@ public class EnemyHealth : MonoBehaviour
 
         // TODO: add death VFX, score popup, loot drop, etc.
         Destroy(gameObject);
+    }
+
+    private bool ShouldAwardRewardsOnDeath()
+    {
+        if (!awardRewardsOnDeath || rewardMode == EnemyRewardMode.Disabled)
+            return false;
+
+        if (rewardMode == EnemyRewardMode.Always)
+            return true;
+
+        if (rewardMode == EnemyRewardMode.HumanOnly)
+            return !_hasLastDamageSourceFaction || _lastDamageSourceFaction == FactionType.Human;
+
+        return false;
     }
 
     private void DropExperience()

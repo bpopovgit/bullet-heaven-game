@@ -308,7 +308,7 @@ public class FactionUnitArchetype : MonoBehaviour
 
         EnemyHealth enemyHealth = Ensure<EnemyHealth>();
         enemyHealth.ConfigureHealth(health);
-        enemyHealth.SetRewardsEnabled(rewardsEnabled);
+        enemyHealth.SetRewardMode(GetRewardMode(faction, rewardsEnabled));
 
         Ensure<StatusReceiver>();
 
@@ -338,6 +338,17 @@ public class FactionUnitArchetype : MonoBehaviour
             component = gameObject.AddComponent<T>();
 
         return component;
+    }
+
+    private EnemyRewardMode GetRewardMode(FactionType faction, bool rewardsEnabled)
+    {
+        if (rewardsEnabled)
+            return EnemyRewardMode.Always;
+
+        if (faction == FactionType.Human)
+            return EnemyRewardMode.Disabled;
+
+        return EnemyRewardMode.HumanOnly;
     }
 
     private void SetEnabled<T>(bool enabled) where T : Behaviour

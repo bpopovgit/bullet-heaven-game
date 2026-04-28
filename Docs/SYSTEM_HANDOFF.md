@@ -179,6 +179,7 @@ When debugging, remember that not every important object exists in the hierarchy
 9. Combat actors carry `FactionMember`, so targeting and damage can support Humans, Angels, Demons, Zombies, and allied units.
 10. `FactionVisualIdentity` adds readable faction badges above prototype actors so faction roles stay visible before final art exists.
 11. `FactionUnitArchetype` applies first-pass role tuning for Human, Angel, Demon, and Zombie melee/ranged units.
+12. `EnemyWaveDirector` can now feed faction spawn rules into `EnemyRespawnManager`, so normal waves can spawn controlled mixes of Zombie, Demon, and Angel archetypes.
 
 ## Script Responsibility Map
 
@@ -481,13 +482,17 @@ Responsibilities:
 - finds or uses authored `EnemySpawnPoint`s
 - keeps the number of alive enemies near a target cap
 - applies wave settings from `EnemyWaveDirector`
+- applies faction spawn rules from `EnemyWaveDirector`
+- supports separate alive caps per archetype, such as `ZombieMelee`, `DemonRanged`, or `AngelMelee`
 - supports special spawns for elites/boss helpers
 - validates player distance and enemy spacing
+- periodically tries to fill missing enemies so caps can recover even when spawn points were temporarily blocked
 
 Important note:
 
 - dynamic spawning exists only as inactive/commented future mode right now
 - the active mode uses authored spawn points
+- assigned spawn points are merged with active scene `EnemySpawnPoint` objects at runtime, so new scene spawn markers become usable without manually adding them to the manager array
 
 #### `EnemySpawnPoint.cs`
 
@@ -722,6 +727,7 @@ Responsibilities:
 
 - pick the active enemy wave stage based on elapsed run time
 - push wave settings into `EnemyRespawnManager`
+- optionally generate starter faction spawn rules when a stage has no authored rules
 
 Each stage can define:
 
@@ -730,6 +736,15 @@ Each stage can define:
 - respawn delay
 - enemy prefab pool
 - allowed spawn regions
+- faction spawn rules
+
+Faction spawn rules define:
+
+- archetype
+- per-archetype max alive
+- optional prefab override
+- allowed spawn regions
+- reward behavior
 
 #### `FactionSkirmishDirector.cs`
 

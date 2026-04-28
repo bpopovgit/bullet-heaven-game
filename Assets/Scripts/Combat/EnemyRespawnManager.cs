@@ -2,6 +2,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
+public class FactionSpawnRule
+{
+    public FactionUnitArchetypeType archetype = FactionUnitArchetypeType.ZombieMelee;
+    [Min(0)]
+    public int maxAlive = 4;
+    public GameObject prefabOverride;
+    public EnemySpawnRegion allowedSpawnRegions = EnemySpawnRegion.Any;
+    public bool rewardsEnabled = true;
+}
+
 public class EnemyRespawnManager : MonoBehaviour
 {
     [Header("Prefabs")]
@@ -23,11 +34,18 @@ public class EnemyRespawnManager : MonoBehaviour
     [SerializeField] private float spawnRadiusMin = 8f;
     [SerializeField] private float spawnRadiusMax = 12f;
 
+    [Header("Faction Spawn Rules (optional)")]
+    [SerializeField] private bool useFactionSpawnRules = false;
+    [SerializeField] private FactionSpawnRule[] factionSpawnRules;
+
     private readonly HashSet<GameObject> _alive = new HashSet<GameObject>();
+    private readonly Dictionary<GameObject, int> _factionRuleByEnemy = new Dictionary<GameObject, int>();
+    private readonly Dictionary<FactionUnitArchetypeType, GameObject> _factionPrefabCache = new Dictionary<FactionUnitArchetypeType, GameObject>();
     private Transform _player;
     private EnemySpawnRegion _allowedSpawnRegions = EnemySpawnRegion.Any;
+    private Coroutine _fillRoutine;
 
-    public int MaxAlive => maxAlive;
+    public int MaxAlive => useFactionSpawnRules ? GetFactionRuleTotalCap() : maxAlive;
     public float RespawnDelay => respawnDelay;
 
     public GameObject[] GetEnemyPrefabs()
@@ -41,15 +59,38 @@ public class EnemyRespawnManager : MonoBehaviour
         if (playerObj != null)
             _player = playerObj.transform;
 
-        if (spawnPoints == null || spawnPoints.Length == 0)
-            spawnPoints = FindObjectsOfType<EnemySpawnPoint>();
+        RefreshSpawnPoints();
+
+        if (FindObjectOfType<EnemyWaveDirector>() != null)
+            return;
 
         FillToCap();
+    }
+
+    private void OnEnable()
+    {
+        if (_fillRoutine == null)
+            _fillRoutine = StartCoroutine(ContinuousFillRoutine());
+    }
+
+    private void OnDisable()
+    {
+        if (_fillRoutine != null)
+        {
+            StopCoroutine(_fillRoutine);
+            _fillRoutine = null;
+        }
     }
 
     private void FillToCap()
     {
         RemoveMissingEnemies();
+
+        if (useFactionSpawnRules)
+        {
+            FillFactionRulesToCaps();
+            return;
+        }
 
         while (_alive.Count < maxAlive)
         {
@@ -68,11 +109,33 @@ public class EnemyRespawnManager : MonoBehaviour
         if (waveEnemyPrefabs != null && waveEnemyPrefabs.Length > 0)
             enemyPrefabs = waveEnemyPrefabs;
 
+        useFactionSpawnRules = false;
+        _factionRuleByEnemy.Clear();
         maxAlive = Mathf.Max(0, waveMaxAlive);
         respawnDelay = Mathf.Max(0.05f, waveRespawnDelay);
         _allowedSpawnRegions = allowedSpawnRegions == EnemySpawnRegion.None
             ? EnemySpawnRegion.Any
             : allowedSpawnRegions;
+
+        if (fillImmediately)
+            FillToCap();
+    }
+
+    public void ApplyFactionWaveSettings(
+        FactionSpawnRule[] waveFactionSpawnRules,
+        float waveRespawnDelay,
+        bool fillImmediately,
+        EnemySpawnRegion fallbackAllowedSpawnRegions = EnemySpawnRegion.Any)
+    {
+        factionSpawnRules = waveFactionSpawnRules;
+        useFactionSpawnRules = HasAnyFactionSpawnRules(factionSpawnRules);
+        respawnDelay = Mathf.Max(0.05f, waveRespawnDelay);
+        _allowedSpawnRegions = fallbackAllowedSpawnRegions == EnemySpawnRegion.None
+            ? EnemySpawnRegion.Any
+            : fallbackAllowedSpawnRegions;
+        maxAlive = GetFactionRuleTotalCap();
+
+        AssignExistingFactionEnemiesToRules();
 
         if (fillImmediately)
             FillToCap();
@@ -108,7 +171,8 @@ public class EnemyRespawnManager : MonoBehaviour
         GameObject prefab,
         out GameObject spawnedEnemy,
         bool ignoreEnemySpacing = false,
-        bool ignorePlayerDistance = false)
+        bool ignorePlayerDistance = false,
+        EnemySpawnRegion allowedSpawnRegionsOverride = EnemySpawnRegion.None)
     {
         spawnedEnemy = null;
 
@@ -121,8 +185,8 @@ public class EnemyRespawnManager : MonoBehaviour
         // ACTIVE MODE:
         // Use spawn points for now because this is easier to balance.
         foundSpawn = preferFarthestSpawn
-            ? TryGetFarthestValidSpawn(out spawnPos, ignoreEnemySpacing, ignorePlayerDistance)
-            : TryGetRandomValidSpawn(out spawnPos, ignoreEnemySpacing, ignorePlayerDistance);
+            ? TryGetFarthestValidSpawn(out spawnPos, ignoreEnemySpacing, ignorePlayerDistance, allowedSpawnRegionsOverride)
+            : TryGetRandomValidSpawn(out spawnPos, ignoreEnemySpacing, ignorePlayerDistance, allowedSpawnRegionsOverride);
 
         /*
         // FUTURE MODE:
@@ -146,6 +210,146 @@ public class EnemyRespawnManager : MonoBehaviour
             hp.Died += OnEnemyDied;
 
         return true;
+    }
+
+    private void FillFactionRulesToCaps()
+    {
+        if (!HasAnyFactionSpawnRules(factionSpawnRules))
+            return;
+
+        for (int i = 0; i < factionSpawnRules.Length; i++)
+        {
+            FactionSpawnRule rule = factionSpawnRules[i];
+            if (rule == null || rule.maxAlive <= 0)
+                continue;
+
+            int aliveForRule = CountAliveForFactionRule(i);
+            int failedAttempts = 0;
+
+            while (aliveForRule < rule.maxAlive)
+            {
+                if (TrySpawnFactionRule(i))
+                {
+                    aliveForRule++;
+                    failedAttempts = 0;
+                    continue;
+                }
+
+                failedAttempts++;
+                if (failedAttempts >= triesPerSpawn)
+                    break;
+            }
+        }
+    }
+
+    private bool TrySpawnFactionRule(int ruleIndex)
+    {
+        if (factionSpawnRules == null || ruleIndex < 0 || ruleIndex >= factionSpawnRules.Length)
+            return false;
+
+        FactionSpawnRule rule = factionSpawnRules[ruleIndex];
+        if (rule == null || rule.maxAlive <= 0)
+            return false;
+
+        GameObject prefab = ResolveFactionPrefab(rule);
+        if (prefab == null)
+        {
+            Debug.LogWarning($"No faction prefab found for {rule.archetype}. Run Tools > Bullet Heaven > Factions > Create Starter Prefabs, or assign a prefab override.", this);
+            return false;
+        }
+
+        EnemySpawnRegion allowedRegions = rule.allowedSpawnRegions == EnemySpawnRegion.None
+            ? _allowedSpawnRegions
+            : rule.allowedSpawnRegions;
+
+        if (!TrySpawnPrefab(prefab, out GameObject spawnedEnemy, allowedSpawnRegionsOverride: allowedRegions))
+            return false;
+
+        FactionUnitArchetype.ApplyTo(spawnedEnemy, rule.archetype, rule.rewardsEnabled);
+        _factionRuleByEnemy[spawnedEnemy] = ruleIndex;
+        return true;
+    }
+
+    private GameObject ResolveFactionPrefab(FactionSpawnRule rule)
+    {
+        if (rule == null)
+            return null;
+
+        if (rule.prefabOverride != null)
+            return rule.prefabOverride;
+
+        if (_factionPrefabCache.TryGetValue(rule.archetype, out GameObject cachedPrefab) && cachedPrefab != null)
+            return cachedPrefab;
+
+        GameObject prefab = LoadFactionPrefab(rule.archetype);
+        _factionPrefabCache[rule.archetype] = prefab;
+        return prefab;
+    }
+
+    private GameObject LoadFactionPrefab(FactionUnitArchetypeType archetype)
+    {
+        string primaryPath = GetFactionPrefabPath(archetype);
+        GameObject prefab = Resources.Load<GameObject>(primaryPath);
+
+        if (prefab != null)
+            return prefab;
+
+        string fallbackPath = GetFactionPrefabFallbackPath(archetype);
+        return string.IsNullOrEmpty(fallbackPath)
+            ? null
+            : Resources.Load<GameObject>(fallbackPath);
+    }
+
+    private string GetFactionPrefabPath(FactionUnitArchetypeType archetype)
+    {
+        switch (archetype)
+        {
+            case FactionUnitArchetypeType.HumanMeleeAlly:
+                return "Prefabs/Factions/HumanAlly_Melee";
+            case FactionUnitArchetypeType.HumanSupport:
+            case FactionUnitArchetypeType.HumanRangedAlly:
+                return "Prefabs/Factions/HumanAlly_Ranged";
+            case FactionUnitArchetypeType.AngelMelee:
+                return "Prefabs/Factions/Angel_Melee";
+            case FactionUnitArchetypeType.AngelMarksman:
+            case FactionUnitArchetypeType.AngelRanged:
+                return "Prefabs/Factions/Angel_Ranged";
+            case FactionUnitArchetypeType.DemonRaider:
+            case FactionUnitArchetypeType.DemonMelee:
+                return "Prefabs/Factions/Demon_Melee";
+            case FactionUnitArchetypeType.DemonRanged:
+                return "Prefabs/Factions/Demon_Ranged";
+            case FactionUnitArchetypeType.ZombieRanged:
+                return "Prefabs/Factions/Zombie_Ranged";
+            case FactionUnitArchetypeType.ZombieGrunt:
+            case FactionUnitArchetypeType.ZombieMelee:
+            default:
+                return "Prefabs/Factions/Zombie_Melee";
+        }
+    }
+
+    private string GetFactionPrefabFallbackPath(FactionUnitArchetypeType archetype)
+    {
+        switch (archetype)
+        {
+            case FactionUnitArchetypeType.HumanMeleeAlly:
+            case FactionUnitArchetypeType.HumanSupport:
+            case FactionUnitArchetypeType.HumanRangedAlly:
+                return "Prefabs/Factions/HumanAlly";
+            case FactionUnitArchetypeType.AngelMelee:
+            case FactionUnitArchetypeType.AngelMarksman:
+            case FactionUnitArchetypeType.AngelRanged:
+                return "Prefabs/Factions/AngelTestUnit";
+            case FactionUnitArchetypeType.DemonRaider:
+            case FactionUnitArchetypeType.DemonMelee:
+            case FactionUnitArchetypeType.DemonRanged:
+                return "Prefabs/Factions/DemonTestUnit";
+            case FactionUnitArchetypeType.ZombieGrunt:
+            case FactionUnitArchetypeType.ZombieMelee:
+            case FactionUnitArchetypeType.ZombieRanged:
+            default:
+                return "Prefabs/Factions/ZombieTestUnit";
+        }
     }
 
     /*
@@ -183,14 +387,15 @@ public class EnemyRespawnManager : MonoBehaviour
     private bool TryGetRandomValidSpawn(
         out Vector2 spawnPos,
         bool ignoreEnemySpacing = false,
-        bool ignorePlayerDistance = false)
+        bool ignorePlayerDistance = false,
+        EnemySpawnRegion allowedSpawnRegionsOverride = EnemySpawnRegion.None)
     {
         spawnPos = default;
 
         if (spawnPoints == null || spawnPoints.Length == 0)
             return false;
 
-        List<EnemySpawnPoint> candidates = GetCandidateSpawnPoints();
+        List<EnemySpawnPoint> candidates = GetCandidateSpawnPoints(allowedSpawnRegionsOverride);
         if (candidates.Count == 0)
             return false;
 
@@ -215,14 +420,15 @@ public class EnemyRespawnManager : MonoBehaviour
     private bool TryGetFarthestValidSpawn(
         out Vector2 spawnPos,
         bool ignoreEnemySpacing = false,
-        bool ignorePlayerDistance = false)
+        bool ignorePlayerDistance = false,
+        EnemySpawnRegion allowedSpawnRegionsOverride = EnemySpawnRegion.None)
     {
         spawnPos = default;
 
         if (spawnPoints == null || spawnPoints.Length == 0)
             return false;
 
-        List<EnemySpawnPoint> candidates = GetCandidateSpawnPoints();
+        List<EnemySpawnPoint> candidates = GetCandidateSpawnPoints(allowedSpawnRegionsOverride);
         if (candidates.Count == 0)
             return false;
 
@@ -254,12 +460,16 @@ public class EnemyRespawnManager : MonoBehaviour
         return found;
     }
 
-    private List<EnemySpawnPoint> GetCandidateSpawnPoints()
+    private List<EnemySpawnPoint> GetCandidateSpawnPoints(EnemySpawnRegion allowedSpawnRegionsOverride = EnemySpawnRegion.None)
     {
         List<EnemySpawnPoint> candidates = new List<EnemySpawnPoint>();
 
         if (spawnPoints == null || spawnPoints.Length == 0)
             return candidates;
+
+        EnemySpawnRegion allowedRegions = allowedSpawnRegionsOverride == EnemySpawnRegion.None
+            ? _allowedSpawnRegions
+            : allowedSpawnRegionsOverride;
 
         for (int i = 0; i < spawnPoints.Length; i++)
         {
@@ -267,7 +477,7 @@ public class EnemyRespawnManager : MonoBehaviour
             if (spawnPoint == null)
                 continue;
 
-            if (!IsSpawnPointAllowed(spawnPoint))
+            if (!IsSpawnPointAllowed(spawnPoint, allowedRegions))
                 continue;
 
             candidates.Add(spawnPoint);
@@ -285,12 +495,12 @@ public class EnemyRespawnManager : MonoBehaviour
         return candidates;
     }
 
-    private bool IsSpawnPointAllowed(EnemySpawnPoint spawnPoint)
+    private bool IsSpawnPointAllowed(EnemySpawnPoint spawnPoint, EnemySpawnRegion allowedRegions)
     {
-        if (_allowedSpawnRegions == EnemySpawnRegion.Any)
+        if (allowedRegions == EnemySpawnRegion.Any)
             return true;
 
-        return (spawnPoint.SpawnRegions & _allowedSpawnRegions) != 0;
+        return (spawnPoint.SpawnRegions & allowedRegions) != 0;
     }
 
     private void OnEnemyDied(EnemyHealth hp)
@@ -300,18 +510,156 @@ public class EnemyRespawnManager : MonoBehaviour
 
         hp.Died -= OnEnemyDied;
         _alive.Remove(hp.gameObject);
+        _factionRuleByEnemy.Remove(hp.gameObject);
         StartCoroutine(RespawnAfterDelay());
     }
 
     private IEnumerator RespawnAfterDelay()
     {
-        yield return new WaitForSeconds(respawnDelay);
+        yield return new WaitForSeconds(Mathf.Max(0.05f, respawnDelay));
         FillToCap();
+    }
+
+    private IEnumerator ContinuousFillRoutine()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(Mathf.Max(0.05f, respawnDelay));
+            FillToCap();
+        }
     }
 
     private void RemoveMissingEnemies()
     {
         _alive.RemoveWhere(enemy => enemy == null);
+
+        if (_factionRuleByEnemy.Count == 0)
+            return;
+
+        List<GameObject> missing = null;
+        foreach (GameObject enemy in _factionRuleByEnemy.Keys)
+        {
+            if (enemy != null)
+                continue;
+
+            if (missing == null)
+                missing = new List<GameObject>();
+
+            missing.Add(enemy);
+        }
+
+        if (missing == null)
+            return;
+
+        for (int i = 0; i < missing.Count; i++)
+            _factionRuleByEnemy.Remove(missing[i]);
+    }
+
+    private void AssignExistingFactionEnemiesToRules()
+    {
+        _factionRuleByEnemy.Clear();
+
+        if (!HasAnyFactionSpawnRules(factionSpawnRules))
+            return;
+
+        foreach (GameObject enemy in _alive)
+        {
+            if (enemy == null)
+                continue;
+
+            FactionUnitArchetype archetype = enemy.GetComponent<FactionUnitArchetype>();
+            if (archetype == null)
+                continue;
+
+            int ruleIndex = FindFirstRuleIndexForArchetype(archetype.Archetype);
+            if (ruleIndex >= 0)
+                _factionRuleByEnemy[enemy] = ruleIndex;
+        }
+    }
+
+    private int CountAliveForFactionRule(int ruleIndex)
+    {
+        int count = 0;
+
+        foreach (var pair in _factionRuleByEnemy)
+        {
+            if (pair.Key == null || pair.Value != ruleIndex)
+                continue;
+
+            count++;
+        }
+
+        return count;
+    }
+
+    private int FindFirstRuleIndexForArchetype(FactionUnitArchetypeType archetype)
+    {
+        if (factionSpawnRules == null)
+            return -1;
+
+        for (int i = 0; i < factionSpawnRules.Length; i++)
+        {
+            FactionSpawnRule rule = factionSpawnRules[i];
+            if (rule != null && rule.archetype == archetype)
+                return i;
+        }
+
+        return -1;
+    }
+
+    private bool HasAnyFactionSpawnRules(FactionSpawnRule[] rules)
+    {
+        if (rules == null || rules.Length == 0)
+            return false;
+
+        for (int i = 0; i < rules.Length; i++)
+        {
+            if (rules[i] != null && rules[i].maxAlive > 0)
+                return true;
+        }
+
+        return false;
+    }
+
+    private int GetFactionRuleTotalCap()
+    {
+        if (factionSpawnRules == null)
+            return 0;
+
+        int total = 0;
+        for (int i = 0; i < factionSpawnRules.Length; i++)
+        {
+            if (factionSpawnRules[i] != null)
+                total += Mathf.Max(0, factionSpawnRules[i].maxAlive);
+        }
+
+        return total;
+    }
+
+    private void RefreshSpawnPoints()
+    {
+        EnemySpawnPoint[] sceneSpawnPoints = FindObjectsOfType<EnemySpawnPoint>();
+
+        if (spawnPoints == null || spawnPoints.Length == 0)
+        {
+            spawnPoints = sceneSpawnPoints;
+            return;
+        }
+
+        List<EnemySpawnPoint> merged = new List<EnemySpawnPoint>();
+        for (int i = 0; i < spawnPoints.Length; i++)
+        {
+            if (spawnPoints[i] != null && !merged.Contains(spawnPoints[i]))
+                merged.Add(spawnPoints[i]);
+        }
+
+        for (int i = 0; i < sceneSpawnPoints.Length; i++)
+        {
+            if (sceneSpawnPoints[i] != null && !merged.Contains(sceneSpawnPoints[i]))
+                merged.Add(sceneSpawnPoints[i]);
+        }
+
+        spawnPoints = merged.ToArray();
     }
 
     private bool IsSpawnValid(

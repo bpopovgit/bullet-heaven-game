@@ -1115,31 +1115,121 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   runTimer: {fileID: 1051013084}
   respawnManager: {fileID: 2020060677}
+  useGeneratedFactionDefaults: 1
   stages:
   - startTimeSeconds: 0
-    maxAlive: 20
+    maxAlive: 8
     respawnDelay: 4
     fillImmediately: 1
     enemyPrefabs: []
     allowedSpawnRegions: 6
+    factionSpawnRules:
+    - archetype: 10
+      maxAlive: 7
+      prefabOverride: {fileID: 0}
+      allowedSpawnRegions: 31
+      rewardsEnabled: 1
+    - archetype: 11
+      maxAlive: 1
+      prefabOverride: {fileID: 0}
+      allowedSpawnRegions: 10
+      rewardsEnabled: 1
   - startTimeSeconds: 10
-    maxAlive: 20
+    maxAlive: 12
     respawnDelay: 2
     fillImmediately: 1
     enemyPrefabs: []
     allowedSpawnRegions: 10
+    factionSpawnRules:
+    - archetype: 10
+      maxAlive: 8
+      prefabOverride: {fileID: 0}
+      allowedSpawnRegions: 31
+      rewardsEnabled: 1
+    - archetype: 11
+      maxAlive: 2
+      prefabOverride: {fileID: 0}
+      allowedSpawnRegions: 10
+      rewardsEnabled: 1
+    - archetype: 8
+      maxAlive: 2
+      prefabOverride: {fileID: 0}
+      allowedSpawnRegions: 3
+      rewardsEnabled: 0
   - startTimeSeconds: 20
-    maxAlive: 20
+    maxAlive: 18
     respawnDelay: 1
     fillImmediately: 1
     enemyPrefabs: []
     allowedSpawnRegions: 15
+    factionSpawnRules:
+    - archetype: 10
+      maxAlive: 9
+      prefabOverride: {fileID: 0}
+      allowedSpawnRegions: 31
+      rewardsEnabled: 1
+    - archetype: 11
+      maxAlive: 2
+      prefabOverride: {fileID: 0}
+      allowedSpawnRegions: 10
+      rewardsEnabled: 1
+    - archetype: 8
+      maxAlive: 3
+      prefabOverride: {fileID: 0}
+      allowedSpawnRegions: 3
+      rewardsEnabled: 0
+    - archetype: 9
+      maxAlive: 1
+      prefabOverride: {fileID: 0}
+      allowedSpawnRegions: 2
+      rewardsEnabled: 0
+    - archetype: 6
+      maxAlive: 2
+      prefabOverride: {fileID: 0}
+      allowedSpawnRegions: 9
+      rewardsEnabled: 0
+    - archetype: 7
+      maxAlive: 1
+      prefabOverride: {fileID: 0}
+      allowedSpawnRegions: 8
+      rewardsEnabled: 0
   - startTimeSeconds: 180
-    maxAlive: 15
+    maxAlive: 24
     respawnDelay: 2.5
     fillImmediately: 1
     enemyPrefabs: []
     allowedSpawnRegions: 15
+    factionSpawnRules:
+    - archetype: 10
+      maxAlive: 10
+      prefabOverride: {fileID: 0}
+      allowedSpawnRegions: 31
+      rewardsEnabled: 1
+    - archetype: 11
+      maxAlive: 3
+      prefabOverride: {fileID: 0}
+      allowedSpawnRegions: 10
+      rewardsEnabled: 1
+    - archetype: 8
+      maxAlive: 4
+      prefabOverride: {fileID: 0}
+      allowedSpawnRegions: 3
+      rewardsEnabled: 0
+    - archetype: 9
+      maxAlive: 2
+      prefabOverride: {fileID: 0}
+      allowedSpawnRegions: 6
+      rewardsEnabled: 0
+    - archetype: 6
+      maxAlive: 3
+      prefabOverride: {fileID: 0}
+      allowedSpawnRegions: 9
+      rewardsEnabled: 0
+    - archetype: 7
+      maxAlive: 2
+      prefabOverride: {fileID: 0}
+      allowedSpawnRegions: 12
+      rewardsEnabled: 0
 --- !u!4 &375168384
 Transform:
   m_ObjectHideFlags: 0
