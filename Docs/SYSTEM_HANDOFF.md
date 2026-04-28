@@ -644,6 +644,29 @@ Each stage can define:
 - enemy prefab pool
 - allowed spawn regions
 
+#### `FactionSkirmishDirector.cs`
+
+Purpose:
+
+- runtime bootstrapper for the first visible Angel/Demon/Zombie battlefield test
+
+Responsibilities:
+
+- waits for `Game.unity`
+- spawns a small skirmish near the player after a short delay
+- tries to use generated starter prefabs from:
+  - `Resources/Prefabs/Factions/AngelTestUnit`
+  - `Resources/Prefabs/Factions/DemonTestUnit`
+  - `Resources/Prefabs/Factions/ZombieTestUnit`
+- falls back to generated placeholder actors when prefabs do not exist
+- gives spawned actors faction identity, health, movement, melee damage, physics, and status support
+
+Current intent:
+
+- Angels and Demons should visibly prefer fighting each other.
+- Zombies should attack whichever hostile actor is closest.
+- Humans should focus Zombies first.
+
 #### `GameAudio.cs`
 
 Purpose:
@@ -1127,6 +1150,7 @@ Responsibilities:
 - `FactionProjectile.cs`
 - `FriendlyAlly.cs`
 - `AllySquadSpawner.cs`
+- `FactionSkirmishDirector.cs`
 - `EnemyMovement.cs`
 - `RangedShooter.cs`
 - `EnemyMeleeDamage.cs`

@@ -31,6 +31,16 @@ Resources/Prefabs/Factions/HumanAlly
 
 If that prefab exists, the starting Human ally squad uses it. If it does not exist, the game falls back to generated runtime circles.
 
+`FactionSkirmishDirector` also automatically tries to load:
+
+```text
+Resources/Prefabs/Factions/AngelTestUnit
+Resources/Prefabs/Factions/DemonTestUnit
+Resources/Prefabs/Factions/ZombieTestUnit
+```
+
+Those prefabs are used for the starter faction skirmish near the player.
+
 These are still placeholder prefabs. Replace their sprites and tuning as the faction art/design becomes clearer.
 
 ## Adding a New Enemy Variant

@@ -29,6 +29,7 @@ This roadmap stays practical on purpose. It should track the next features that 
 - Faction-aware enemy targeting and damage routing.
 - Runtime Human ally squad that follows the player and shoots hostile targets.
 - Editor helper that generates starter Human, Angel, Demon, and Zombie faction prefabs.
+- Starter Angel/Demon/Zombie skirmish that makes faction aggro visible in-game.
 
 ## Highest-Value Next Features
 
@@ -216,7 +217,7 @@ Next boss-side growth:
 
 1. Generate the starter faction prefabs from the Unity `Tools` menu.
 2. Replace placeholder faction sprites with real or better temporary art.
-3. Add Angel and Demon test spawns and verify faction aggro.
+3. Tune or replace the generated starter faction prefabs.
 4. Add character selection data to the pre-run flow.
 5. Create the first visible talent-tree data structure.
 6. Add a two-map run handoff prototype.

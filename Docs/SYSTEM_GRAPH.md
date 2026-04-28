@@ -101,6 +101,13 @@ flowchart TD
     X --> E
     X --> Y["FactionProjectile"]
     Y --> O
+
+    Z["FactionSkirmishDirector"] --> ZA["Angel Test Units"]
+    Z --> ZB["Demon Test Units"]
+    Z --> ZC["Zombie Test Units"]
+    ZA --> B
+    ZB --> B
+    ZC --> B
 ```
 
 ## UI Ownership Graph

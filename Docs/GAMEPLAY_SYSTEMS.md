@@ -103,6 +103,33 @@ Starter faction prefabs can be generated from:
 Tools > Bullet Heaven > Factions > Create Starter Prefabs
 ```
 
+## Starter Faction Skirmish
+
+`FactionSkirmishDirector` currently spawns a small faction test fight shortly after `Game.unity` starts.
+
+Current starter skirmish:
+
+- two Angels near the upper-left of the player
+- two Demons near the upper-right of the player
+- three Zombies below the player
+
+The director tries to load these prefabs:
+
+```text
+Resources/Prefabs/Factions/AngelTestUnit
+Resources/Prefabs/Factions/DemonTestUnit
+Resources/Prefabs/Factions/ZombieTestUnit
+```
+
+If those prefabs do not exist, it creates generated placeholder actors.
+
+The goal is to make faction targeting visible:
+
+- Angels should prioritize Demons.
+- Demons should prioritize Angels.
+- Zombies should attack whatever hostile actor is closest.
+- Human allies and the player should care most about Zombies.
+
 ## Primary Weapons
 
 `PlayerShooting` reads:

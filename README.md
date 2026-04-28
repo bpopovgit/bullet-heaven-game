@@ -20,6 +20,7 @@ A Unity 2D top-down bullet-heaven project with elemental combat, pre-run loadout
 - faction identity foundation for Humans, Angels, Demons, Zombies, and Neutral actors
 - first-pass faction-aware targeting and damage routing
 - runtime Human ally squad that follows the player and shoots hostile targets
+- starter Angel/Demon/Zombie skirmish for visible faction aggro testing
 
 ## Current Gameplay Loop
 

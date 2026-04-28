@@ -70,6 +70,7 @@
     <Compile Include="Assets\Scripts\UIScripts\ScoreManager.cs" />
     <Compile Include="Assets\Scripts\Combat\WeaponDefinition.cs" />
     <Compile Include="Assets\Scripts\Pickups\PickupSpriteFactory.cs" />
+    <Compile Include="Assets\Scripts\GameSystems\FactionSkirmishDirector.cs" />
     <Compile Include="Assets\Scripts\GameSystems\RunLoadoutState.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_ExampleScript_01.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMPro_InstructionOverlay.cs" />
