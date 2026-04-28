@@ -2,7 +2,7 @@
 
 ## Creating Starter Faction Prefabs
 
-Use the editor helper when you want quick placeholder faction prefabs:
+Use the editor helper when you want faction prefabs based on the existing enemy prefab family:
 
 ```text
 Tools > Bullet Heaven > Factions > Create Starter Prefabs
@@ -12,12 +12,33 @@ This creates:
 
 ```text
 Assets/Resources/Prefabs/Factions/HumanAlly.prefab
+Assets/Resources/Prefabs/Factions/HumanAlly_Melee.prefab
+Assets/Resources/Prefabs/Factions/HumanAlly_Ranged.prefab
 Assets/Resources/Prefabs/Factions/AngelTestUnit.prefab
+Assets/Resources/Prefabs/Factions/Angel_Melee.prefab
+Assets/Resources/Prefabs/Factions/Angel_Ranged.prefab
 Assets/Resources/Prefabs/Factions/DemonTestUnit.prefab
+Assets/Resources/Prefabs/Factions/Demon_Melee.prefab
+Assets/Resources/Prefabs/Factions/Demon_Ranged.prefab
 Assets/Resources/Prefabs/Factions/ZombieTestUnit.prefab
+Assets/Resources/Prefabs/Factions/Zombie_Melee.prefab
+Assets/Resources/Prefabs/Factions/Zombie_Ranged.prefab
 ```
 
-It also creates simple marker sprites under:
+The helper clones from these source prefabs when available:
+
+```text
+Assets/Prefabs/Enemies/Melee/MeleeEnemy_Base.prefab
+Assets/Prefabs/Enemies/Ranged/RangedEnemy_Base.prefab
+Assets/Prefabs/Enemies/Melee/MeleeEnemy_Fire.prefab
+Assets/Prefabs/Enemies/Ranged/RangedEnemy_Fire.prefab
+Assets/Prefabs/Enemies/Melee/MeleeEnemy_Lightning.prefab
+Assets/Prefabs/Enemies/Ranged/RangedEnemy_Lightning.prefab
+Assets/Prefabs/Enemies/Melee/MeleeEnemy_Poison.prefab
+Assets/Prefabs/Enemies/Ranged/RangedEnemy_Poison.prefab
+```
+
+If a source prefab is missing, it falls back to simple marker sprites under:
 
 ```text
 Assets/Art/Sprites/Factions/
@@ -34,30 +55,42 @@ Keep this enabled while prototyping. Once real character art clearly communicate
 
 Generated starter prefabs now also receive `FactionUnitArchetype` tuning:
 
-- `HumanAlly`: `HumanSupport`
-- `AngelTestUnit`: `AngelMarksman`
-- `DemonTestUnit`: `DemonRaider`
-- `ZombieTestUnit`: `ZombieGrunt`
+- `HumanAlly`: `HumanRangedAlly`
+- `HumanAlly_Melee`: `HumanMeleeAlly`
+- `HumanAlly_Ranged`: `HumanRangedAlly`
+- `AngelTestUnit`: `AngelRanged`
+- `Angel_Melee`: `AngelMelee`
+- `Angel_Ranged`: `AngelRanged`
+- `DemonTestUnit`: `DemonMelee`
+- `Demon_Melee`: `DemonMelee`
+- `Demon_Ranged`: `DemonRanged`
+- `ZombieTestUnit`: `ZombieMelee`
+- `Zombie_Melee`: `ZombieMelee`
+- `Zombie_Ranged`: `ZombieRanged`
 
 If the prefabs already exist from an older generator run, the runtime spawners still apply the correct archetype when they spawn the unit. Re-run the tool when you want the prefab assets themselves to be refreshed with the latest component setup.
 
 `AllySquadSpawner` automatically tries to load:
 
 ```text
-Resources/Prefabs/Factions/HumanAlly
+Resources/Prefabs/Factions/HumanAlly_Melee
+Resources/Prefabs/Factions/HumanAlly_Ranged
 ```
 
-If that prefab exists, the starting Human ally squad uses it. If it does not exist, the game falls back to generated runtime circles.
+If those prefabs exist, the starting Human ally squad uses them. If they do not exist, the game falls back to the legacy `HumanAlly` prefab or generated runtime circles.
 
 `FactionSkirmishDirector` also automatically tries to load:
 
 ```text
-Resources/Prefabs/Factions/AngelTestUnit
-Resources/Prefabs/Factions/DemonTestUnit
-Resources/Prefabs/Factions/ZombieTestUnit
+Resources/Prefabs/Factions/Angel_Melee
+Resources/Prefabs/Factions/Angel_Ranged
+Resources/Prefabs/Factions/Demon_Melee
+Resources/Prefabs/Factions/Demon_Ranged
+Resources/Prefabs/Factions/Zombie_Melee
+Resources/Prefabs/Factions/Zombie_Ranged
 ```
 
-Those prefabs are used for the starter faction skirmish near the player.
+Those prefabs are used for the starter faction skirmish near the player. The older `AngelTestUnit`, `DemonTestUnit`, and `ZombieTestUnit` names remain as compatibility fallbacks.
 
 These are still placeholder prefabs. Replace their sprites and tuning as the faction art/design becomes clearer.
 

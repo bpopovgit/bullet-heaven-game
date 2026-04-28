@@ -28,21 +28,21 @@ This roadmap stays practical on purpose. It should track the next features that 
 - Faction identity foundation for Humans, Angels, Demons, Zombies, and Neutral actors.
 - Faction-aware enemy targeting and damage routing.
 - Faction visual badges for readable Human, Angel, Demon, and Zombie actors during prototyping.
-- Starter faction unit archetypes for Human support allies, Angel marksmen, Demon raiders, and Zombie grunts.
+- Starter faction unit archetypes for Human, Angel, Demon, and Zombie melee/ranged roles.
 - Runtime Human ally squad that follows the player and shoots hostile targets.
-- Editor helper that generates starter Human, Angel, Demon, and Zombie faction prefabs.
+- Editor helper that builds Human, Angel, Demon, and Zombie faction prefabs from the existing melee/ranged enemy prefabs.
 - Starter Angel/Demon/Zombie skirmish that makes faction aggro visible in-game.
 
 ## Highest-Value Next Features
 
 ### 1. Better Faction Art and Authored Prefabs
 
-The first code-level archetypes exist. The next content pass should replace placeholder shapes with authored prefabs for:
+The first code-level archetypes exist, and the generator can clone from the old enemy prefab family. The next content pass should replace placeholder shapes with authored prefabs for:
 
 - Human allies
-- Angel units
-- Demon units
-- Zombie units
+- Angel melee/ranged units
+- Demon melee/ranged units
+- Zombie melee/ranged units
 
 Each prefab should include:
 

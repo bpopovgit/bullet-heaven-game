@@ -7,6 +7,8 @@ public static class FactionStarterPrefabBuilder
 {
     private const string PrefabFolder = "Assets/Resources/Prefabs/Factions";
     private const string SpriteFolder = "Assets/Art/Sprites/Factions";
+    private const string MeleeSourceFolder = "Assets/Prefabs/Enemies/Melee";
+    private const string RangedSourceFolder = "Assets/Prefabs/Enemies/Ranged";
 
     [MenuItem("Tools/Bullet Heaven/Factions/Create Starter Prefabs")]
     public static void CreateStarterPrefabs()
@@ -22,10 +24,21 @@ public static class FactionStarterPrefabBuilder
         Sprite demonSprite = CreateCircleSpriteAsset("DemonTestUnit_Marker", new Color32(220, 55, 65, 255));
         Sprite zombieSprite = CreateCircleSpriteAsset("ZombieTestUnit_Marker", new Color32(115, 210, 80, 255));
 
-        CreateHumanAllyPrefab(humanSprite);
-        CreateFactionPrefab("AngelTestUnit", FactionUnitArchetypeType.AngelMarksman, angelSprite, rewardsEnabled: false);
-        CreateFactionPrefab("DemonTestUnit", FactionUnitArchetypeType.DemonRaider, demonSprite, rewardsEnabled: false);
-        CreateFactionPrefab("ZombieTestUnit", FactionUnitArchetypeType.ZombieGrunt, zombieSprite, rewardsEnabled: true);
+        CreateFactionPrefab("HumanAlly", FactionUnitArchetypeType.HumanRangedAlly, $"{RangedSourceFolder}/RangedEnemy_Base.prefab", humanSprite, rewardsEnabled: false);
+        CreateFactionPrefab("HumanAlly_Melee", FactionUnitArchetypeType.HumanMeleeAlly, $"{MeleeSourceFolder}/MeleeEnemy_Base.prefab", humanSprite, rewardsEnabled: false);
+        CreateFactionPrefab("HumanAlly_Ranged", FactionUnitArchetypeType.HumanRangedAlly, $"{RangedSourceFolder}/RangedEnemy_Base.prefab", humanSprite, rewardsEnabled: false);
+
+        CreateFactionPrefab("AngelTestUnit", FactionUnitArchetypeType.AngelRanged, $"{RangedSourceFolder}/RangedEnemy_Lightning.prefab", angelSprite, rewardsEnabled: false);
+        CreateFactionPrefab("Angel_Melee", FactionUnitArchetypeType.AngelMelee, $"{MeleeSourceFolder}/MeleeEnemy_Lightning.prefab", angelSprite, rewardsEnabled: false);
+        CreateFactionPrefab("Angel_Ranged", FactionUnitArchetypeType.AngelRanged, $"{RangedSourceFolder}/RangedEnemy_Lightning.prefab", angelSprite, rewardsEnabled: false);
+
+        CreateFactionPrefab("DemonTestUnit", FactionUnitArchetypeType.DemonMelee, $"{MeleeSourceFolder}/MeleeEnemy_Fire.prefab", demonSprite, rewardsEnabled: false);
+        CreateFactionPrefab("Demon_Melee", FactionUnitArchetypeType.DemonMelee, $"{MeleeSourceFolder}/MeleeEnemy_Fire.prefab", demonSprite, rewardsEnabled: false);
+        CreateFactionPrefab("Demon_Ranged", FactionUnitArchetypeType.DemonRanged, $"{RangedSourceFolder}/RangedEnemy_Fire.prefab", demonSprite, rewardsEnabled: false);
+
+        CreateFactionPrefab("ZombieTestUnit", FactionUnitArchetypeType.ZombieMelee, $"{MeleeSourceFolder}/MeleeEnemy_Poison.prefab", zombieSprite, rewardsEnabled: true);
+        CreateFactionPrefab("Zombie_Melee", FactionUnitArchetypeType.ZombieMelee, $"{MeleeSourceFolder}/MeleeEnemy_Poison.prefab", zombieSprite, rewardsEnabled: true);
+        CreateFactionPrefab("Zombie_Ranged", FactionUnitArchetypeType.ZombieRanged, $"{RangedSourceFolder}/RangedEnemy_Poison.prefab", zombieSprite, rewardsEnabled: true);
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
@@ -35,18 +48,44 @@ public static class FactionStarterPrefabBuilder
         Debug.Log("Created starter faction prefabs in Assets/Resources/Prefabs/Factions.");
     }
 
-    private static void CreateHumanAllyPrefab(Sprite sprite)
+    private static void CreateFactionPrefab(
+        string name,
+        FactionUnitArchetypeType archetype,
+        string sourcePrefabPath,
+        Sprite fallbackSprite,
+        bool rewardsEnabled)
     {
-        GameObject go = CreateBaseActor("HumanAlly", FactionType.Human, sprite);
-        FactionUnitArchetype.ApplyTo(go, FactionUnitArchetypeType.HumanSupport, rewardsEnabled: false);
-        SavePrefab(go, "HumanAlly");
-    }
-
-    private static void CreateFactionPrefab(string name, FactionUnitArchetypeType archetype, Sprite sprite, bool rewardsEnabled)
-    {
-        GameObject go = CreateBaseActor(name, GetFactionForArchetype(archetype), sprite);
+        GameObject go = CreateActorFromSourceOrFallback(name, FactionUnitArchetype.GetFaction(archetype), sourcePrefabPath, fallbackSprite);
         FactionUnitArchetype.ApplyTo(go, archetype, rewardsEnabled);
         SavePrefab(go, name);
+    }
+
+    private static GameObject CreateActorFromSourceOrFallback(
+        string name,
+        FactionType faction,
+        string sourcePrefabPath,
+        Sprite fallbackSprite)
+    {
+        GameObject sourcePrefab = AssetDatabase.LoadAssetAtPath<GameObject>(sourcePrefabPath);
+        if (sourcePrefab == null)
+        {
+            Debug.LogWarning($"Could not find source prefab at '{sourcePrefabPath}'. Creating marker fallback for {name}.");
+            return CreateBaseActor(name, faction, fallbackSprite);
+        }
+
+        GameObject go = PrefabUtility.InstantiatePrefab(sourcePrefab) as GameObject;
+        if (go == null)
+            go = Object.Instantiate(sourcePrefab);
+
+        if (PrefabUtility.IsPartOfPrefabInstance(go))
+            PrefabUtility.UnpackPrefabInstance(go, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
+
+        go.name = name;
+        go.transform.position = Vector3.zero;
+        go.transform.rotation = Quaternion.identity;
+
+        EnsureFactionBasics(go, faction, fallbackSprite);
+        return go;
     }
 
     private static GameObject CreateBaseActor(
@@ -78,20 +117,28 @@ public static class FactionStarterPrefabBuilder
         return go;
     }
 
-    private static FactionType GetFactionForArchetype(FactionUnitArchetypeType archetype)
+    private static void EnsureFactionBasics(GameObject go, FactionType faction, Sprite fallbackSprite)
     {
-        switch (archetype)
+        if (go == null)
+            return;
+
+        SpriteRenderer renderer = go.GetComponent<SpriteRenderer>();
+        if (renderer == null)
         {
-            case FactionUnitArchetypeType.HumanSupport:
-                return FactionType.Human;
-            case FactionUnitArchetypeType.AngelMarksman:
-                return FactionType.Angel;
-            case FactionUnitArchetypeType.DemonRaider:
-                return FactionType.Demon;
-            case FactionUnitArchetypeType.ZombieGrunt:
-            default:
-                return FactionType.Zombie;
+            renderer = go.AddComponent<SpriteRenderer>();
+            renderer.sprite = fallbackSprite;
+            renderer.sortingLayerName = "Actors";
+            renderer.sortingOrder = 2;
         }
+
+        FactionMember factionMember = go.GetComponent<FactionMember>();
+        if (factionMember == null)
+            factionMember = go.AddComponent<FactionMember>();
+
+        factionMember.Configure(faction);
+
+        if (go.GetComponent<FactionVisualIdentity>() == null)
+            go.AddComponent<FactionVisualIdentity>();
     }
 
     private static void SavePrefab(GameObject go, string fileName)

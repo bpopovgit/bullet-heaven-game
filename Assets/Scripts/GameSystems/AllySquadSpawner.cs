@@ -10,14 +10,23 @@ public class AllySquadSpawner : MonoBehaviour
     [Header("Runtime Test Squad")]
     [SerializeField] private bool spawnSquad = true;
     [SerializeField] private int allyCount = 3;
+    [SerializeField] private int meleeAllyCount = 1;
     [SerializeField] private int allyHealth = 55;
     [SerializeField] private float formationRadius = 1.45f;
     [SerializeField] private Color allyColor = new Color(0.2f, 0.78f, 1f, 1f);
+
+    [Header("Prefab Overrides")]
     [SerializeField] private GameObject allyPrefab;
-    [SerializeField] private string allyPrefabResourcePath = "Prefabs/Factions/HumanAlly";
+    [SerializeField] private GameObject meleeAllyPrefab;
+    [SerializeField] private GameObject rangedAllyPrefab;
+    [SerializeField] private string allyPrefabResourcePath = "Prefabs/Factions/HumanAlly_Ranged";
+    [SerializeField] private string meleeAllyPrefabResourcePath = "Prefabs/Factions/HumanAlly_Melee";
+    [SerializeField] private string rangedAllyPrefabResourcePath = "Prefabs/Factions/HumanAlly_Ranged";
 
     private bool _spawned;
-    private GameObject _cachedAllyPrefab;
+    private GameObject _cachedLegacyAllyPrefab;
+    private GameObject _cachedMeleeAllyPrefab;
+    private GameObject _cachedRangedAllyPrefab;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Bootstrap()
@@ -78,7 +87,10 @@ public class AllySquadSpawner : MonoBehaviour
         for (int i = 0; i < count; i++)
         {
             Vector2 offset = GetFormationOffset(i, count);
-            GameObject ally = CreateAlly(player.position + (Vector3)offset, i + 1);
+            FactionUnitArchetypeType archetype = i < Mathf.Clamp(meleeAllyCount, 0, count)
+                ? FactionUnitArchetypeType.HumanMeleeAlly
+                : FactionUnitArchetypeType.HumanRangedAlly;
+            GameObject ally = CreateAlly(player.position + (Vector3)offset, i + 1, archetype);
 
             FriendlyAlly friendlyAlly = ally.GetComponent<FriendlyAlly>();
             if (friendlyAlly != null)
@@ -88,19 +100,19 @@ public class AllySquadSpawner : MonoBehaviour
         Debug.Log($"Spawned {count} Human allies near the player.");
     }
 
-    private GameObject CreateAlly(Vector3 position, int index)
+    private GameObject CreateAlly(Vector3 position, int index, FactionUnitArchetypeType archetype)
     {
-        GameObject prefab = GetAllyPrefab();
+        GameObject prefab = GetAllyPrefab(archetype);
         if (prefab != null)
-            return CreatePrefabAlly(prefab, position, index);
+            return CreatePrefabAlly(prefab, position, index, archetype);
 
-        GameObject ally = new GameObject($"Human Ally {index}");
+        GameObject ally = new GameObject($"{archetype} {index}");
         ally.transform.position = position;
         ally.transform.localScale = Vector3.one * 0.72f;
 
         PickupSpriteFactory.AddDefaultRenderer(ally, allyColor, sortingOrder: 2);
 
-        FactionUnitArchetype.ApplyTo(ally, FactionUnitArchetypeType.HumanSupport, rewardsEnabled: false);
+        FactionUnitArchetype.ApplyTo(ally, archetype, rewardsEnabled: false);
 
         EnemyHealth health = ally.GetComponent<EnemyHealth>();
         if (health != null)
@@ -109,35 +121,53 @@ public class AllySquadSpawner : MonoBehaviour
         return ally;
     }
 
-    private GameObject CreatePrefabAlly(GameObject prefab, Vector3 position, int index)
+    private GameObject CreatePrefabAlly(GameObject prefab, Vector3 position, int index, FactionUnitArchetypeType archetype)
     {
         GameObject ally = Instantiate(prefab, position, Quaternion.identity);
-        ally.name = $"Human Ally {index}";
-        EnsureAllySetup(ally);
+        ally.name = $"{archetype} {index}";
+        EnsureAllySetup(ally, archetype);
         return ally;
     }
 
-    private GameObject GetAllyPrefab()
+    private GameObject GetAllyPrefab(FactionUnitArchetypeType archetype)
+    {
+        if (archetype == FactionUnitArchetypeType.HumanMeleeAlly)
+        {
+            if (meleeAllyPrefab != null)
+                return meleeAllyPrefab;
+
+            if (_cachedMeleeAllyPrefab == null && !string.IsNullOrWhiteSpace(meleeAllyPrefabResourcePath))
+                _cachedMeleeAllyPrefab = Resources.Load<GameObject>(meleeAllyPrefabResourcePath);
+
+            return _cachedMeleeAllyPrefab != null ? _cachedMeleeAllyPrefab : GetLegacyAllyPrefab();
+        }
+
+        if (rangedAllyPrefab != null)
+            return rangedAllyPrefab;
+
+        if (_cachedRangedAllyPrefab == null && !string.IsNullOrWhiteSpace(rangedAllyPrefabResourcePath))
+            _cachedRangedAllyPrefab = Resources.Load<GameObject>(rangedAllyPrefabResourcePath);
+
+        return _cachedRangedAllyPrefab != null ? _cachedRangedAllyPrefab : GetLegacyAllyPrefab();
+    }
+
+    private GameObject GetLegacyAllyPrefab()
     {
         if (allyPrefab != null)
             return allyPrefab;
 
-        if (_cachedAllyPrefab != null)
-            return _cachedAllyPrefab;
+        if (_cachedLegacyAllyPrefab == null && !string.IsNullOrWhiteSpace(allyPrefabResourcePath))
+            _cachedLegacyAllyPrefab = Resources.Load<GameObject>(allyPrefabResourcePath);
 
-        if (string.IsNullOrWhiteSpace(allyPrefabResourcePath))
-            return null;
-
-        _cachedAllyPrefab = Resources.Load<GameObject>(allyPrefabResourcePath);
-        return _cachedAllyPrefab;
+        return _cachedLegacyAllyPrefab;
     }
 
-    private void EnsureAllySetup(GameObject ally)
+    private void EnsureAllySetup(GameObject ally, FactionUnitArchetypeType archetype)
     {
         if (ally == null)
             return;
 
-        FactionUnitArchetype.ApplyTo(ally, FactionUnitArchetypeType.HumanSupport, rewardsEnabled: false);
+        FactionUnitArchetype.ApplyTo(ally, archetype, rewardsEnabled: false);
 
         EnemyHealth health = ally.GetComponent<EnemyHealth>();
         if (health != null)

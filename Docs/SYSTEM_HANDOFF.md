@@ -178,7 +178,7 @@ When debugging, remember that not every important object exists in the hierarchy
 8. Player fights enemies, levels up, uses active skills, and progresses into elite and boss events.
 9. Combat actors carry `FactionMember`, so targeting and damage can support Humans, Angels, Demons, Zombies, and allied units.
 10. `FactionVisualIdentity` adds readable faction badges above prototype actors so faction roles stay visible before final art exists.
-11. `FactionUnitArchetype` applies first-pass role tuning for Human support allies, Angel marksmen, Demon raiders, and Zombie grunts.
+11. `FactionUnitArchetype` applies first-pass role tuning for Human, Angel, Demon, and Zombie melee/ranged units.
 
 ## Script Responsibility Map
 
@@ -335,7 +335,9 @@ Responsibilities:
 
 Current use:
 
-- `AngelMarksman` starter archetype
+- `AngelRanged`
+- `DemonRanged`
+- `ZombieRanged`
 
 #### `FactionUnitArchetype.cs`
 
@@ -352,6 +354,14 @@ Responsibilities:
   - `AngelMarksman`
   - `DemonRaider`
   - `ZombieGrunt`
+  - `HumanMeleeAlly`
+  - `HumanRangedAlly`
+  - `AngelMelee`
+  - `AngelRanged`
+  - `DemonMelee`
+  - `DemonRanged`
+  - `ZombieMelee`
+  - `ZombieRanged`
 - disable incompatible old components when reusing older starter prefabs
 
 #### `FriendlyAlly.cs`
@@ -607,13 +617,13 @@ Responsibilities:
 - waits for `Game.unity`
 - finds the player
 - spawns a small Human squad near the player
-- auto-loads `Resources/Prefabs/Factions/HumanAlly` when available
+- auto-loads `Resources/Prefabs/Factions/HumanAlly_Melee` and `Resources/Prefabs/Factions/HumanAlly_Ranged` when available
 - falls back to generated runtime placeholder allies when no prefab exists
 - gives each ally:
   - `FactionMember` set to `Human`
   - `EnemyHealth` with rewards disabled
-  - `FriendlyAlly`
-  - simple generated placeholder visuals and physics
+  - `FactionUnitArchetype`
+  - melee or ranged ally behavior
 
 #### `FactionStarterPrefabBuilder.cs`
 
@@ -626,22 +636,39 @@ Responsibilities:
 - adds a Unity menu item:
   - `Tools > Bullet Heaven > Factions > Create Starter Prefabs`
 - creates placeholder faction marker sprites
-- creates starter prefabs under:
+- clones from the existing enemy prefab family when available
+- creates faction prefabs under:
   - `Assets/Resources/Prefabs/Factions/`
 
 Generated prefabs:
 
 - `HumanAlly`
+- `HumanAlly_Melee`
+- `HumanAlly_Ranged`
 - `AngelTestUnit`
+- `Angel_Melee`
+- `Angel_Ranged`
 - `DemonTestUnit`
+- `Demon_Melee`
+- `Demon_Ranged`
 - `ZombieTestUnit`
+- `Zombie_Melee`
+- `Zombie_Ranged`
 
 Current generated archetypes:
 
-- `HumanAlly`: `HumanSupport`
-- `AngelTestUnit`: `AngelMarksman`
-- `DemonTestUnit`: `DemonRaider`
-- `ZombieTestUnit`: `ZombieGrunt`
+- `HumanAlly`: `HumanRangedAlly`
+- `HumanAlly_Melee`: `HumanMeleeAlly`
+- `HumanAlly_Ranged`: `HumanRangedAlly`
+- `AngelTestUnit`: `AngelRanged`
+- `Angel_Melee`: `AngelMelee`
+- `Angel_Ranged`: `AngelRanged`
+- `DemonTestUnit`: `DemonMelee`
+- `Demon_Melee`: `DemonMelee`
+- `Demon_Ranged`: `DemonRanged`
+- `ZombieTestUnit`: `ZombieMelee`
+- `Zombie_Melee`: `ZombieMelee`
+- `Zombie_Ranged`: `ZombieRanged`
 
 #### `BossSpawnDirector.cs`
 
@@ -715,9 +742,12 @@ Responsibilities:
 - waits for `Game.unity`
 - spawns a small skirmish near the player after a short delay
 - tries to use generated starter prefabs from:
-  - `Resources/Prefabs/Factions/AngelTestUnit`
-  - `Resources/Prefabs/Factions/DemonTestUnit`
-  - `Resources/Prefabs/Factions/ZombieTestUnit`
+  - `Resources/Prefabs/Factions/Angel_Melee`
+  - `Resources/Prefabs/Factions/Angel_Ranged`
+  - `Resources/Prefabs/Factions/Demon_Melee`
+  - `Resources/Prefabs/Factions/Demon_Ranged`
+  - `Resources/Prefabs/Factions/Zombie_Melee`
+  - `Resources/Prefabs/Factions/Zombie_Ranged`
 - falls back to generated placeholder actors when prefabs do not exist
 - gives spawned actors faction identity, health, movement, melee damage, physics, and status support
 

@@ -76,7 +76,7 @@ flowchart TD
     B --> BA["FactionVisualIdentity"]
     BA --> BB["Readable H / A / D / Z Badge"]
     A --> BC["FactionUnitArchetype"]
-    BC --> BD["Human Support / Angel Marksman / Demon Raider / Zombie Grunt"]
+    BC --> BD["Faction Melee / Ranged Roles"]
 
     D["EnemyMovement"] --> E["FactionTargeting"]
     F["RangedShooter"] --> E

@@ -10,18 +10,24 @@ public class FactionSkirmishDirector : MonoBehaviour
     [Header("Starter Skirmish")]
     [SerializeField] private bool spawnStarterSkirmish = true;
     [SerializeField] private float spawnDelay = 1.25f;
-    [SerializeField] private int angelsToSpawn = 2;
-    [SerializeField] private int demonsToSpawn = 2;
-    [SerializeField] private int zombiesToSpawn = 3;
+    [SerializeField] private int angelMeleeToSpawn = 1;
+    [SerializeField] private int angelRangedToSpawn = 1;
+    [SerializeField] private int demonMeleeToSpawn = 1;
+    [SerializeField] private int demonRangedToSpawn = 1;
+    [SerializeField] private int zombieMeleeToSpawn = 2;
+    [SerializeField] private int zombieRangedToSpawn = 1;
     [SerializeField] private float groupDistanceFromPlayer = 6f;
     [SerializeField] private float unitSpacing = 1.15f;
     [SerializeField] private bool rewardsEnabled = false;
 
     private bool _spawned;
     private float _readyTime;
-    private GameObject _angelPrefab;
-    private GameObject _demonPrefab;
-    private GameObject _zombiePrefab;
+    private GameObject _angelMeleePrefab;
+    private GameObject _angelRangedPrefab;
+    private GameObject _demonMeleePrefab;
+    private GameObject _demonRangedPrefab;
+    private GameObject _zombieMeleePrefab;
+    private GameObject _zombieRangedPrefab;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Bootstrap()
@@ -82,30 +88,37 @@ public class FactionSkirmishDirector : MonoBehaviour
     private void SpawnSkirmish(Transform player)
     {
         Vector3 center = player.position;
+        Vector3 angelAnchor = center + new Vector3(-groupDistanceFromPlayer, groupDistanceFromPlayer, 0f);
+        Vector3 demonAnchor = center + new Vector3(groupDistanceFromPlayer, groupDistanceFromPlayer, 0f);
+        Vector3 zombieAnchor = center + new Vector3(0f, -groupDistanceFromPlayer, 0f);
 
-        SpawnGroup(FactionType.Angel, angelsToSpawn, center + new Vector3(-groupDistanceFromPlayer, groupDistanceFromPlayer, 0f));
-        SpawnGroup(FactionType.Demon, demonsToSpawn, center + new Vector3(groupDistanceFromPlayer, groupDistanceFromPlayer, 0f));
-        SpawnGroup(FactionType.Zombie, zombiesToSpawn, center + new Vector3(0f, -groupDistanceFromPlayer, 0f));
+        SpawnGroup(FactionUnitArchetypeType.AngelMelee, angelMeleeToSpawn, angelAnchor + new Vector3(0.45f, -0.4f, 0f));
+        SpawnGroup(FactionUnitArchetypeType.AngelRanged, angelRangedToSpawn, angelAnchor + new Vector3(-0.65f, 0.45f, 0f));
+        SpawnGroup(FactionUnitArchetypeType.DemonMelee, demonMeleeToSpawn, demonAnchor + new Vector3(-0.45f, -0.4f, 0f));
+        SpawnGroup(FactionUnitArchetypeType.DemonRanged, demonRangedToSpawn, demonAnchor + new Vector3(0.65f, 0.45f, 0f));
+        SpawnGroup(FactionUnitArchetypeType.ZombieMelee, zombieMeleeToSpawn, zombieAnchor);
+        SpawnGroup(FactionUnitArchetypeType.ZombieRanged, zombieRangedToSpawn, zombieAnchor + new Vector3(0f, -0.7f, 0f));
 
         Debug.Log("Faction starter skirmish spawned.");
     }
 
-    private void SpawnGroup(FactionType faction, int count, Vector3 anchor)
+    private void SpawnGroup(FactionUnitArchetypeType archetype, int count, Vector3 anchor)
     {
         int safeCount = Mathf.Clamp(count, 0, 8);
 
         for (int i = 0; i < safeCount; i++)
         {
             Vector3 offset = GetGroupOffset(i, safeCount);
-            GameObject actor = CreateFactionActor(faction, anchor + offset, i + 1);
-            EnsureFactionActorSetup(actor, faction);
+            GameObject actor = CreateFactionActor(archetype, anchor + offset, i + 1);
+            EnsureFactionActorSetup(actor, archetype);
         }
     }
 
-    private GameObject CreateFactionActor(FactionType faction, Vector3 position, int index)
+    private GameObject CreateFactionActor(FactionUnitArchetypeType archetype, Vector3 position, int index)
     {
-        GameObject prefab = GetPrefab(faction);
-        string displayName = $"{faction} Test Unit {index}";
+        FactionType faction = FactionUnitArchetype.GetFaction(archetype);
+        GameObject prefab = GetPrefab(archetype);
+        string displayName = $"{archetype} {index}";
 
         if (prefab != null)
         {
@@ -121,36 +134,50 @@ public class FactionSkirmishDirector : MonoBehaviour
         return fallback;
     }
 
-    private void EnsureFactionActorSetup(GameObject actor, FactionType faction)
+    private void EnsureFactionActorSetup(GameObject actor, FactionUnitArchetypeType archetype)
     {
         if (actor == null)
             return;
 
-        FactionUnitArchetype.ApplyTo(actor, GetArchetype(faction), rewardsEnabled);
+        FactionUnitArchetype.ApplyTo(actor, archetype, rewardsEnabled);
     }
 
-    private GameObject GetPrefab(FactionType faction)
+    private GameObject GetPrefab(FactionUnitArchetypeType archetype)
     {
-        switch (faction)
+        switch (archetype)
         {
-            case FactionType.Angel:
-                if (_angelPrefab == null)
-                    _angelPrefab = Resources.Load<GameObject>("Prefabs/Factions/AngelTestUnit");
-                return _angelPrefab;
-
-            case FactionType.Demon:
-                if (_demonPrefab == null)
-                    _demonPrefab = Resources.Load<GameObject>("Prefabs/Factions/DemonTestUnit");
-                return _demonPrefab;
-
-            case FactionType.Zombie:
-                if (_zombiePrefab == null)
-                    _zombiePrefab = Resources.Load<GameObject>("Prefabs/Factions/ZombieTestUnit");
-                return _zombiePrefab;
+            case FactionUnitArchetypeType.AngelMelee:
+                return LoadCachedPrefab(ref _angelMeleePrefab, "Prefabs/Factions/Angel_Melee", "Prefabs/Factions/AngelTestUnit");
+            case FactionUnitArchetypeType.AngelMarksman:
+            case FactionUnitArchetypeType.AngelRanged:
+                return LoadCachedPrefab(ref _angelRangedPrefab, "Prefabs/Factions/Angel_Ranged", "Prefabs/Factions/AngelTestUnit");
+            case FactionUnitArchetypeType.DemonRaider:
+            case FactionUnitArchetypeType.DemonMelee:
+                return LoadCachedPrefab(ref _demonMeleePrefab, "Prefabs/Factions/Demon_Melee", "Prefabs/Factions/DemonTestUnit");
+            case FactionUnitArchetypeType.DemonRanged:
+                return LoadCachedPrefab(ref _demonRangedPrefab, "Prefabs/Factions/Demon_Ranged", "Prefabs/Factions/DemonTestUnit");
+            case FactionUnitArchetypeType.ZombieGrunt:
+            case FactionUnitArchetypeType.ZombieMelee:
+                return LoadCachedPrefab(ref _zombieMeleePrefab, "Prefabs/Factions/Zombie_Melee", "Prefabs/Factions/ZombieTestUnit");
+            case FactionUnitArchetypeType.ZombieRanged:
+                return LoadCachedPrefab(ref _zombieRangedPrefab, "Prefabs/Factions/Zombie_Ranged", "Prefabs/Factions/ZombieTestUnit");
 
             default:
                 return null;
         }
+    }
+
+    private GameObject LoadCachedPrefab(ref GameObject cache, string resourcePath, string fallbackResourcePath)
+    {
+        if (cache != null)
+            return cache;
+
+        cache = Resources.Load<GameObject>(resourcePath);
+
+        if (cache == null && !string.IsNullOrWhiteSpace(fallbackResourcePath))
+            cache = Resources.Load<GameObject>(fallbackResourcePath);
+
+        return cache;
     }
 
     private Vector3 GetGroupOffset(int index, int count)
@@ -179,23 +206,6 @@ public class FactionSkirmishDirector : MonoBehaviour
                 return new Color(0.45f, 0.85f, 0.28f, 1f);
             default:
                 return Color.white;
-        }
-    }
-
-    private FactionUnitArchetypeType GetArchetype(FactionType faction)
-    {
-        switch (faction)
-        {
-            case FactionType.Angel:
-                return FactionUnitArchetypeType.AngelMarksman;
-            case FactionType.Demon:
-                return FactionUnitArchetypeType.DemonRaider;
-            case FactionType.Zombie:
-                return FactionUnitArchetypeType.ZombieGrunt;
-            case FactionType.Human:
-                return FactionUnitArchetypeType.HumanSupport;
-            default:
-                return FactionUnitArchetypeType.ZombieGrunt;
         }
     }
 }

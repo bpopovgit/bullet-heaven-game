@@ -94,14 +94,15 @@ This is the foundation for:
 Current behavior:
 
 - spawns three Human allies near the player
-- uses `Resources/Prefabs/Factions/HumanAlly` when that prefab exists
+- uses `Resources/Prefabs/Factions/HumanAlly_Melee` and `Resources/Prefabs/Factions/HumanAlly_Ranged` when those prefabs exist
 - falls back to generated placeholder circles when no prefab exists
 - allies follow the player in a loose formation
 - allies use `FriendlyAlly` to search for hostile faction targets
 - allies fire simple physical `FactionProjectile` shots
 - zombies can target and damage allies
 - ally deaths do not award score, XP, or pickups
-- allies use the `HumanSupport` faction archetype
+- ranged allies use `HumanRangedAlly`
+- melee allies use `HumanMeleeAlly`
 
 This is placeholder content, but it proves the intended battlefield direction:
 
@@ -117,27 +118,52 @@ Tools > Bullet Heaven > Factions > Create Starter Prefabs
 
 ## Faction Unit Archetypes
 
-`FactionUnitArchetype` gives starter faction actors an explicit gameplay role instead of only a faction label.
+`FactionUnitArchetype` gives faction actors an explicit gameplay role instead of only a faction label.
 
 Current archetypes:
 
 - `HumanSupport`
+  - legacy alias for `HumanRangedAlly`
+- `HumanRangedAlly`
   - Human ally
   - follows the player
   - shoots hostile targets from range
   - does not award score, XP, or pickups on death
+- `HumanMeleeAlly`
+  - Human ally
+  - melee combatant built from the old melee enemy prefab family
+  - chases hostile targets and fights on the player's side
 - `AngelMarksman`
+  - legacy alias for `AngelRanged`
+- `AngelRanged`
   - Angel ranged unit
   - keeps distance
   - fires lightning-colored faction projectiles
   - naturally prioritizes Demons through `FactionTargeting`
+- `AngelMelee`
+  - Angel melee unit
+  - applies lightning/shock contact pressure
+  - naturally prioritizes Demons
 - `DemonRaider`
+  - legacy alias for `DemonMelee`
+- `DemonMelee`
   - fast Demon melee unit
   - burns targets on contact
   - naturally prioritizes Angels through `FactionTargeting`
+- `DemonRanged`
+  - Demon ranged unit
+  - throws fire/burn projectiles
+  - naturally prioritizes Angels
 - `ZombieGrunt`
+  - legacy alias for `ZombieMelee`
+- `ZombieMelee`
   - slower melee swarm unit
   - lower health and damage
+  - applies light poison pressure
+  - attacks the closest hostile target when priority is equal
+- `ZombieRanged`
+  - slower ranged spitter
+  - applies poison projectiles
   - attacks the closest hostile target when priority is equal
 
 `FactionRangedAttacker` supports non-player ranged faction units such as Angel marksmen. It uses `FactionProjectile`, so its shots respect the same faction-safe damage routing as other combat.
@@ -148,19 +174,22 @@ Current archetypes:
 
 Current starter skirmish:
 
-- two Angels near the upper-left of the player
-- two Demons near the upper-right of the player
-- three Zombies below the player
+- Angel melee and ranged units near the upper-left of the player
+- Demon melee and ranged units near the upper-right of the player
+- Zombie melee and ranged units below the player
 
 The director tries to load these prefabs:
 
 ```text
-Resources/Prefabs/Factions/AngelTestUnit
-Resources/Prefabs/Factions/DemonTestUnit
-Resources/Prefabs/Factions/ZombieTestUnit
+Resources/Prefabs/Factions/Angel_Melee
+Resources/Prefabs/Factions/Angel_Ranged
+Resources/Prefabs/Factions/Demon_Melee
+Resources/Prefabs/Factions/Demon_Ranged
+Resources/Prefabs/Factions/Zombie_Melee
+Resources/Prefabs/Factions/Zombie_Ranged
 ```
 
-If those prefabs do not exist, it creates generated placeholder actors.
+If those prefabs do not exist, it tries the older `AngelTestUnit`, `DemonTestUnit`, and `ZombieTestUnit` fallbacks before creating generated placeholder actors.
 
 The goal is to make faction targeting visible:
 
