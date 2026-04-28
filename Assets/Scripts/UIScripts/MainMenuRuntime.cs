@@ -77,18 +77,17 @@ public class MainMenuRuntime : MonoBehaviour
         CreateBackground(_root);
         CreateTitle(_root);
         CreateSubtitle(_root);
-        CreateFooter(_root);
 
-        _modeSelectionPanel = CreatePanel("ModeSelectionPanel", _root, new Vector2(0f, -12f), new Vector2(860f, 500f));
+        _modeSelectionPanel = CreatePanel("ModeSelectionPanel", _root, new Vector2(0f, -34f), new Vector2(900f, 540f));
         BuildModeSelectionPanel(_modeSelectionPanel);
 
-        _singlePlayerPanel = CreatePanel("SinglePlayerPanel", _root, new Vector2(0f, -16f), new Vector2(900f, 540f));
+        _singlePlayerPanel = CreatePanel("SinglePlayerPanel", _root, new Vector2(0f, -32f), new Vector2(920f, 560f));
         BuildSinglePlayerPanel(_singlePlayerPanel);
 
-        _multiplayerPanel = CreatePanel("MultiplayerPanel", _root, new Vector2(0f, -18f), new Vector2(860f, 430f));
+        _multiplayerPanel = CreatePanel("MultiplayerPanel", _root, new Vector2(0f, -30f), new Vector2(880f, 460f));
         BuildMultiplayerPanel(_multiplayerPanel);
 
-        _loadoutPanel = CreatePanel("LoadoutPanel", _root, new Vector2(0f, -24f), new Vector2(980f, 560f));
+        _loadoutPanel = CreatePanel("LoadoutPanel", _root, new Vector2(0f, -28f), new Vector2(1000f, 600f));
         BuildLoadoutPanel(_loadoutPanel);
     }
 
@@ -164,7 +163,7 @@ public class MainMenuRuntime : MonoBehaviour
         subtitleObject.transform.SetParent(parent, false);
 
         TextMeshProUGUI text = subtitleObject.AddComponent<TextMeshProUGUI>();
-        text.text = "Survive the swarm. Defeat the dragon. Build-breaking loadouts are on the way.";
+        text.text = "Choose your mode, shape a loadout, and enter the faction war.";
         text.fontSize = 18f;
         text.alignment = TextAlignmentOptions.Center;
         text.enableWordWrapping = true;
@@ -174,7 +173,7 @@ public class MainMenuRuntime : MonoBehaviour
         rect.anchorMin = new Vector2(0.5f, 0.5f);
         rect.anchorMax = new Vector2(0.5f, 0.5f);
         rect.pivot = new Vector2(0.5f, 0.5f);
-        rect.anchoredPosition = new Vector2(0f, 248f);
+        rect.anchoredPosition = new Vector2(0f, 254f);
         rect.sizeDelta = new Vector2(900f, 62f);
     }
 
@@ -213,27 +212,27 @@ public class MainMenuRuntime : MonoBehaviour
 
     private void BuildModeSelectionPanel(RectTransform panel)
     {
-        CreatePanelTitle(panel, "Choose Mode", new Vector2(0f, 170f));
-        CreatePanelBody(panel, "Step into a solo run now, or leave room for party adventures later. Clean, readable choices first. Extra systems can grow around them.", new Vector2(0f, 130f), 700f);
-        CreateDivider(panel, new Vector2(0f, 88f), 640f);
+        CreatePanelTitle(panel, "Choose Mode", new Vector2(0f, 188f));
+        CreatePanelBody(panel, "Step into a solo run now, or leave room for party adventures later. Clean choices first; bigger systems can grow around them.", new Vector2(0f, 148f), 700f);
+        CreateDivider(panel, new Vector2(0f, 102f), 640f);
 
-        CreateButton(panel, "Single Player", new Vector2(0f, 26f), new Vector2(420f, 64f), AccentColor, true, ShowSinglePlayerSetup, string.Empty);
-        CreateButton(panel, "Multiplayer", new Vector2(0f, -56f), new Vector2(420f, 56f), PlaceholderArcane, true, ShowMultiplayerSetup, "Soon");
+        CreateButton(panel, "Single Player", new Vector2(0f, 32f), new Vector2(440f, 64f), AccentColor, true, ShowSinglePlayerSetup, string.Empty);
+        CreateButton(panel, "Multiplayer", new Vector2(0f, -48f), new Vector2(440f, 56f), PlaceholderArcane, true, ShowMultiplayerSetup, "Soon");
 
-        CreateSectionLabel(panel, "Adventurer's Desk", new Vector2(0f, -120f));
-        CreateButton(panel, "Settings", new Vector2(-220f, -170f), new Vector2(180f, 46f), UtilityButtonColor, false, null, string.Empty);
-        CreateButton(panel, "Sound", new Vector2(0f, -170f), new Vector2(180f, 46f), PlaceholderWar, false, null, string.Empty);
-        CreateButton(panel, "Profile", new Vector2(220f, -170f), new Vector2(180f, 46f), PlaceholderRanger, false, null, string.Empty);
-        CreateButton(panel, "Quit", new Vector2(0f, -242f), new Vector2(220f, 48f), SecondaryButtonColor, true, QuitGame, string.Empty);
+        CreateSectionLabel(panel, "Camp Desk", new Vector2(0f, -110f));
+        CreateButton(panel, "Settings", new Vector2(-240f, -160f), new Vector2(190f, 48f), UtilityButtonColor, false, null, string.Empty);
+        CreateButton(panel, "Sound", new Vector2(0f, -160f), new Vector2(190f, 48f), PlaceholderWar, false, null, string.Empty);
+        CreateButton(panel, "Profile", new Vector2(240f, -160f), new Vector2(190f, 48f), PlaceholderRanger, false, null, string.Empty);
+        CreateButton(panel, "Quit", new Vector2(0f, -230f), new Vector2(240f, 50f), SecondaryButtonColor, true, QuitGame, string.Empty);
 
-        CreateHintLabel(panel, "Loadout comes after mode selection, so Single Player and Multiplayer can each grow into their own flavor of adventure.", new Vector2(0f, -300f), 720f);
+        CreateHintLabel(panel, "Loadouts come after mode selection, so each mode can grow into its own flavor of adventure.", new Vector2(0f, -292f), 760f);
     }
 
     private void BuildSinglePlayerPanel(RectTransform panel)
     {
-        CreatePanelTitle(panel, "Single Player Setup", new Vector2(0f, 176f));
-        CreatePanelBody(panel, "Shape the run before the first enemy shows up. Your opening kit, route, and pace should feel chosen rather than accidental.", new Vector2(0f, 136f), 720f);
-        CreateDivider(panel, new Vector2(0f, 94f), 680f);
+        CreatePanelTitle(panel, "Single Player Setup", new Vector2(0f, 184f));
+        CreatePanelBody(panel, "Shape the run before the first enemy shows up. Your opening kit, route, and pace should feel chosen rather than accidental.", new Vector2(0f, 142f), 720f);
+        CreateDivider(panel, new Vector2(0f, 98f), 680f);
 
         CreateSectionLabel(panel, "Run Setup", new Vector2(0f, 48f));
         CreateButton(panel, "Loadout", new Vector2(-240f, -6f), new Vector2(220f, 52f), PlaceholderArcane, true, ShowLoadoutSetup, string.Empty);
@@ -241,9 +240,9 @@ public class MainMenuRuntime : MonoBehaviour
         CreateButton(panel, "Difficulty", new Vector2(240f, -6f), new Vector2(220f, 52f), PlaceholderWar, false, null, "Soon");
 
         _singlePlayerLoadoutSummaryText = CreateHintLabel(panel, string.Empty, new Vector2(0f, -72f), 720f);
-        CreateButton(panel, "Start Run", new Vector2(0f, -150f), new Vector2(320f, 60f), AccentColor, true, LoadGameplayScene, string.Empty);
-        CreateButton(panel, "Back", new Vector2(0f, -226f), new Vector2(220f, 48f), SecondaryButtonColor, true, ShowModeSelection, string.Empty);
-        CreateHintLabel(panel, "Your selected loadout carries straight into the run. Press Q in combat to unleash the starting bomb you've prepared here.", new Vector2(0f, -290f), 720f);
+        CreateButton(panel, "Start Run", new Vector2(0f, -146f), new Vector2(320f, 60f), AccentColor, true, LoadGameplayScene, string.Empty);
+        CreateButton(panel, "Back", new Vector2(0f, -220f), new Vector2(220f, 48f), SecondaryButtonColor, true, ShowModeSelection, string.Empty);
+        CreateHintLabel(panel, "Your selected loadout carries straight into the run. Press Q for your bomb and E for your active skill.", new Vector2(0f, -282f), 720f);
     }
 
     private void BuildMultiplayerPanel(RectTransform panel)
@@ -260,18 +259,18 @@ public class MainMenuRuntime : MonoBehaviour
 
     private void BuildLoadoutPanel(RectTransform panel)
     {
-        CreatePanelTitle(panel, "Starting Loadout", new Vector2(0f, 188f));
-        CreatePanelBody(panel, "Choose the weapon, bomb skill, and passive that define your first steps into danger. This should feel like preparing a kit, not flipping random toggles.", new Vector2(0f, 148f), 760f);
-        CreateDivider(panel, new Vector2(0f, 108f), 720f);
-        _loadoutHeaderSummaryText = CreateHintLabel(panel, string.Empty, new Vector2(0f, 84f), 760f);
+        CreatePanelTitle(panel, "Starting Loadout", new Vector2(0f, 204f));
+        CreatePanelBody(panel, "Choose the weapon, bomb skill, active skill, and passive that define your first steps into danger.", new Vector2(0f, 164f), 760f);
+        CreateDivider(panel, new Vector2(0f, 120f), 720f);
+        _loadoutHeaderSummaryText = CreateHintLabel(panel, string.Empty, new Vector2(0f, 94f), 760f);
 
-        _weaponChoiceText = CreateChoiceBlock(panel, "Weapon", new Vector2(0f, 8f), CycleWeaponBackward, CycleWeaponForward, out _weaponDescriptionText);
-        _bombChoiceText = CreateChoiceBlock(panel, "Bomb Skill", new Vector2(0f, -94f), CycleBombBackward, CycleBombForward, out _bombDescriptionText);
-        _skillChoiceText = CreateChoiceBlock(panel, "Active Skill", new Vector2(0f, -196f), CycleSkillBackward, CycleSkillForward, out _skillDescriptionText);
-        _passiveChoiceText = CreateChoiceBlock(panel, "Passive", new Vector2(0f, -298f), CyclePassiveBackward, CyclePassiveForward, out _passiveDescriptionText);
+        _weaponChoiceText = CreateChoiceBlock(panel, "Weapon", new Vector2(0f, 18f), CycleWeaponBackward, CycleWeaponForward, out _weaponDescriptionText);
+        _bombChoiceText = CreateChoiceBlock(panel, "Bomb Skill", new Vector2(0f, -82f), CycleBombBackward, CycleBombForward, out _bombDescriptionText);
+        _skillChoiceText = CreateChoiceBlock(panel, "Active Skill", new Vector2(0f, -182f), CycleSkillBackward, CycleSkillForward, out _skillDescriptionText);
+        _passiveChoiceText = CreateChoiceBlock(panel, "Passive", new Vector2(0f, -282f), CyclePassiveBackward, CyclePassiveForward, out _passiveDescriptionText);
 
-        CreateButton(panel, "Back to Setup", new Vector2(0f, -390f), new Vector2(260f, 50f), SecondaryButtonColor, true, ShowSinglePlayerSetup, string.Empty);
-        CreateHintLabel(panel, "These choices stay active until you change them here again. The next step is expanding the weapon, bomb, and skill families so every loadout feels more distinct.", new Vector2(0f, -458f), 760f);
+        CreateButton(panel, "Back to Setup", new Vector2(0f, -374f), new Vector2(260f, 50f), SecondaryButtonColor, true, ShowSinglePlayerSetup, string.Empty);
+        CreateHintLabel(panel, "These choices stay active until you change them here again. More weapon, bomb, and skill families can plug into this screen later.", new Vector2(0f, -436f), 760f);
     }
 
     private static void CreatePanelTitle(Transform parent, string label, Vector2 anchoredPosition)
@@ -469,6 +468,8 @@ public class MainMenuRuntime : MonoBehaviour
         text.text = label;
         text.fontSize = size.y >= 60f ? 26f : (size.y >= 54f ? 22f : 18f);
         text.alignment = TextAlignmentOptions.Center;
+        text.enableWordWrapping = false;
+        text.overflowMode = TextOverflowModes.Ellipsis;
         text.color = interactable ? Color.white : new Color(0.97f, 0.97f, 0.99f, 1f);
 
         RectTransform labelRect = labelObject.GetComponent<RectTransform>();
