@@ -28,6 +28,7 @@ This roadmap stays practical on purpose. It should track the next features that 
 - Faction identity foundation for Humans, Angels, Demons, Zombies, and Neutral actors.
 - Faction-aware enemy targeting and damage routing.
 - Runtime Human ally squad that follows the player and shoots hostile targets.
+- Editor helper that generates starter Human, Angel, Demon, and Zombie faction prefabs.
 
 ## Highest-Value Next Features
 
@@ -213,8 +214,8 @@ Next boss-side growth:
 
 ## Suggested Immediate Implementation Order
 
-1. Create authored Human, Angel, Demon, and Zombie test prefabs.
-2. Replace the runtime ally circles with an optional Human ally prefab.
+1. Generate the starter faction prefabs from the Unity `Tools` menu.
+2. Replace placeholder faction sprites with real or better temporary art.
 3. Add Angel and Demon test spawns and verify faction aggro.
 4. Add character selection data to the pre-run flow.
 5. Create the first visible talent-tree data structure.

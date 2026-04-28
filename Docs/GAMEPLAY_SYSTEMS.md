@@ -83,6 +83,8 @@ This is the foundation for:
 Current behavior:
 
 - spawns three Human allies near the player
+- uses `Resources/Prefabs/Factions/HumanAlly` when that prefab exists
+- falls back to generated placeholder circles when no prefab exists
 - allies follow the player in a loose formation
 - allies use `FriendlyAlly` to search for hostile faction targets
 - allies fire simple physical `FactionProjectile` shots
@@ -94,6 +96,12 @@ This is placeholder content, but it proves the intended battlefield direction:
 - the player is no longer the only meaningful combat target
 - friendly units can exist on the map
 - enemies can split attention naturally through faction targeting
+
+Starter faction prefabs can be generated from:
+
+```text
+Tools > Bullet Heaven > Factions > Create Starter Prefabs
+```
 
 ## Primary Weapons
 

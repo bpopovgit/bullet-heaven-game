@@ -554,11 +554,34 @@ Responsibilities:
 - waits for `Game.unity`
 - finds the player
 - spawns a small Human squad near the player
+- auto-loads `Resources/Prefabs/Factions/HumanAlly` when available
+- falls back to generated runtime placeholder allies when no prefab exists
 - gives each ally:
   - `FactionMember` set to `Human`
   - `EnemyHealth` with rewards disabled
   - `FriendlyAlly`
   - simple generated placeholder visuals and physics
+
+#### `FactionStarterPrefabBuilder.cs`
+
+Purpose:
+
+- editor-only helper for creating starter faction prefabs
+
+Responsibilities:
+
+- adds a Unity menu item:
+  - `Tools > Bullet Heaven > Factions > Create Starter Prefabs`
+- creates placeholder faction marker sprites
+- creates starter prefabs under:
+  - `Assets/Resources/Prefabs/Factions/`
+
+Generated prefabs:
+
+- `HumanAlly`
+- `AngelTestUnit`
+- `DemonTestUnit`
+- `ZombieTestUnit`
 
 #### `BossSpawnDirector.cs`
 

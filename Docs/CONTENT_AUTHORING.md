@@ -1,5 +1,38 @@
 # Content Authoring
 
+## Creating Starter Faction Prefabs
+
+Use the editor helper when you want quick placeholder faction prefabs:
+
+```text
+Tools > Bullet Heaven > Factions > Create Starter Prefabs
+```
+
+This creates:
+
+```text
+Assets/Resources/Prefabs/Factions/HumanAlly.prefab
+Assets/Resources/Prefabs/Factions/AngelTestUnit.prefab
+Assets/Resources/Prefabs/Factions/DemonTestUnit.prefab
+Assets/Resources/Prefabs/Factions/ZombieTestUnit.prefab
+```
+
+It also creates simple marker sprites under:
+
+```text
+Assets/Art/Sprites/Factions/
+```
+
+`AllySquadSpawner` automatically tries to load:
+
+```text
+Resources/Prefabs/Factions/HumanAlly
+```
+
+If that prefab exists, the starting Human ally squad uses it. If it does not exist, the game falls back to generated runtime circles.
+
+These are still placeholder prefabs. Replace their sprites and tuning as the faction art/design becomes clearer.
+
 ## Adding a New Enemy Variant
 
 1. Duplicate an existing enemy prefab from:
