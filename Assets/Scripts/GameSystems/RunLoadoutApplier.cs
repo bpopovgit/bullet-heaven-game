@@ -69,7 +69,7 @@ public class RunLoadoutApplier : MonoBehaviour
         if (RunAnnouncementUI.Instance != null)
         {
             RunAnnouncementUI.Instance.ShowMessage(
-                $"{RunLoadoutState.GetWeaponName(RunLoadoutState.WeaponChoice)} | {RunLoadoutState.GetBombName(RunLoadoutState.BombChoice)}\n{RunLoadoutState.GetSkillName(RunLoadoutState.SkillChoice)} | {RunLoadoutState.GetPassiveName(RunLoadoutState.PassiveChoice)}",
+                $"{RunLoadoutState.GetCharacterName(RunLoadoutState.CharacterChoice)}\n{RunLoadoutState.GetWeaponName(RunLoadoutState.WeaponChoice)} | {RunLoadoutState.GetBombName(RunLoadoutState.BombChoice)} | {RunLoadoutState.GetSkillName(RunLoadoutState.SkillChoice)}",
                 4f);
             _announcementShown = true;
         }
@@ -80,7 +80,10 @@ public class RunLoadoutApplier : MonoBehaviour
         PlayerShooting shooting = player.GetComponent<PlayerShooting>();
         PlayerStats stats = player.GetComponent<PlayerStats>();
         PlayerHealth health = player.GetComponent<PlayerHealth>();
+        string characterSummary;
         string passiveSummary;
+
+        ApplyCharacter(player, stats, health, out characterSummary);
 
         if (shooting != null)
             ApplyWeaponPreset(shooting);
@@ -103,7 +106,36 @@ public class RunLoadoutApplier : MonoBehaviour
         skill.Configure(RunLoadoutState.SkillChoice);
 
         Debug.Log($"LOADOUT APPLIED: {RunLoadoutState.BuildSummary()}");
+        Debug.Log($"CHARACTER APPLIED: {characterSummary}");
         Debug.Log($"PASSIVE APPLIED: {passiveSummary}");
+    }
+
+    private static void ApplyCharacter(GameObject player, PlayerStats stats, PlayerHealth health, out string characterSummary)
+    {
+        PlayableCharacterChoice choice = RunLoadoutState.CharacterChoice;
+        FactionMember.Ensure(player, FactionType.Human);
+        FactionVisualIdentity.Ensure(player);
+
+        int maxHpBonus = RunLoadoutState.GetCharacterMaxHpBonus(choice);
+        if (health != null && maxHpBonus > 0)
+            health.IncreaseMaxHP(maxHpBonus, true);
+
+        if (stats != null)
+        {
+            stats.AddMoveSpeedPercent(RunLoadoutState.GetCharacterMoveSpeedBonus(choice));
+            stats.AddFireRatePercent(RunLoadoutState.GetCharacterFireRateBonus(choice));
+            stats.AddDamagePercent(RunLoadoutState.GetCharacterDamageBonus(choice));
+            stats.AddPickupRadius(RunLoadoutState.GetCharacterPickupRadiusBonus(choice));
+        }
+
+        SpriteRenderer renderer = player.GetComponent<SpriteRenderer>();
+        if (renderer == null)
+            renderer = player.GetComponentInChildren<SpriteRenderer>();
+
+        if (renderer != null)
+            renderer.color = RunLoadoutState.GetCharacterTint(choice);
+
+        characterSummary = $"{RunLoadoutState.GetCharacterName(choice)} ({RunLoadoutState.GetCharacterStatsSummary(choice)})";
     }
 
     private static void ApplyWeaponPreset(PlayerShooting shooting)

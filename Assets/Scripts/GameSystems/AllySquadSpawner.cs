@@ -9,6 +9,7 @@ public class AllySquadSpawner : MonoBehaviour
 
     [Header("Runtime Test Squad")]
     [SerializeField] private bool spawnSquad = true;
+    [SerializeField] private bool useSelectedCharacterSquad = true;
     [SerializeField] private int allyCount = 3;
     [SerializeField] private int meleeAllyCount = 1;
     [SerializeField] private int allyHealth = 55;
@@ -80,14 +81,19 @@ public class AllySquadSpawner : MonoBehaviour
 
     private void SpawnSquad(Transform player)
     {
-        int count = Mathf.Clamp(allyCount, 0, 8);
+        int meleeCount = GetMeleeAllyCount();
+        int rangedCount = GetRangedAllyCount();
+        int count = Mathf.Clamp(meleeCount + rangedCount, 0, 8);
         if (count <= 0)
             return;
 
+        meleeCount = Mathf.Clamp(meleeCount, 0, count);
+        float radius = GetFormationRadius();
+
         for (int i = 0; i < count; i++)
         {
-            Vector2 offset = GetFormationOffset(i, count);
-            FactionUnitArchetypeType archetype = i < Mathf.Clamp(meleeAllyCount, 0, count)
+            Vector2 offset = GetFormationOffset(i, count, radius);
+            FactionUnitArchetypeType archetype = i < meleeCount
                 ? FactionUnitArchetypeType.HumanMeleeAlly
                 : FactionUnitArchetypeType.HumanRangedAlly;
             GameObject ally = CreateAlly(player.position + (Vector3)offset, i + 1, archetype);
@@ -97,7 +103,7 @@ public class AllySquadSpawner : MonoBehaviour
                 friendlyAlly.Configure(player, offset);
         }
 
-        Debug.Log($"Spawned {count} Human allies near the player.");
+        Debug.Log($"Spawned {count} Human allies near {RunLoadoutState.GetCharacterName(RunLoadoutState.CharacterChoice)}.");
     }
 
     private GameObject CreateAlly(Vector3 position, int index, FactionUnitArchetypeType archetype)
@@ -110,7 +116,7 @@ public class AllySquadSpawner : MonoBehaviour
         ally.transform.position = position;
         ally.transform.localScale = Vector3.one * 0.72f;
 
-        PickupSpriteFactory.AddDefaultRenderer(ally, allyColor, sortingOrder: 2);
+        PickupSpriteFactory.AddDefaultRenderer(ally, GetAllyColor(), sortingOrder: 2);
 
         FactionUnitArchetype.ApplyTo(ally, archetype, rewardsEnabled: false);
 
@@ -174,16 +180,48 @@ public class AllySquadSpawner : MonoBehaviour
             health.ConfigureHealth(allyHealth);
     }
 
-    private Vector2 GetFormationOffset(int index, int count)
+    private int GetMeleeAllyCount()
+    {
+        if (!useSelectedCharacterSquad)
+            return Mathf.Clamp(meleeAllyCount, 0, 8);
+
+        return RunLoadoutState.GetCharacterMeleeAllyCount(RunLoadoutState.CharacterChoice);
+    }
+
+    private int GetRangedAllyCount()
+    {
+        if (!useSelectedCharacterSquad)
+            return Mathf.Clamp(allyCount - meleeAllyCount, 0, 8);
+
+        return RunLoadoutState.GetCharacterRangedAllyCount(RunLoadoutState.CharacterChoice);
+    }
+
+    private float GetFormationRadius()
+    {
+        if (!useSelectedCharacterSquad)
+            return formationRadius;
+
+        return RunLoadoutState.GetCharacterFormationRadius(RunLoadoutState.CharacterChoice);
+    }
+
+    private Color GetAllyColor()
+    {
+        if (!useSelectedCharacterSquad)
+            return allyColor;
+
+        return RunLoadoutState.GetCharacterTint(RunLoadoutState.CharacterChoice);
+    }
+
+    private Vector2 GetFormationOffset(int index, int count, float radius)
     {
         if (count == 1)
-            return Vector2.down * formationRadius;
+            return Vector2.down * radius;
 
         float startAngle = 210f;
         float endAngle = 330f;
         float t = count <= 1 ? 0.5f : index / (float)(count - 1);
         float angle = Mathf.Lerp(startAngle, endAngle, t) * Mathf.Deg2Rad;
 
-        return new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * formationRadius;
+        return new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
     }
 }

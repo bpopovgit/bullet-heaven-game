@@ -31,12 +31,25 @@ public enum StartingPassiveChoice
     Overclock
 }
 
+public enum PlayableCharacterChoice
+{
+    HumanVanguard,
+    HumanRanger,
+    HumanArcanist
+}
+
 public static class RunLoadoutState
 {
+    public static PlayableCharacterChoice CharacterChoice { get; private set; } = PlayableCharacterChoice.HumanVanguard;
     public static StartingWeaponChoice WeaponChoice { get; private set; } = StartingWeaponChoice.EmberRepeater;
     public static StartingBombChoice BombChoice { get; private set; } = StartingBombChoice.FragBomb;
     public static StartingSkillChoice SkillChoice { get; private set; } = StartingSkillChoice.MagneticPulse;
     public static StartingPassiveChoice PassiveChoice { get; private set; } = StartingPassiveChoice.Vitality;
+
+    public static void CycleCharacter(int delta)
+    {
+        CharacterChoice = CycleEnum(CharacterChoice, delta);
+    }
 
     public static void CycleWeapon(int delta)
     {
@@ -56,6 +69,170 @@ public static class RunLoadoutState
     public static void CyclePassive(int delta)
     {
         PassiveChoice = CycleEnum(PassiveChoice, delta);
+    }
+
+    public static string GetCharacterName(PlayableCharacterChoice choice)
+    {
+        switch (choice)
+        {
+            case PlayableCharacterChoice.HumanRanger:
+                return "Waywatch Ranger";
+            case PlayableCharacterChoice.HumanArcanist:
+                return "Runebound Arcanist";
+            case PlayableCharacterChoice.HumanVanguard:
+            default:
+                return "Iron Vanguard";
+        }
+    }
+
+    public static string GetCharacterRole(PlayableCharacterChoice choice)
+    {
+        switch (choice)
+        {
+            case PlayableCharacterChoice.HumanRanger:
+                return "Human Skirmisher";
+            case PlayableCharacterChoice.HumanArcanist:
+                return "Human Spellfighter";
+            case PlayableCharacterChoice.HumanVanguard:
+            default:
+                return "Human Frontliner";
+        }
+    }
+
+    public static string GetCharacterDescription(PlayableCharacterChoice choice)
+    {
+        switch (choice)
+        {
+            case PlayableCharacterChoice.HumanRanger:
+                return "A fast survivor who opens with more ranged support and better tempo.";
+            case PlayableCharacterChoice.HumanArcanist:
+                return "A fragile caster who starts with stronger damage and a tighter escort.";
+            case PlayableCharacterChoice.HumanVanguard:
+            default:
+                return "A durable leader who drops into the fight with a balanced guard squad.";
+        }
+    }
+
+    public static string GetCharacterStatsSummary(PlayableCharacterChoice choice)
+    {
+        switch (choice)
+        {
+            case PlayableCharacterChoice.HumanRanger:
+                return "+10 max HP  |  +12% move speed  |  +10% fire rate";
+            case PlayableCharacterChoice.HumanArcanist:
+                return "+15% damage  |  +1 pickup radius  |  lighter ally screen";
+            case PlayableCharacterChoice.HumanVanguard:
+            default:
+                return "+35 max HP  |  +8% damage  |  stronger front line";
+        }
+    }
+
+    public static string GetCharacterAllySummary(PlayableCharacterChoice choice)
+    {
+        return $"Starts with {GetCharacterMeleeAllyCount(choice)} melee allies and {GetCharacterRangedAllyCount(choice)} ranged allies.";
+    }
+
+    public static int GetCharacterMaxHpBonus(PlayableCharacterChoice choice)
+    {
+        switch (choice)
+        {
+            case PlayableCharacterChoice.HumanRanger:
+                return 10;
+            case PlayableCharacterChoice.HumanArcanist:
+                return 0;
+            case PlayableCharacterChoice.HumanVanguard:
+            default:
+                return 35;
+        }
+    }
+
+    public static float GetCharacterMoveSpeedBonus(PlayableCharacterChoice choice)
+    {
+        return choice == PlayableCharacterChoice.HumanRanger ? 0.12f : 0f;
+    }
+
+    public static float GetCharacterFireRateBonus(PlayableCharacterChoice choice)
+    {
+        return choice == PlayableCharacterChoice.HumanRanger ? 0.1f : 0f;
+    }
+
+    public static float GetCharacterDamageBonus(PlayableCharacterChoice choice)
+    {
+        switch (choice)
+        {
+            case PlayableCharacterChoice.HumanArcanist:
+                return 0.15f;
+            case PlayableCharacterChoice.HumanVanguard:
+                return 0.08f;
+            default:
+                return 0f;
+        }
+    }
+
+    public static float GetCharacterPickupRadiusBonus(PlayableCharacterChoice choice)
+    {
+        return choice == PlayableCharacterChoice.HumanArcanist ? 1f : 0f;
+    }
+
+    public static int GetCharacterMeleeAllyCount(PlayableCharacterChoice choice)
+    {
+        switch (choice)
+        {
+            case PlayableCharacterChoice.HumanRanger:
+                return 1;
+            case PlayableCharacterChoice.HumanArcanist:
+                return 0;
+            case PlayableCharacterChoice.HumanVanguard:
+            default:
+                return 2;
+        }
+    }
+
+    public static int GetCharacterRangedAllyCount(PlayableCharacterChoice choice)
+    {
+        switch (choice)
+        {
+            case PlayableCharacterChoice.HumanRanger:
+                return 3;
+            case PlayableCharacterChoice.HumanArcanist:
+                return 2;
+            case PlayableCharacterChoice.HumanVanguard:
+            default:
+                return 2;
+        }
+    }
+
+    public static float GetCharacterFormationRadius(PlayableCharacterChoice choice)
+    {
+        switch (choice)
+        {
+            case PlayableCharacterChoice.HumanRanger:
+                return 1.75f;
+            case PlayableCharacterChoice.HumanArcanist:
+                return 1.35f;
+            case PlayableCharacterChoice.HumanVanguard:
+            default:
+                return 1.55f;
+        }
+    }
+
+    public static Color GetCharacterTint(PlayableCharacterChoice choice)
+    {
+        switch (choice)
+        {
+            case PlayableCharacterChoice.HumanRanger:
+                return new Color(0.72f, 1f, 0.44f, 1f);
+            case PlayableCharacterChoice.HumanArcanist:
+                return new Color(0.58f, 0.86f, 1f, 1f);
+            case PlayableCharacterChoice.HumanVanguard:
+            default:
+                return new Color(1f, 0.92f, 0.62f, 1f);
+        }
+    }
+
+    public static string BuildCharacterSummary()
+    {
+        return $"{GetCharacterName(CharacterChoice)}  |  {GetCharacterStatsSummary(CharacterChoice)}";
     }
 
     public static string GetWeaponName(StartingWeaponChoice choice)
@@ -191,6 +368,11 @@ public static class RunLoadoutState
     }
 
     public static string BuildSummary()
+    {
+        return $"Character: {GetCharacterName(CharacterChoice)}  |  Weapon: {GetWeaponName(WeaponChoice)}  |  Bomb: {GetBombName(BombChoice)}  |  Skill: {GetSkillName(SkillChoice)}  |  Passive: {GetPassiveName(PassiveChoice)}";
+    }
+
+    public static string BuildKitSummary()
     {
         return $"Weapon: {GetWeaponName(WeaponChoice)}  |  Bomb: {GetBombName(BombChoice)}  |  Skill: {GetSkillName(SkillChoice)}  |  Passive: {GetPassiveName(PassiveChoice)}";
     }
