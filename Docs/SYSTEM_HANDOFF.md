@@ -178,6 +178,7 @@ When debugging, remember that not every important object exists in the hierarchy
 8. Player fights enemies, levels up, uses active skills, and progresses into elite and boss events.
 9. Combat actors carry `FactionMember`, so targeting and damage can support Humans, Angels, Demons, Zombies, and allied units.
 10. `FactionVisualIdentity` adds readable faction badges above prototype actors so faction roles stay visible before final art exists.
+11. `FactionUnitArchetype` applies first-pass role tuning for Human support allies, Angel marksmen, Demon raiders, and Zombie grunts.
 
 ## Script Responsibility Map
 
@@ -318,6 +319,40 @@ Responsibilities:
 - stores the firing actor's `FactionMember`
 - applies damage only when `FactionCombat` says the target is hostile
 - destroys itself after impact or lifetime expiry
+
+#### `FactionRangedAttacker.cs`
+
+Purpose:
+
+- ranged combat behavior for non-player faction units
+
+Responsibilities:
+
+- pick hostile targets using `FactionTargeting`
+- maintain a preferred firing range
+- spawn `FactionProjectile` shots
+- respect `StatusReceiver` slow/freeze/stun effects
+
+Current use:
+
+- `AngelMarksman` starter archetype
+
+#### `FactionUnitArchetype.cs`
+
+Purpose:
+
+- first-pass role/tuning layer for faction actors
+
+Responsibilities:
+
+- assign the correct `FactionMember`
+- ensure health, physics, status, badge, and combat components exist
+- tune role-specific stats for:
+  - `HumanSupport`
+  - `AngelMarksman`
+  - `DemonRaider`
+  - `ZombieGrunt`
+- disable incompatible old components when reusing older starter prefabs
 
 #### `FriendlyAlly.cs`
 
@@ -600,6 +635,13 @@ Generated prefabs:
 - `AngelTestUnit`
 - `DemonTestUnit`
 - `ZombieTestUnit`
+
+Current generated archetypes:
+
+- `HumanAlly`: `HumanSupport`
+- `AngelTestUnit`: `AngelMarksman`
+- `DemonTestUnit`: `DemonRaider`
+- `ZombieTestUnit`: `ZombieGrunt`
 
 #### `BossSpawnDirector.cs`
 
@@ -1164,6 +1206,8 @@ Responsibilities:
 - `FactionType.cs`
 - `FactionMember.cs`
 - `FactionVisualIdentity.cs`
+- `FactionUnitArchetype.cs`
+- `FactionRangedAttacker.cs`
 - `FactionTargeting.cs`
 - `FactionCombat.cs`
 - `FactionProjectile.cs`

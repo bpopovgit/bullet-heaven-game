@@ -20,6 +20,7 @@ A Unity 2D top-down bullet-heaven project with elemental combat, pre-run loadout
 - faction identity foundation for Humans, Angels, Demons, Zombies, and Neutral actors
 - first-pass faction-aware targeting and damage routing
 - readable faction badges for Human, Angel, Demon, and Zombie prototype actors
+- starter faction archetypes for Human support allies, Angel marksmen, Demon raiders, and Zombie grunts
 - runtime Human ally squad that follows the player and shoots hostile targets
 - starter Angel/Demon/Zombie skirmish for visible faction aggro testing
 

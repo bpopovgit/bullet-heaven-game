@@ -31,6 +31,22 @@ public class FriendlyAlly : MonoBehaviour
         _formationOffset = formationOffset;
     }
 
+    public void ConfigureCombat(
+        float moveSpeed,
+        float attackRange,
+        float fireCooldown,
+        int projectileDamage,
+        float projectileSpeed,
+        Color projectileColor)
+    {
+        this.moveSpeed = Mathf.Max(0f, moveSpeed);
+        this.attackRange = Mathf.Max(0.5f, attackRange);
+        this.fireCooldown = Mathf.Max(0.1f, fireCooldown);
+        this.projectileDamage = Mathf.Max(1, projectileDamage);
+        this.projectileSpeed = Mathf.Max(0.1f, projectileSpeed);
+        this.projectileColor = projectileColor;
+    }
+
     private void Awake()
     {
         _rb = GetComponent<Rigidbody2D>();

@@ -75,9 +75,12 @@ flowchart TD
     B --> C["FactionType"]
     B --> BA["FactionVisualIdentity"]
     BA --> BB["Readable H / A / D / Z Badge"]
+    A --> BC["FactionUnitArchetype"]
+    BC --> BD["Human Support / Angel Marksman / Demon Raider / Zombie Grunt"]
 
     D["EnemyMovement"] --> E["FactionTargeting"]
     F["RangedShooter"] --> E
+    FE["FactionRangedAttacker"] --> E
     E --> G["Best Hostile Target"]
 
     H["PlayerShooting"] --> I["BulletElemental"]
@@ -87,6 +90,8 @@ flowchart TD
 
     I --> O["FactionCombat"]
     J --> O
+    FE --> Y["FactionProjectile"]
+    Y --> O
     L --> O
     N --> O
 
@@ -185,5 +190,7 @@ flowchart TD
   - `FactionType`
   - `FactionMember`
   - `FactionVisualIdentity`
+  - `FactionUnitArchetype`
+  - `FactionRangedAttacker`
   - `FactionTargeting`
   - `FactionCombat`

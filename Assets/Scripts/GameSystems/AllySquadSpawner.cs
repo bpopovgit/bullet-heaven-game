@@ -10,7 +10,7 @@ public class AllySquadSpawner : MonoBehaviour
     [Header("Runtime Test Squad")]
     [SerializeField] private bool spawnSquad = true;
     [SerializeField] private int allyCount = 3;
-    [SerializeField] private int allyHealth = 45;
+    [SerializeField] private int allyHealth = 55;
     [SerializeField] private float formationRadius = 1.45f;
     [SerializeField] private Color allyColor = new Color(0.2f, 0.78f, 1f, 1f);
     [SerializeField] private GameObject allyPrefab;
@@ -100,24 +100,12 @@ public class AllySquadSpawner : MonoBehaviour
 
         PickupSpriteFactory.AddDefaultRenderer(ally, allyColor, sortingOrder: 2);
 
-        CircleCollider2D collider = ally.AddComponent<CircleCollider2D>();
-        collider.radius = 0.45f;
-        collider.isTrigger = false;
+        FactionUnitArchetype.ApplyTo(ally, FactionUnitArchetypeType.HumanSupport, rewardsEnabled: false);
 
-        Rigidbody2D rb = ally.AddComponent<Rigidbody2D>();
-        rb.gravityScale = 0f;
-        rb.freezeRotation = true;
-        rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+        EnemyHealth health = ally.GetComponent<EnemyHealth>();
+        if (health != null)
+            health.ConfigureHealth(allyHealth);
 
-        FactionMember faction = ally.AddComponent<FactionMember>();
-        faction.Configure(FactionType.Human);
-
-        EnemyHealth health = ally.AddComponent<EnemyHealth>();
-        health.ConfigureHealth(allyHealth);
-        health.SetRewardsEnabled(false);
-
-        FactionVisualIdentity.Ensure(ally);
-        ally.AddComponent<FriendlyAlly>();
         return ally;
     }
 
@@ -149,35 +137,11 @@ public class AllySquadSpawner : MonoBehaviour
         if (ally == null)
             return;
 
-        FactionMember faction = FactionMember.Ensure(ally, FactionType.Human);
-        faction.Configure(FactionType.Human);
-        FactionVisualIdentity.Ensure(ally);
+        FactionUnitArchetype.ApplyTo(ally, FactionUnitArchetypeType.HumanSupport, rewardsEnabled: false);
 
-        if (!ally.TryGetComponent<EnemyHealth>(out EnemyHealth health))
-            health = ally.AddComponent<EnemyHealth>();
-
-        health.ConfigureHealth(allyHealth);
-        health.SetRewardsEnabled(false);
-
-        if (!ally.TryGetComponent<StatusReceiver>(out _))
-            ally.AddComponent<StatusReceiver>();
-
-        if (!ally.TryGetComponent<Rigidbody2D>(out Rigidbody2D rb))
-            rb = ally.AddComponent<Rigidbody2D>();
-
-        rb.gravityScale = 0f;
-        rb.freezeRotation = true;
-        rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
-
-        if (!ally.TryGetComponent<Collider2D>(out _))
-        {
-            CircleCollider2D collider = ally.AddComponent<CircleCollider2D>();
-            collider.radius = 0.45f;
-            collider.isTrigger = false;
-        }
-
-        if (!ally.TryGetComponent<FriendlyAlly>(out _))
-            ally.AddComponent<FriendlyAlly>();
+        EnemyHealth health = ally.GetComponent<EnemyHealth>();
+        if (health != null)
+            health.ConfigureHealth(allyHealth);
     }
 
     private Vector2 GetFormationOffset(int index, int count)

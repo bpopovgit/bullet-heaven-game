@@ -60,6 +60,7 @@
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextSelector_A.cs" />
     <Compile Include="Assets\Scripts\UIScripts\BombCooldownUI.cs" />
     <Compile Include="Assets\Scripts\UIScripts\MainMenuRuntime.cs" />
+    <Compile Include="Assets\Scripts\Combat\FactionUnitArchetype.cs" />
     <Compile Include="Assets\Scripts\Combat\EnemyResistances.cs" />
     <Compile Include="Assets\Scripts\UIScripts\LevelUpManager.cs" />
     <Compile Include="Assets\Scripts\PlayerScripts\PlayerPickupCollector.cs" />
@@ -144,6 +145,7 @@
     <Compile Include="Assets\Scripts\GameSystems\GameAudio.cs" />
     <Compile Include="Assets\Scripts\Combat\StatusReceiver.cs" />
     <Compile Include="Assets\Scripts\Pickups\MagnetPickup.cs" />
+    <Compile Include="Assets\Scripts\Combat\FactionRangedAttacker.cs" />
     <Compile Include="Assets\Scripts\PlayerScripts\PlayerBombProjectile.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TextMeshProFloatingText.cs" />
     <Compile Include="Assets\Scripts\UIScripts\PlayerHealthUI.cs" />

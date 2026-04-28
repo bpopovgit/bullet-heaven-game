@@ -12,6 +12,13 @@ public class EnemyMovement : MonoBehaviour
     private FactionMember _faction;
     private float _nextTargetRefreshTime;
 
+    public void ConfigureMovement(float speed, float targetRefreshInterval = 0.25f, float maxTargetRange = 0f)
+    {
+        this.speed = Mathf.Max(0f, speed);
+        this.targetRefreshInterval = Mathf.Max(0.05f, targetRefreshInterval);
+        this.maxTargetRange = Mathf.Max(0f, maxTargetRange);
+    }
+
     private void Awake()
     {
         _status = GetComponent<StatusReceiver>();

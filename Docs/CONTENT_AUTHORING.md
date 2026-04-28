@@ -32,6 +32,15 @@ Generated faction prefabs include `FactionVisualIdentity`, which adds a small re
 
 Keep this enabled while prototyping. Once real character art clearly communicates faction at gameplay zoom, disable `Show Badge` on the prefab if the badge feels too busy.
 
+Generated starter prefabs now also receive `FactionUnitArchetype` tuning:
+
+- `HumanAlly`: `HumanSupport`
+- `AngelTestUnit`: `AngelMarksman`
+- `DemonTestUnit`: `DemonRaider`
+- `ZombieTestUnit`: `ZombieGrunt`
+
+If the prefabs already exist from an older generator run, the runtime spawners still apply the correct archetype when they spawn the unit. Re-run the tool when you want the prefab assets themselves to be refreshed with the latest component setup.
+
 `AllySquadSpawner` automatically tries to load:
 
 ```text

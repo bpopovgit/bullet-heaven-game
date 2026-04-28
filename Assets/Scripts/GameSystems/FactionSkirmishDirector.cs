@@ -126,38 +126,7 @@ public class FactionSkirmishDirector : MonoBehaviour
         if (actor == null)
             return;
 
-        FactionMember member = FactionMember.Ensure(actor, faction);
-        member.Configure(faction);
-        FactionVisualIdentity.Ensure(actor);
-
-        if (!actor.TryGetComponent<EnemyHealth>(out EnemyHealth health))
-            health = actor.AddComponent<EnemyHealth>();
-
-        health.ConfigureHealth(GetHealth(faction));
-        health.SetRewardsEnabled(rewardsEnabled);
-
-        if (!actor.TryGetComponent<StatusReceiver>(out _))
-            actor.AddComponent<StatusReceiver>();
-
-        if (!actor.TryGetComponent<Rigidbody2D>(out Rigidbody2D rb))
-            rb = actor.AddComponent<Rigidbody2D>();
-
-        rb.gravityScale = 0f;
-        rb.freezeRotation = true;
-        rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
-
-        if (!actor.TryGetComponent<Collider2D>(out _))
-        {
-            CircleCollider2D collider = actor.AddComponent<CircleCollider2D>();
-            collider.radius = 0.45f;
-            collider.isTrigger = false;
-        }
-
-        if (!actor.TryGetComponent<EnemyMovement>(out _))
-            actor.AddComponent<EnemyMovement>();
-
-        if (!actor.TryGetComponent<EnemyMeleeDamage>(out _))
-            actor.AddComponent<EnemyMeleeDamage>();
+        FactionUnitArchetype.ApplyTo(actor, GetArchetype(faction), rewardsEnabled);
     }
 
     private GameObject GetPrefab(FactionType faction)
@@ -193,21 +162,6 @@ public class FactionSkirmishDirector : MonoBehaviour
         return new Vector3(centeredIndex * unitSpacing, Random.Range(-0.35f, 0.35f), 0f);
     }
 
-    private int GetHealth(FactionType faction)
-    {
-        switch (faction)
-        {
-            case FactionType.Angel:
-                return 34;
-            case FactionType.Demon:
-                return 38;
-            case FactionType.Zombie:
-                return 28;
-            default:
-                return 30;
-        }
-    }
-
     private float GetScale(FactionType faction)
     {
         return faction == FactionType.Demon ? 0.78f : 0.72f;
@@ -225,6 +179,23 @@ public class FactionSkirmishDirector : MonoBehaviour
                 return new Color(0.45f, 0.85f, 0.28f, 1f);
             default:
                 return Color.white;
+        }
+    }
+
+    private FactionUnitArchetypeType GetArchetype(FactionType faction)
+    {
+        switch (faction)
+        {
+            case FactionType.Angel:
+                return FactionUnitArchetypeType.AngelMarksman;
+            case FactionType.Demon:
+                return FactionUnitArchetypeType.DemonRaider;
+            case FactionType.Zombie:
+                return FactionUnitArchetypeType.ZombieGrunt;
+            case FactionType.Human:
+                return FactionUnitArchetypeType.HumanSupport;
+            default:
+                return FactionUnitArchetypeType.ZombieGrunt;
         }
     }
 }

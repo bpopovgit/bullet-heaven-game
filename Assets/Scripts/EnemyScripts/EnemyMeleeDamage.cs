@@ -17,6 +17,22 @@ public class EnemyMeleeDamage : MonoBehaviour
     private GameObject _targetInContact;
     private FactionMember _faction;
 
+    public void ConfigureDamage(
+        int contactDamage,
+        float damageInterval,
+        DamageElement element = DamageElement.Physical,
+        StatusEffect status = StatusEffect.None,
+        float statusDuration = 0f,
+        float statusStrength = 0f)
+    {
+        this.contactDamage = Mathf.Max(0, contactDamage);
+        this.damageInterval = Mathf.Max(0.05f, damageInterval);
+        this.element = element;
+        this.status = status;
+        this.statusDuration = Mathf.Max(0f, statusDuration);
+        this.statusStrength = Mathf.Clamp01(statusStrength);
+    }
+
     private void Awake()
     {
         _faction = FactionMember.Ensure(gameObject, FactionType.Zombie);

@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 3793354895847701760}
   - component: {fileID: 4881702926864331311}
   - component: {fileID: 517739216064923978}
+  - component: {fileID: 8134096128353018301}
   - component: {fileID: 5910946029274275005}
   - component: {fileID: 7295226058163142662}
   m_Layer: 0
@@ -223,6 +224,21 @@ MonoBehaviour:
   freezeRingColor: {r: 0.72, g: 0.94, b: 1, a: 0.9}
   freezeSparkleColor: {r: 0.9, g: 0.98, b: 1, a: 0.92}
   freezeVisualScale: 1.2
+--- !u!114 &8134096128353018301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3070591022033884879}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a60fc83b31ff4f1f8c5138cbe8c209b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FactionVisualIdentity
+  showBadge: 1
+  badgeOffset: {x: 0, y: 0.78, z: 0}
+  badgeScale: 0.34
 --- !u!114 &5910946029274275005
 MonoBehaviour:
   m_ObjectHideFlags: 0

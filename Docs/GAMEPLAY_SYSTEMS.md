@@ -101,6 +101,7 @@ Current behavior:
 - allies fire simple physical `FactionProjectile` shots
 - zombies can target and damage allies
 - ally deaths do not award score, XP, or pickups
+- allies use the `HumanSupport` faction archetype
 
 This is placeholder content, but it proves the intended battlefield direction:
 
@@ -113,6 +114,33 @@ Starter faction prefabs can be generated from:
 ```text
 Tools > Bullet Heaven > Factions > Create Starter Prefabs
 ```
+
+## Faction Unit Archetypes
+
+`FactionUnitArchetype` gives starter faction actors an explicit gameplay role instead of only a faction label.
+
+Current archetypes:
+
+- `HumanSupport`
+  - Human ally
+  - follows the player
+  - shoots hostile targets from range
+  - does not award score, XP, or pickups on death
+- `AngelMarksman`
+  - Angel ranged unit
+  - keeps distance
+  - fires lightning-colored faction projectiles
+  - naturally prioritizes Demons through `FactionTargeting`
+- `DemonRaider`
+  - fast Demon melee unit
+  - burns targets on contact
+  - naturally prioritizes Angels through `FactionTargeting`
+- `ZombieGrunt`
+  - slower melee swarm unit
+  - lower health and damage
+  - attacks the closest hostile target when priority is equal
+
+`FactionRangedAttacker` supports non-player ranged faction units such as Angel marksmen. It uses `FactionProjectile`, so its shots respect the same faction-safe damage routing as other combat.
 
 ## Starter Faction Skirmish
 
@@ -140,6 +168,7 @@ The goal is to make faction targeting visible:
 - Demons should prioritize Angels.
 - Zombies should attack whatever hostile actor is closest.
 - Human allies and the player should care most about Zombies.
+- Angels should behave like ranged marksmen, Demons like fast melee raiders, and Zombies like slower swarm grunts.
 
 ## Primary Weapons
 

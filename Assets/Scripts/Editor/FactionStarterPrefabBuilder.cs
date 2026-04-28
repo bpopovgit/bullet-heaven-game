@@ -23,9 +23,9 @@ public static class FactionStarterPrefabBuilder
         Sprite zombieSprite = CreateCircleSpriteAsset("ZombieTestUnit_Marker", new Color32(115, 210, 80, 255));
 
         CreateHumanAllyPrefab(humanSprite);
-        CreateFactionMeleePrefab("AngelTestUnit", FactionType.Angel, angelSprite, 34, 0.72f);
-        CreateFactionMeleePrefab("DemonTestUnit", FactionType.Demon, demonSprite, 38, 0.78f);
-        CreateFactionMeleePrefab("ZombieTestUnit", FactionType.Zombie, zombieSprite, 28, 0.72f);
+        CreateFactionPrefab("AngelTestUnit", FactionUnitArchetypeType.AngelMarksman, angelSprite, rewardsEnabled: false);
+        CreateFactionPrefab("DemonTestUnit", FactionUnitArchetypeType.DemonRaider, demonSprite, rewardsEnabled: false);
+        CreateFactionPrefab("ZombieTestUnit", FactionUnitArchetypeType.ZombieGrunt, zombieSprite, rewardsEnabled: true);
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
@@ -37,29 +37,24 @@ public static class FactionStarterPrefabBuilder
 
     private static void CreateHumanAllyPrefab(Sprite sprite)
     {
-        GameObject go = CreateBaseActor("HumanAlly", FactionType.Human, sprite, 45, 0.72f, rewardsEnabled: false);
-        go.AddComponent<FriendlyAlly>();
+        GameObject go = CreateBaseActor("HumanAlly", FactionType.Human, sprite);
+        FactionUnitArchetype.ApplyTo(go, FactionUnitArchetypeType.HumanSupport, rewardsEnabled: false);
         SavePrefab(go, "HumanAlly");
     }
 
-    private static void CreateFactionMeleePrefab(string name, FactionType faction, Sprite sprite, int health, float scale)
+    private static void CreateFactionPrefab(string name, FactionUnitArchetypeType archetype, Sprite sprite, bool rewardsEnabled)
     {
-        GameObject go = CreateBaseActor(name, faction, sprite, health, scale, rewardsEnabled: faction == FactionType.Zombie);
-        go.AddComponent<EnemyMovement>();
-        go.AddComponent<EnemyMeleeDamage>();
+        GameObject go = CreateBaseActor(name, GetFactionForArchetype(archetype), sprite);
+        FactionUnitArchetype.ApplyTo(go, archetype, rewardsEnabled);
         SavePrefab(go, name);
     }
 
     private static GameObject CreateBaseActor(
         string name,
         FactionType faction,
-        Sprite sprite,
-        int health,
-        float scale,
-        bool rewardsEnabled)
+        Sprite sprite)
     {
         GameObject go = new GameObject(name);
-        go.transform.localScale = Vector3.one * scale;
 
         SpriteRenderer renderer = go.AddComponent<SpriteRenderer>();
         renderer.sprite = sprite;
@@ -79,13 +74,24 @@ public static class FactionStarterPrefabBuilder
         FactionMember factionMember = go.AddComponent<FactionMember>();
         factionMember.Configure(faction);
 
-        EnemyHealth enemyHealth = go.AddComponent<EnemyHealth>();
-        enemyHealth.ConfigureHealth(health);
-        enemyHealth.SetRewardsEnabled(rewardsEnabled);
-
-        go.AddComponent<StatusReceiver>();
         go.AddComponent<FactionVisualIdentity>();
         return go;
+    }
+
+    private static FactionType GetFactionForArchetype(FactionUnitArchetypeType archetype)
+    {
+        switch (archetype)
+        {
+            case FactionUnitArchetypeType.HumanSupport:
+                return FactionType.Human;
+            case FactionUnitArchetypeType.AngelMarksman:
+                return FactionType.Angel;
+            case FactionUnitArchetypeType.DemonRaider:
+                return FactionType.Demon;
+            case FactionUnitArchetypeType.ZombieGrunt:
+            default:
+                return FactionType.Zombie;
+        }
     }
 
     private static void SavePrefab(GameObject go, string fileName)
