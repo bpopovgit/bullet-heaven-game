@@ -102,6 +102,7 @@
     <Compile Include="Assets\Scripts\Combat\FactionCombat.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\VertexShakeA.cs" />
     <Compile Include="Assets\Scripts\Combat\FriendlyAlly.cs" />
+    <Compile Include="Assets\Scripts\PlayerScripts\PlayerMeleeAttack.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark01_UGUI.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\SimpleScript.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark04.cs" />
@@ -132,6 +133,7 @@
     <Compile Include="Assets\Scripts\UIScripts\SecondarySkillCooldownUI.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\DropdownSample.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\VertexColorCycler.cs" />
+    <Compile Include="Assets\Scripts\PlayerScripts\PlayerMagicAttack.cs" />
     <Compile Include="Assets\Scripts\Combat\EliteEnemy.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\ObjectSpin.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_PhoneNumberValidator.cs" />
@@ -148,6 +150,7 @@
     <Compile Include="Assets\Scripts\Combat\FactionRangedAttacker.cs" />
     <Compile Include="Assets\Scripts\PlayerScripts\PlayerBombProjectile.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TextMeshProFloatingText.cs" />
+    <Compile Include="Assets\Scripts\PlayerScripts\PlayerCharacterVisualIdentity.cs" />
     <Compile Include="Assets\Scripts\UIScripts\PlayerHealthUI.cs" />
     <Compile Include="Assets\Scripts\PlayerScripts\PlayerShooting.cs" />
     <Compile Include="Assets\Scripts\Combat\EnemyHealth.cs" />

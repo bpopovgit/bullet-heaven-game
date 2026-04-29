@@ -84,8 +84,9 @@ public class RunLoadoutApplier : MonoBehaviour
         string passiveSummary;
 
         ApplyCharacter(player, stats, health, out characterSummary);
+        ApplyPrimaryCombat(player, shooting);
 
-        if (shooting != null)
+        if (shooting != null && shooting.enabled)
             ApplyWeaponPreset(shooting);
 
         if (stats != null)
@@ -114,8 +115,26 @@ public class RunLoadoutApplier : MonoBehaviour
     {
         PlayableCharacterChoice choice = RunLoadoutState.CharacterChoice;
         FactionMember.Ensure(player, FactionType.Human);
-        FactionVisualIdentity.Ensure(player);
 
+        FactionVisualIdentity factionBadge = player.GetComponent<FactionVisualIdentity>();
+        if (factionBadge != null)
+            factionBadge.enabled = false;
+
+        Transform existingFactionBadge = player.transform.Find("FactionBadge");
+        if (existingFactionBadge != null)
+            existingFactionBadge.gameObject.SetActive(false);
+
+        PlayerCharacterVisualIdentity visualIdentity = player.GetComponent<PlayerCharacterVisualIdentity>();
+        if (visualIdentity == null)
+            visualIdentity = player.AddComponent<PlayerCharacterVisualIdentity>();
+
+        visualIdentity.Apply(choice);
+
+        PlayerMeleeAttack meleeAttack = player.GetComponent<PlayerMeleeAttack>();
+        if (meleeAttack == null)
+            meleeAttack = player.AddComponent<PlayerMeleeAttack>();
+
+        meleeAttack.ConfigureForCharacter(choice);
         int maxHpBonus = RunLoadoutState.GetCharacterMaxHpBonus(choice);
         if (health != null && maxHpBonus > 0)
             health.IncreaseMaxHP(maxHpBonus, true);
@@ -128,14 +147,30 @@ public class RunLoadoutApplier : MonoBehaviour
             stats.AddPickupRadius(RunLoadoutState.GetCharacterPickupRadiusBonus(choice));
         }
 
-        SpriteRenderer renderer = player.GetComponent<SpriteRenderer>();
-        if (renderer == null)
-            renderer = player.GetComponentInChildren<SpriteRenderer>();
-
-        if (renderer != null)
-            renderer.color = RunLoadoutState.GetCharacterTint(choice);
-
         characterSummary = $"{RunLoadoutState.GetCharacterName(choice)} ({RunLoadoutState.GetCharacterStatsSummary(choice)})";
+    }
+
+    private static void ApplyPrimaryCombat(GameObject player, PlayerShooting shooting)
+    {
+        PlayableCharacterChoice choice = RunLoadoutState.CharacterChoice;
+
+        if (shooting != null)
+        {
+            shooting.enabled = choice == PlayableCharacterChoice.HumanRanger;
+            if (!shooting.enabled)
+                shooting.ResetCooldown();
+        }
+
+        PlayerMagicAttack magicAttack = player.GetComponent<PlayerMagicAttack>();
+        if (magicAttack == null)
+            magicAttack = player.AddComponent<PlayerMagicAttack>();
+
+        magicAttack.ConfigureForCharacter(choice, RunLoadoutState.WeaponChoice);
+        magicAttack.enabled = choice == PlayableCharacterChoice.HumanArcanist;
+
+        PlayerMeleeAttack meleeAttack = player.GetComponent<PlayerMeleeAttack>();
+        if (meleeAttack != null)
+            meleeAttack.enabled = choice == PlayableCharacterChoice.HumanVanguard;
     }
 
     private static void ApplyWeaponPreset(PlayerShooting shooting)

@@ -104,12 +104,12 @@ public static class RunLoadoutState
         switch (choice)
         {
             case PlayableCharacterChoice.HumanRanger:
-                return "A fast survivor who opens with more ranged support and better tempo.";
+                return "A fast survivor who keeps the projectile weapons and opens with more ranged support.";
             case PlayableCharacterChoice.HumanArcanist:
-                return "A fragile caster who starts with stronger damage and a tighter escort.";
+                return "A fragile caster who channels the selected primary into a spell beam instead of bullets.";
             case PlayableCharacterChoice.HumanVanguard:
             default:
-                return "A durable leader who drops into the fight with a balanced guard squad.";
+                return "A durable melee-only leader who drops into the fight with a guard squad and a forward cleave.";
         }
     }
 
@@ -118,12 +118,12 @@ public static class RunLoadoutState
         switch (choice)
         {
             case PlayableCharacterChoice.HumanRanger:
-                return "+10 max HP  |  +12% move speed  |  +10% fire rate";
+                return "Projectile weapons  |  +12% move speed  |  +10% fire rate";
             case PlayableCharacterChoice.HumanArcanist:
-                return "+15% damage  |  +1 pickup radius  |  lighter ally screen";
+                return "Arcane spell beam  |  +15% damage  |  +1 pickup radius";
             case PlayableCharacterChoice.HumanVanguard:
             default:
-                return "+35 max HP  |  +8% damage  |  stronger front line";
+                return "Melee only  |  +35 max HP  |  Vanguard Cleave";
         }
     }
 
