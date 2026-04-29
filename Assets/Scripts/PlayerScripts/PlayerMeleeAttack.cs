@@ -36,6 +36,24 @@ public class PlayerMeleeAttack : MonoBehaviour
         }
     }
 
+    public void AddRadius(float amount)
+    {
+        radius += Mathf.Max(0f, amount);
+        Debug.Log($"VANGUARD CLEAVE RANGE: {radius:0.00}");
+    }
+
+    public void AddArcAngle(float degrees)
+    {
+        arcAngle = Mathf.Clamp(arcAngle + Mathf.Max(0f, degrees), 45f, 220f);
+        Debug.Log($"VANGUARD CLEAVE ARC: {arcAngle:0} degrees");
+    }
+
+    public void ReduceCooldown(float seconds)
+    {
+        cooldown = Mathf.Max(0.14f, cooldown - Mathf.Max(0f, seconds));
+        Debug.Log($"VANGUARD CLEAVE COOLDOWN: {cooldown:0.00}s");
+    }
+
     private void Awake()
     {
         _playerInput = GetComponent<PlayerInput>();

@@ -94,8 +94,13 @@ public class PlayerExperience : MonoBehaviour
     {
         EnsureDefaultUpgradePool();
 
-        List<PlayerUpgradeOption> available = new List<PlayerUpgradeOption>(upgradePool);
+        PlayableCharacterChoice character = RunLoadoutState.CharacterChoice;
+        List<PlayerUpgradeOption> available = BuildAvailableUpgradePool(character);
         List<PlayerUpgradeOption> choices = new List<PlayerUpgradeOption>();
+
+        if (available.Count == 0)
+            return choices;
+
         int count = Mathf.Clamp(choicesPerLevel, 1, available.Count);
 
         for (int i = 0; i < count; i++)
@@ -106,6 +111,39 @@ public class PlayerExperience : MonoBehaviour
         }
 
         return choices;
+    }
+
+    private List<PlayerUpgradeOption> BuildAvailableUpgradePool(PlayableCharacterChoice character)
+    {
+        List<PlayerUpgradeOption> available = new List<PlayerUpgradeOption>();
+
+        for (int i = 0; i < upgradePool.Count; i++)
+        {
+            PlayerUpgradeOption option = upgradePool[i];
+            if (option != null && option.IsAvailableFor(character))
+                AddIfMissingTitle(available, option);
+        }
+
+        PlayerUpgradeOption[] defaults = PlayerUpgradeOption.CreateDefaultPool();
+        for (int i = 0; i < defaults.Length; i++)
+        {
+            PlayerUpgradeOption option = defaults[i];
+            if (option != null && option.IsAvailableFor(character))
+                AddIfMissingTitle(available, option);
+        }
+
+        return available;
+    }
+
+    private static void AddIfMissingTitle(List<PlayerUpgradeOption> options, PlayerUpgradeOption option)
+    {
+        for (int i = 0; i < options.Count; i++)
+        {
+            if (options[i] != null && options[i].Title == option.Title)
+                return;
+        }
+
+        options.Add(option);
     }
 
     private int GetExperienceForLevel(int level)

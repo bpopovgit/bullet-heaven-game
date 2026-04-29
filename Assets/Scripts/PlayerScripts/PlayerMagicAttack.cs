@@ -55,6 +55,30 @@ public class PlayerMagicAttack : MonoBehaviour
         }
     }
 
+    public void AddRange(float amount)
+    {
+        range += Mathf.Max(0f, amount);
+        Debug.Log($"ARCANIST SPELL RANGE: {range:0.00}");
+    }
+
+    public void AddBeamWidth(float amount)
+    {
+        beamWidth += Mathf.Max(0f, amount);
+        Debug.Log($"ARCANIST SPELL WIDTH: {beamWidth:0.00}");
+    }
+
+    public void ReduceCooldown(float seconds)
+    {
+        cooldown = Mathf.Max(0.16f, cooldown - Mathf.Max(0f, seconds));
+        Debug.Log($"ARCANIST SPELL COOLDOWN: {cooldown:0.00}s");
+    }
+
+    public void AddStatusChance(float amount)
+    {
+        statusChance = Mathf.Clamp01(statusChance + Mathf.Max(0f, amount));
+        Debug.Log($"ARCANIST STATUS CHANCE: {statusChance:P0}");
+    }
+
     private void ConfigureSpell(
         DamageElement newElement,
         StatusEffect newStatus,

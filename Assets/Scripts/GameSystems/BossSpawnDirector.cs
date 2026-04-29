@@ -389,8 +389,20 @@ public class BossSpawnDirector : MonoBehaviour
     private List<PlayerUpgradeOption> PickBossRewardChoices()
     {
         PlayerUpgradeOption[] pool = PlayerUpgradeOption.CreateBossRewardPool();
-        List<PlayerUpgradeOption> available = new List<PlayerUpgradeOption>(pool);
+        PlayableCharacterChoice character = RunLoadoutState.CharacterChoice;
+        List<PlayerUpgradeOption> available = new List<PlayerUpgradeOption>();
         List<PlayerUpgradeOption> choices = new List<PlayerUpgradeOption>();
+
+        for (int i = 0; i < pool.Length; i++)
+        {
+            PlayerUpgradeOption option = pool[i];
+            if (option != null && option.IsAvailableFor(character))
+                available.Add(option);
+        }
+
+        if (available.Count == 0)
+            return choices;
+
         int count = Mathf.Min(3, available.Count);
 
         for (int i = 0; i < count; i++)
