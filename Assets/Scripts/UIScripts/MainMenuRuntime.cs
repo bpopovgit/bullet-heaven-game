@@ -35,7 +35,16 @@ public class MainMenuRuntime : MonoBehaviour
         public TextMeshProUGUI EffectText;
     }
 
+    private sealed class RunChainView
+    {
+        public GameObject Root;
+        public TextMeshProUGUI ChainNameText;
+        public TalentCardView[] Nodes;
+        public TextMeshProUGUI[] Arrows;
+    }
+
     private bool _isLoading;
+    private bool _showingRunChains;
     private RectTransform _root;
     private RectTransform _modeSelectionPanel;
     private RectTransform _characterSelectionPanel;
@@ -63,7 +72,10 @@ public class MainMenuRuntime : MonoBehaviour
     private TextMeshProUGUI _passiveDescriptionText;
     private TextMeshProUGUI _talentKitSummaryText;
     private TextMeshProUGUI _talentTagSummaryText;
+    private GameObject _profileTalentRoot;
+    private GameObject _runChainRoot;
     private TalentCardView[] _talentCards;
+    private RunChainView[] _runChainViews;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Bootstrap()
@@ -329,24 +341,36 @@ public class MainMenuRuntime : MonoBehaviour
     private void BuildTalentPanel(RectTransform panel)
     {
         CreatePanelTitle(panel, "Talent Codex", new Vector2(0f, 236f));
-        CreatePanelBody(panel, "Browse future build paths without adding noise to combat. Cards adapt to your current kit, so the same talent can read differently for each character and primary.", new Vector2(0f, 192f), 840f);
+        CreatePanelBody(panel, "Browse future build paths without adding noise to combat. Profile talents unlock long-term options; run chains show how one in-run upgrade can unlock the next.", new Vector2(0f, 192f), 900f);
         CreateDivider(panel, new Vector2(0f, 144f), 820f);
 
         _talentKitSummaryText = CreateHintLabel(panel, string.Empty, new Vector2(0f, 114f), 900f);
-        _talentTagSummaryText = CreateHintLabel(panel, string.Empty, new Vector2(0f, 78f), 900f);
+        _talentTagSummaryText = CreateHintLabel(panel, string.Empty, new Vector2(0f, 84f), 900f);
+
+        CreateButton(panel, "Profile Talents", new Vector2(-150f, 44f), new Vector2(230f, 42f), AccentColor, true, ShowProfileTalentTab, string.Empty);
+        CreateButton(panel, "Run Chains", new Vector2(150f, 44f), new Vector2(230f, 42f), UtilityButtonColor, true, ShowRunChainTab, string.Empty);
+
+        _profileTalentRoot = CreateViewRoot("ProfileTalentView", panel);
+        _runChainRoot = CreateViewRoot("RunChainView", panel);
 
         _talentCards = new TalentCardView[6];
-        Vector2 cardSize = new Vector2(490f, 106f);
-        _talentCards[0] = CreateTalentCard(panel, new Vector2(-260f, 12f), cardSize);
-        _talentCards[1] = CreateTalentCard(panel, new Vector2(260f, 12f), cardSize);
-        _talentCards[2] = CreateTalentCard(panel, new Vector2(-260f, -114f), cardSize);
-        _talentCards[3] = CreateTalentCard(panel, new Vector2(260f, -114f), cardSize);
-        _talentCards[4] = CreateTalentCard(panel, new Vector2(-260f, -240f), cardSize);
-        _talentCards[5] = CreateTalentCard(panel, new Vector2(260f, -240f), cardSize);
+        Vector2 cardSize = new Vector2(490f, 96f);
+        _talentCards[0] = CreateTalentCard(_profileTalentRoot.transform, new Vector2(-260f, -24f), cardSize);
+        _talentCards[1] = CreateTalentCard(_profileTalentRoot.transform, new Vector2(260f, -24f), cardSize);
+        _talentCards[2] = CreateTalentCard(_profileTalentRoot.transform, new Vector2(-260f, -134f), cardSize);
+        _talentCards[3] = CreateTalentCard(_profileTalentRoot.transform, new Vector2(260f, -134f), cardSize);
+        _talentCards[4] = CreateTalentCard(_profileTalentRoot.transform, new Vector2(-260f, -244f), cardSize);
+        _talentCards[5] = CreateTalentCard(_profileTalentRoot.transform, new Vector2(260f, -244f), cardSize);
+
+        _runChainViews = new RunChainView[3];
+        _runChainViews[0] = CreateRunChainView(_runChainRoot.transform, new Vector2(0f, -18f));
+        _runChainViews[1] = CreateRunChainView(_runChainRoot.transform, new Vector2(0f, -138f));
+        _runChainViews[2] = CreateRunChainView(_runChainRoot.transform, new Vector2(0f, -258f));
 
         CreateButton(panel, "Change Loadout", new Vector2(-150f, -326f), new Vector2(250f, 48f), AccentColor, true, ShowLoadoutSetup, string.Empty);
         CreateButton(panel, "Back to Setup", new Vector2(150f, -326f), new Vector2(250f, 48f), SecondaryButtonColor, true, ShowSinglePlayerSetup, string.Empty);
-        CreateHintLabel(panel, "For now, this is a preview layer. Later, profile XP can unlock these paths and the in-run upgrade pool can draw from the active tags.", new Vector2(0f, -388f), 860f);
+        CreateHintLabel(panel, "For now, this is a preview layer. Later, the in-run level-up pool can use these prerequisites so follow-up cards only appear after their root card is picked.", new Vector2(0f, -388f), 900f);
+        SetTalentSubView(showRunChains: false);
     }
 
     private static void CreatePanelTitle(Transform parent, string label, Vector2 anchoredPosition)
@@ -538,16 +562,69 @@ public class MainMenuRuntime : MonoBehaviour
         rect.anchoredPosition = anchoredPosition;
         rect.sizeDelta = size;
 
+        bool compact = size.y < 96f;
+        float titleFontSize = compact ? 13f : 18f;
+        float requirementFontSize = compact ? 9f : 11f;
+        float effectFontSize = compact ? 9f : 12f;
+        float unlockFontSize = compact ? 8.5f : 11f;
+
         TalentCardView view = new TalentCardView
         {
             Root = cardObject,
             Background = background,
             Outline = outline,
-            UnlockText = CreateTalentCardText(cardObject.transform, "Unlock", new Vector2(0f, 39f), new Vector2(size.x - 30f, 18f), 11f, HintColor),
-            TitleText = CreateTalentCardText(cardObject.transform, "Title", new Vector2(0f, 18f), new Vector2(size.x - 30f, 24f), 18f, TitleColor),
-            RequirementText = CreateTalentCardText(cardObject.transform, "Requirement", new Vector2(0f, -6f), new Vector2(size.x - 30f, 18f), 11f, new Color(0.72f, 0.88f, 0.68f, 1f)),
-            EffectText = CreateTalentCardText(cardObject.transform, "Effect", new Vector2(0f, -33f), new Vector2(size.x - 36f, 42f), 12f, BodyColor)
+            UnlockText = CreateTalentCardText(cardObject.transform, "Unlock", new Vector2(0f, size.y * 0.34f), new Vector2(size.x - 24f, size.y * 0.16f), unlockFontSize, HintColor),
+            TitleText = CreateTalentCardText(cardObject.transform, "Title", new Vector2(0f, size.y * 0.13f), new Vector2(size.x - 24f, size.y * 0.24f), titleFontSize, TitleColor),
+            RequirementText = CreateTalentCardText(cardObject.transform, "Requirement", new Vector2(0f, size.y * -0.08f), new Vector2(size.x - 24f, size.y * 0.16f), requirementFontSize, new Color(0.72f, 0.88f, 0.68f, 1f)),
+            EffectText = CreateTalentCardText(cardObject.transform, "Effect", new Vector2(0f, size.y * -0.31f), new Vector2(size.x - 28f, size.y * 0.34f), effectFontSize, BodyColor)
         };
+
+        return view;
+    }
+
+    private static GameObject CreateViewRoot(string name, Transform parent)
+    {
+        GameObject rootObject = new GameObject(name, typeof(RectTransform));
+        rootObject.transform.SetParent(parent, false);
+
+        RectTransform rect = rootObject.GetComponent<RectTransform>();
+        Stretch(rect, 0f);
+
+        return rootObject;
+    }
+
+    private static RunChainView CreateRunChainView(Transform parent, Vector2 anchoredPosition)
+    {
+        GameObject rowObject = new GameObject("RunUpgradeChain");
+        rowObject.transform.SetParent(parent, false);
+
+        RectTransform rect = rowObject.AddComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = anchoredPosition;
+        rect.sizeDelta = new Vector2(980f, 112f);
+
+        RunChainView view = new RunChainView
+        {
+            Root = rowObject,
+            ChainNameText = CreateTalentCardText(rowObject.transform, "ChainName", new Vector2(0f, 50f), new Vector2(920f, 20f), 13f, HintColor),
+            Nodes = new TalentCardView[4],
+            Arrows = new TextMeshProUGUI[3]
+        };
+
+        Vector2 nodeSize = new Vector2(208f, 78f);
+        view.Nodes[0] = CreateTalentCard(rowObject.transform, new Vector2(-390f, 0f), nodeSize);
+        view.Nodes[1] = CreateTalentCard(rowObject.transform, new Vector2(-130f, 0f), nodeSize);
+        view.Nodes[2] = CreateTalentCard(rowObject.transform, new Vector2(130f, 0f), nodeSize);
+        view.Nodes[3] = CreateTalentCard(rowObject.transform, new Vector2(390f, 0f), nodeSize);
+
+        view.Arrows[0] = CreateTalentCardText(rowObject.transform, "Arrow", new Vector2(-260f, 0f), new Vector2(38f, 34f), 22f, HintColor);
+        view.Arrows[1] = CreateTalentCardText(rowObject.transform, "Arrow", new Vector2(0f, 0f), new Vector2(38f, 34f), 22f, HintColor);
+        view.Arrows[2] = CreateTalentCardText(rowObject.transform, "Arrow", new Vector2(260f, 0f), new Vector2(38f, 34f), 22f, HintColor);
+
+        for (int i = 0; i < view.Arrows.Length; i++)
+            view.Arrows[i].text = ">";
 
         return view;
     }
@@ -823,29 +900,119 @@ public class MainMenuRuntime : MonoBehaviour
                 continue;
 
             TalentDisplayInfo card = cards[i];
-            Color accent = card.AccentColor;
+            ApplyTalentCardView(
+                view,
+                card.AccentColor,
+                card.IsUnlocked,
+                $"{card.TreeName}  |  {card.UnlockText}",
+                card.Title,
+                card.RequirementText,
+                card.EffectText);
+        }
 
-            if (view.Background != null)
-                view.Background.color = new Color(accent.r * 0.45f, accent.g * 0.55f, accent.b * 0.45f, 0.78f);
+        RefreshRunChainTexts();
+        SetTalentSubView(_showingRunChains);
+    }
 
-            if (view.Outline != null)
-                view.Outline.effectColor = new Color(accent.r, accent.g, accent.b, card.IsUnlocked ? 0.45f : 0.2f);
+    private void RefreshRunChainTexts()
+    {
+        if (_runChainViews == null)
+            return;
 
-            if (view.UnlockText != null)
-                view.UnlockText.text = $"{card.TreeName}  |  {card.UnlockText}";
+        RunUpgradeChainDisplayInfo[] chains = TalentCatalog.BuildCurrentRunUpgradeChains();
+        for (int i = 0; i < _runChainViews.Length; i++)
+        {
+            RunChainView view = _runChainViews[i];
+            if (view == null || view.Root == null)
+                continue;
 
-            if (view.TitleText != null)
-                view.TitleText.text = card.Title;
+            bool hasChain = i < chains.Length;
+            view.Root.SetActive(hasChain);
+            if (!hasChain)
+                continue;
 
-            if (view.RequirementText != null)
-                view.RequirementText.text = card.RequirementText;
+            RunUpgradeChainDisplayInfo chain = chains[i];
+            if (view.ChainNameText != null)
+                view.ChainNameText.text = chain.ChainName;
 
-            if (view.EffectText != null)
+            for (int nodeIndex = 0; nodeIndex < view.Nodes.Length; nodeIndex++)
             {
-                view.EffectText.text = card.EffectText;
-                view.EffectText.color = card.IsUnlocked ? BodyColor : new Color(BodyColor.r, BodyColor.g, BodyColor.b, 0.78f);
+                TalentCardView nodeView = view.Nodes[nodeIndex];
+                if (nodeView == null || nodeView.Root == null)
+                    continue;
+
+                bool hasNode = chain.Nodes != null && nodeIndex < chain.Nodes.Length;
+                nodeView.Root.SetActive(hasNode);
+                if (!hasNode)
+                    continue;
+
+                RunUpgradeNodeDisplayInfo node = chain.Nodes[nodeIndex];
+                ApplyTalentCardView(
+                    nodeView,
+                    node.AccentColor,
+                    true,
+                    node.StageText,
+                    node.Title,
+                    node.RequirementText,
+                    node.EffectText);
             }
         }
+    }
+
+    private static void ApplyTalentCardView(
+        TalentCardView view,
+        Color accent,
+        bool bright,
+        string unlockText,
+        string title,
+        string requirement,
+        string effect)
+    {
+        if (view == null)
+            return;
+
+        if (view.Background != null)
+            view.Background.color = new Color(accent.r * 0.45f, accent.g * 0.55f, accent.b * 0.45f, 0.78f);
+
+        if (view.Outline != null)
+            view.Outline.effectColor = new Color(accent.r, accent.g, accent.b, bright ? 0.45f : 0.2f);
+
+        if (view.UnlockText != null)
+            view.UnlockText.text = unlockText;
+
+        if (view.TitleText != null)
+            view.TitleText.text = title;
+
+        if (view.RequirementText != null)
+            view.RequirementText.text = requirement;
+
+        if (view.EffectText != null)
+        {
+            view.EffectText.text = effect;
+            view.EffectText.color = bright ? BodyColor : new Color(BodyColor.r, BodyColor.g, BodyColor.b, 0.78f);
+        }
+    }
+
+    private void ShowProfileTalentTab()
+    {
+        _showingRunChains = false;
+        SetTalentSubView(showRunChains: false);
+    }
+
+    private void ShowRunChainTab()
+    {
+        _showingRunChains = true;
+        RefreshRunChainTexts();
+        SetTalentSubView(showRunChains: true);
+    }
+
+    private void SetTalentSubView(bool showRunChains)
+    {
+        if (_profileTalentRoot != null)
+            _profileTalentRoot.SetActive(!showRunChains);
+
+        if (_runChainRoot != null)
+            _runChainRoot.SetActive(showRunChains);
     }
 
     private void ShowModeSelection()
