@@ -24,6 +24,17 @@ public class MainMenuRuntime : MonoBehaviour
     private static readonly Color BodyColor = new Color(0.83f, 0.88f, 0.82f, 1f);
     private static readonly Color HintColor = new Color(0.93f, 0.79f, 0.35f, 1f);
 
+    private sealed class TalentCardView
+    {
+        public GameObject Root;
+        public Image Background;
+        public Outline Outline;
+        public TextMeshProUGUI UnlockText;
+        public TextMeshProUGUI TitleText;
+        public TextMeshProUGUI RequirementText;
+        public TextMeshProUGUI EffectText;
+    }
+
     private bool _isLoading;
     private RectTransform _root;
     private RectTransform _modeSelectionPanel;
@@ -31,11 +42,13 @@ public class MainMenuRuntime : MonoBehaviour
     private RectTransform _singlePlayerPanel;
     private RectTransform _multiplayerPanel;
     private RectTransform _loadoutPanel;
+    private RectTransform _talentPanel;
 
     private TextMeshProUGUI _singlePlayerCharacterSummaryText;
     private TextMeshProUGUI _singlePlayerLoadoutSummaryText;
     private TextMeshProUGUI _characterChoiceText;
     private TextMeshProUGUI _characterRoleText;
+    private TextMeshProUGUI _characterPrimaryText;
     private TextMeshProUGUI _characterDescriptionText;
     private TextMeshProUGUI _characterStatsText;
     private TextMeshProUGUI _characterAlliesText;
@@ -48,6 +61,9 @@ public class MainMenuRuntime : MonoBehaviour
     private TextMeshProUGUI _skillDescriptionText;
     private TextMeshProUGUI _passiveChoiceText;
     private TextMeshProUGUI _passiveDescriptionText;
+    private TextMeshProUGUI _talentKitSummaryText;
+    private TextMeshProUGUI _talentTagSummaryText;
+    private TalentCardView[] _talentCards;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Bootstrap()
@@ -99,6 +115,9 @@ public class MainMenuRuntime : MonoBehaviour
 
         _loadoutPanel = CreatePanel("LoadoutPanel", _root, new Vector2(0f, -28f), new Vector2(1000f, 600f));
         BuildLoadoutPanel(_loadoutPanel);
+
+        _talentPanel = CreatePanel("TalentPanel", _root, new Vector2(0f, -30f), new Vector2(1080f, 650f));
+        BuildTalentPanel(_talentPanel);
     }
 
     private static void EnsureEventSystem()
@@ -247,14 +266,15 @@ public class MainMenuRuntime : MonoBehaviour
         CreateButton(panel, "<", new Vector2(-360f, 16f), new Vector2(66f, 54f), UtilityButtonColor, true, CycleCharacterBackward, string.Empty);
         CreateButton(panel, ">", new Vector2(360f, 16f), new Vector2(66f, 54f), UtilityButtonColor, true, CycleCharacterForward, string.Empty);
 
-        _characterChoiceText = CreateLargeCenterLabel(panel, string.Empty, new Vector2(0f, 52f), 620f, 30f, TitleColor);
-        _characterRoleText = CreateLargeCenterLabel(panel, string.Empty, new Vector2(0f, 14f), 520f, 17f, HintColor);
-        _characterDescriptionText = CreateLargeCenterLabel(panel, string.Empty, new Vector2(0f, -34f), 700f, 16f, BodyColor);
-        _characterStatsText = CreateLargeCenterLabel(panel, string.Empty, new Vector2(0f, -96f), 760f, 15f, HintColor);
-        _characterAlliesText = CreateLargeCenterLabel(panel, string.Empty, new Vector2(0f, -138f), 760f, 15f, BodyColor);
+        _characterChoiceText = CreateLargeCenterLabel(panel, string.Empty, new Vector2(0f, 62f), 620f, 30f, TitleColor);
+        _characterRoleText = CreateLargeCenterLabel(panel, string.Empty, new Vector2(0f, 26f), 520f, 17f, HintColor);
+        _characterPrimaryText = CreateLargeCenterLabel(panel, string.Empty, new Vector2(0f, -12f), 700f, 16f, TitleColor);
+        _characterDescriptionText = CreateLargeCenterLabel(panel, string.Empty, new Vector2(0f, -56f), 700f, 16f, BodyColor);
+        _characterStatsText = CreateLargeCenterLabel(panel, string.Empty, new Vector2(0f, -112f), 760f, 15f, HintColor);
+        _characterAlliesText = CreateLargeCenterLabel(panel, string.Empty, new Vector2(0f, -154f), 760f, 15f, BodyColor);
 
-        CreateButton(panel, "Continue", new Vector2(0f, -214f), new Vector2(300f, 58f), AccentColor, true, ShowSinglePlayerSetup, string.Empty);
-        CreateButton(panel, "Back", new Vector2(0f, -286f), new Vector2(220f, 48f), SecondaryButtonColor, true, ShowModeSelection, string.Empty);
+        CreateButton(panel, "Continue", new Vector2(0f, -226f), new Vector2(300f, 58f), AccentColor, true, ShowSinglePlayerSetup, string.Empty);
+        CreateButton(panel, "Back", new Vector2(0f, -298f), new Vector2(220f, 48f), SecondaryButtonColor, true, ShowModeSelection, string.Empty);
         CreateHintLabel(panel, "Zombies are not playable. Angels and Demons can join this screen later once their player kits are ready.", new Vector2(0f, -350f), 760f);
     }
 
@@ -265,10 +285,11 @@ public class MainMenuRuntime : MonoBehaviour
         CreateDivider(panel, new Vector2(0f, 98f), 680f);
 
         CreateSectionLabel(panel, "Run Setup", new Vector2(0f, 48f));
-        CreateButton(panel, "Character", new Vector2(-330f, -4f), new Vector2(190f, 52f), UtilityButtonColor, true, ShowCharacterSelection, string.Empty);
-        CreateButton(panel, "Loadout", new Vector2(-110f, -4f), new Vector2(190f, 52f), PlaceholderArcane, true, ShowLoadoutSetup, string.Empty);
-        CreateButton(panel, "Map Select", new Vector2(110f, -4f), new Vector2(190f, 52f), UtilityButtonColor, false, null, "Soon");
-        CreateButton(panel, "Difficulty", new Vector2(330f, -4f), new Vector2(190f, 52f), PlaceholderWar, false, null, "Soon");
+        CreateButton(panel, "Character", new Vector2(-360f, -4f), new Vector2(160f, 52f), UtilityButtonColor, true, ShowCharacterSelection, string.Empty);
+        CreateButton(panel, "Loadout", new Vector2(-180f, -4f), new Vector2(160f, 52f), PlaceholderArcane, true, ShowLoadoutSetup, string.Empty);
+        CreateButton(panel, "Talents", new Vector2(0f, -4f), new Vector2(160f, 52f), AccentColor, true, ShowTalentBrowser, string.Empty);
+        CreateButton(panel, "Map Select", new Vector2(180f, -4f), new Vector2(160f, 52f), UtilityButtonColor, false, null, "Soon");
+        CreateButton(panel, "Difficulty", new Vector2(360f, -4f), new Vector2(160f, 52f), PlaceholderWar, false, null, "Soon");
 
         _singlePlayerCharacterSummaryText = CreateHintLabel(panel, string.Empty, new Vector2(0f, -64f), 760f);
         _singlePlayerLoadoutSummaryText = CreateHintLabel(panel, string.Empty, new Vector2(0f, -112f), 760f);
@@ -296,13 +317,36 @@ public class MainMenuRuntime : MonoBehaviour
         CreateDivider(panel, new Vector2(0f, 120f), 720f);
         _loadoutHeaderSummaryText = CreateHintLabel(panel, string.Empty, new Vector2(0f, 94f), 760f);
 
-        _weaponChoiceText = CreateChoiceBlock(panel, "Weapon", new Vector2(0f, 18f), CycleWeaponBackward, CycleWeaponForward, out _weaponDescriptionText);
+        _weaponChoiceText = CreateChoiceBlock(panel, "Primary", new Vector2(0f, 18f), CycleWeaponBackward, CycleWeaponForward, out _weaponDescriptionText);
         _bombChoiceText = CreateChoiceBlock(panel, "Bomb Skill", new Vector2(0f, -82f), CycleBombBackward, CycleBombForward, out _bombDescriptionText);
         _skillChoiceText = CreateChoiceBlock(panel, "Active Skill", new Vector2(0f, -182f), CycleSkillBackward, CycleSkillForward, out _skillDescriptionText);
         _passiveChoiceText = CreateChoiceBlock(panel, "Passive", new Vector2(0f, -282f), CyclePassiveBackward, CyclePassiveForward, out _passiveDescriptionText);
 
         CreateButton(panel, "Back to Setup", new Vector2(0f, -374f), new Vector2(260f, 50f), SecondaryButtonColor, true, ShowSinglePlayerSetup, string.Empty);
         CreateHintLabel(panel, "These choices stay active until you change them here again. More weapon, bomb, and skill families can plug into this screen later.", new Vector2(0f, -436f), 760f);
+    }
+
+    private void BuildTalentPanel(RectTransform panel)
+    {
+        CreatePanelTitle(panel, "Talent Codex", new Vector2(0f, 236f));
+        CreatePanelBody(panel, "Browse future build paths without adding noise to combat. Cards adapt to your current kit, so the same talent can read differently for each character and primary.", new Vector2(0f, 192f), 840f);
+        CreateDivider(panel, new Vector2(0f, 144f), 820f);
+
+        _talentKitSummaryText = CreateHintLabel(panel, string.Empty, new Vector2(0f, 114f), 900f);
+        _talentTagSummaryText = CreateHintLabel(panel, string.Empty, new Vector2(0f, 78f), 900f);
+
+        _talentCards = new TalentCardView[6];
+        Vector2 cardSize = new Vector2(490f, 106f);
+        _talentCards[0] = CreateTalentCard(panel, new Vector2(-260f, 12f), cardSize);
+        _talentCards[1] = CreateTalentCard(panel, new Vector2(260f, 12f), cardSize);
+        _talentCards[2] = CreateTalentCard(panel, new Vector2(-260f, -114f), cardSize);
+        _talentCards[3] = CreateTalentCard(panel, new Vector2(260f, -114f), cardSize);
+        _talentCards[4] = CreateTalentCard(panel, new Vector2(-260f, -240f), cardSize);
+        _talentCards[5] = CreateTalentCard(panel, new Vector2(260f, -240f), cardSize);
+
+        CreateButton(panel, "Change Loadout", new Vector2(-150f, -326f), new Vector2(250f, 48f), AccentColor, true, ShowLoadoutSetup, string.Empty);
+        CreateButton(panel, "Back to Setup", new Vector2(150f, -326f), new Vector2(250f, 48f), SecondaryButtonColor, true, ShowSinglePlayerSetup, string.Empty);
+        CreateHintLabel(panel, "For now, this is a preview layer. Later, profile XP can unlock these paths and the in-run upgrade pool can draw from the active tags.", new Vector2(0f, -388f), 860f);
     }
 
     private static void CreatePanelTitle(Transform parent, string label, Vector2 anchoredPosition)
@@ -473,6 +517,67 @@ public class MainMenuRuntime : MonoBehaviour
         descriptionRect.sizeDelta = new Vector2(640f, 40f);
 
         return choiceText;
+    }
+
+    private static TalentCardView CreateTalentCard(Transform parent, Vector2 anchoredPosition, Vector2 size)
+    {
+        GameObject cardObject = new GameObject("TalentCard");
+        cardObject.transform.SetParent(parent, false);
+
+        Image background = cardObject.AddComponent<Image>();
+        background.color = new Color(0.05f, 0.12f, 0.06f, 0.78f);
+
+        Outline outline = cardObject.AddComponent<Outline>();
+        outline.effectColor = OutlineColor;
+        outline.effectDistance = new Vector2(1.5f, -1.5f);
+
+        RectTransform rect = cardObject.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = anchoredPosition;
+        rect.sizeDelta = size;
+
+        TalentCardView view = new TalentCardView
+        {
+            Root = cardObject,
+            Background = background,
+            Outline = outline,
+            UnlockText = CreateTalentCardText(cardObject.transform, "Unlock", new Vector2(0f, 39f), new Vector2(size.x - 30f, 18f), 11f, HintColor),
+            TitleText = CreateTalentCardText(cardObject.transform, "Title", new Vector2(0f, 18f), new Vector2(size.x - 30f, 24f), 18f, TitleColor),
+            RequirementText = CreateTalentCardText(cardObject.transform, "Requirement", new Vector2(0f, -6f), new Vector2(size.x - 30f, 18f), 11f, new Color(0.72f, 0.88f, 0.68f, 1f)),
+            EffectText = CreateTalentCardText(cardObject.transform, "Effect", new Vector2(0f, -33f), new Vector2(size.x - 36f, 42f), 12f, BodyColor)
+        };
+
+        return view;
+    }
+
+    private static TextMeshProUGUI CreateTalentCardText(
+        Transform parent,
+        string name,
+        Vector2 anchoredPosition,
+        Vector2 size,
+        float fontSize,
+        Color color)
+    {
+        GameObject textObject = new GameObject(name);
+        textObject.transform.SetParent(parent, false);
+
+        TextMeshProUGUI text = textObject.AddComponent<TextMeshProUGUI>();
+        text.fontSize = fontSize;
+        text.alignment = TextAlignmentOptions.Center;
+        text.enableWordWrapping = true;
+        text.overflowMode = TextOverflowModes.Ellipsis;
+        text.color = color;
+
+        RectTransform rect = textObject.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = anchoredPosition;
+        rect.sizeDelta = size;
+
+        return text;
     }
 
     private static void CreateButton(
@@ -652,6 +757,9 @@ public class MainMenuRuntime : MonoBehaviour
         if (_characterRoleText != null)
             _characterRoleText.text = RunLoadoutState.GetCharacterRole(RunLoadoutState.CharacterChoice);
 
+        if (_characterPrimaryText != null)
+            _characterPrimaryText.text = $"{RunLoadoutState.GetPrimaryAttackCategory(RunLoadoutState.CharacterChoice)} Primary: {RunLoadoutState.GetPrimaryAttackName(RunLoadoutState.CharacterChoice, RunLoadoutState.WeaponChoice)}";
+
         if (_characterDescriptionText != null)
             _characterDescriptionText.text = RunLoadoutState.GetCharacterDescription(RunLoadoutState.CharacterChoice);
 
@@ -665,10 +773,10 @@ public class MainMenuRuntime : MonoBehaviour
             _loadoutHeaderSummaryText.text = kitSummary;
 
         if (_weaponChoiceText != null)
-            _weaponChoiceText.text = RunLoadoutState.GetWeaponName(RunLoadoutState.WeaponChoice);
+            _weaponChoiceText.text = RunLoadoutState.GetPrimaryAttackName(RunLoadoutState.CharacterChoice, RunLoadoutState.WeaponChoice);
 
         if (_weaponDescriptionText != null)
-            _weaponDescriptionText.text = RunLoadoutState.GetWeaponDescription(RunLoadoutState.WeaponChoice);
+            _weaponDescriptionText.text = RunLoadoutState.GetPrimaryAttackDescription(RunLoadoutState.CharacterChoice, RunLoadoutState.WeaponChoice);
 
         if (_bombChoiceText != null)
             _bombChoiceText.text = RunLoadoutState.GetBombName(RunLoadoutState.BombChoice);
@@ -687,6 +795,57 @@ public class MainMenuRuntime : MonoBehaviour
 
         if (_passiveDescriptionText != null)
             _passiveDescriptionText.text = RunLoadoutState.GetPassiveDescription(RunLoadoutState.PassiveChoice);
+
+        RefreshTalentTexts();
+    }
+
+    private void RefreshTalentTexts()
+    {
+        if (_talentKitSummaryText != null)
+            _talentKitSummaryText.text = RunLoadoutState.BuildSummary();
+
+        if (_talentTagSummaryText != null)
+            _talentTagSummaryText.text = TalentCatalog.BuildCurrentTagSummary();
+
+        if (_talentCards == null)
+            return;
+
+        TalentDisplayInfo[] cards = TalentCatalog.BuildCurrentDisplayCards();
+        for (int i = 0; i < _talentCards.Length; i++)
+        {
+            TalentCardView view = _talentCards[i];
+            if (view == null || view.Root == null)
+                continue;
+
+            bool hasCard = i < cards.Length;
+            view.Root.SetActive(hasCard);
+            if (!hasCard)
+                continue;
+
+            TalentDisplayInfo card = cards[i];
+            Color accent = card.AccentColor;
+
+            if (view.Background != null)
+                view.Background.color = new Color(accent.r * 0.45f, accent.g * 0.55f, accent.b * 0.45f, 0.78f);
+
+            if (view.Outline != null)
+                view.Outline.effectColor = new Color(accent.r, accent.g, accent.b, card.IsUnlocked ? 0.45f : 0.2f);
+
+            if (view.UnlockText != null)
+                view.UnlockText.text = $"{card.TreeName}  |  {card.UnlockText}";
+
+            if (view.TitleText != null)
+                view.TitleText.text = card.Title;
+
+            if (view.RequirementText != null)
+                view.RequirementText.text = card.RequirementText;
+
+            if (view.EffectText != null)
+            {
+                view.EffectText.text = card.EffectText;
+                view.EffectText.color = card.IsUnlocked ? BodyColor : new Color(BodyColor.r, BodyColor.g, BodyColor.b, 0.78f);
+            }
+        }
     }
 
     private void ShowModeSelection()
@@ -717,7 +876,13 @@ public class MainMenuRuntime : MonoBehaviour
         SetPanelState(modeSelection: false, characterSelection: false, singlePlayer: false, multiplayer: false, loadout: true);
     }
 
-    private void SetPanelState(bool modeSelection, bool characterSelection, bool singlePlayer, bool multiplayer, bool loadout)
+    private void ShowTalentBrowser()
+    {
+        RefreshLoadoutTexts();
+        SetPanelState(modeSelection: false, characterSelection: false, singlePlayer: false, multiplayer: false, loadout: false, talent: true);
+    }
+
+    private void SetPanelState(bool modeSelection, bool characterSelection, bool singlePlayer, bool multiplayer, bool loadout, bool talent = false)
     {
         if (_modeSelectionPanel != null)
             _modeSelectionPanel.gameObject.SetActive(modeSelection);
@@ -733,6 +898,9 @@ public class MainMenuRuntime : MonoBehaviour
 
         if (_loadoutPanel != null)
             _loadoutPanel.gameObject.SetActive(loadout);
+
+        if (_talentPanel != null)
+            _talentPanel.gameObject.SetActive(talent);
     }
 
     private void LoadGameplayScene()

@@ -242,7 +242,7 @@ public class PlayerUpgradeOption
                 scope: PlayerUpgradeScope.Vanguard),
 
             new PlayerUpgradeOption("Leyline Reach", "+1 spell range", PlayerUpgradeType.MagicRange, amount: 1f, scope: PlayerUpgradeScope.Arcanist),
-            new PlayerUpgradeOption("Wider Channel", "+0.18 spell width", PlayerUpgradeType.MagicBeamWidth, amount: 0.18f, scope: PlayerUpgradeScope.Arcanist),
+            new PlayerUpgradeOption("Amplified Casting", "+0.18 spell size", PlayerUpgradeType.MagicBeamWidth, amount: 0.18f, scope: PlayerUpgradeScope.Arcanist),
             new PlayerUpgradeOption("Quick Chant", "-0.07s spell cooldown", PlayerUpgradeType.MagicCooldownReduction, amount: 0.07f, scope: PlayerUpgradeScope.Arcanist),
             new PlayerUpgradeOption(
                 "Unstable Rune",
@@ -327,7 +327,7 @@ public class PlayerUpgradeOption
 
             new PlayerUpgradeOption(
                 "Ancient Leyline",
-                "+1.5 spell range and +0.25 spell width",
+                "+1.5 spell range and +0.25 spell size",
                 PlayerUpgradeType.MagicRange,
                 amount: 1.5f,
                 hasSecondaryUpgrade: true,

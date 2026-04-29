@@ -94,7 +94,7 @@ public class PlayerExperience : MonoBehaviour
     {
         EnsureDefaultUpgradePool();
 
-        PlayableCharacterChoice character = RunLoadoutState.CharacterChoice;
+        PlayableCharacterChoice character = GetActiveCharacterChoice();
         List<PlayerUpgradeOption> available = BuildAvailableUpgradePool(character);
         List<PlayerUpgradeOption> choices = new List<PlayerUpgradeOption>();
 
@@ -111,6 +111,23 @@ public class PlayerExperience : MonoBehaviour
         }
 
         return choices;
+    }
+
+    private PlayableCharacterChoice GetActiveCharacterChoice()
+    {
+        PlayerMagicAttack magic = GetComponent<PlayerMagicAttack>();
+        if (magic != null && magic.enabled)
+            return PlayableCharacterChoice.HumanArcanist;
+
+        PlayerMeleeAttack melee = GetComponent<PlayerMeleeAttack>();
+        if (melee != null && melee.enabled)
+            return PlayableCharacterChoice.HumanVanguard;
+
+        PlayerShooting shooting = GetComponent<PlayerShooting>();
+        if (shooting != null && shooting.enabled)
+            return PlayableCharacterChoice.HumanRanger;
+
+        return RunLoadoutState.CharacterChoice;
     }
 
     private List<PlayerUpgradeOption> BuildAvailableUpgradePool(PlayableCharacterChoice character)

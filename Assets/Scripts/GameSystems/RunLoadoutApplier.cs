@@ -69,7 +69,7 @@ public class RunLoadoutApplier : MonoBehaviour
         if (RunAnnouncementUI.Instance != null)
         {
             RunAnnouncementUI.Instance.ShowMessage(
-                $"{RunLoadoutState.GetCharacterName(RunLoadoutState.CharacterChoice)}\n{RunLoadoutState.GetWeaponName(RunLoadoutState.WeaponChoice)} | {RunLoadoutState.GetBombName(RunLoadoutState.BombChoice)} | {RunLoadoutState.GetSkillName(RunLoadoutState.SkillChoice)}",
+                $"{RunLoadoutState.GetCharacterName(RunLoadoutState.CharacterChoice)}\n{RunLoadoutState.GetPrimaryAttackName(RunLoadoutState.CharacterChoice, RunLoadoutState.WeaponChoice)} | {RunLoadoutState.GetBombName(RunLoadoutState.BombChoice)} | {RunLoadoutState.GetSkillName(RunLoadoutState.SkillChoice)}",
                 4f);
             _announcementShown = true;
         }

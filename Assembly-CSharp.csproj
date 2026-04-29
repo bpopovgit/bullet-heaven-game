@@ -127,6 +127,7 @@
     <Compile Include="Assets\Scripts\Combat\BulletElemental.cs" />
     <Compile Include="Assets\Scripts\UIScripts\ExperienceUI.cs" />
     <Compile Include="Assets\Scripts\UIScripts\ScoreTextUI.cs" />
+    <Compile Include="Assets\Scripts\GameSystems\TalentCatalog.cs" />
     <Compile Include="Assets\Scripts\GameSystems\BossSpawnPoint.cs" />
     <Compile Include="Assets\Scripts\GameSystems\RunLoadoutApplier.cs" />
     <Compile Include="Assets\Scripts\GameSystems\EliteSpawnDirector.cs" />
@@ -153,6 +154,7 @@
     <Compile Include="Assets\Scripts\PlayerScripts\PlayerCharacterVisualIdentity.cs" />
     <Compile Include="Assets\Scripts\UIScripts\PlayerHealthUI.cs" />
     <Compile Include="Assets\Scripts\PlayerScripts\PlayerShooting.cs" />
+    <Compile Include="Assets\Scripts\UIScripts\RunKitSummaryUI.cs" />
     <Compile Include="Assets\Scripts\Combat\EnemyHealth.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -106,7 +106,7 @@ public static class RunLoadoutState
             case PlayableCharacterChoice.HumanRanger:
                 return "A fast survivor who keeps the projectile weapons and opens with more ranged support.";
             case PlayableCharacterChoice.HumanArcanist:
-                return "A fragile caster who channels the selected primary into a spell beam instead of bullets.";
+                return "A fragile caster who turns the selected primary into a distinct elemental spell instead of bullets.";
             case PlayableCharacterChoice.HumanVanguard:
             default:
                 return "A durable melee-only leader who drops into the fight with a guard squad and a forward cleave.";
@@ -120,7 +120,7 @@ public static class RunLoadoutState
             case PlayableCharacterChoice.HumanRanger:
                 return "Projectile weapons  |  +12% move speed  |  +10% fire rate";
             case PlayableCharacterChoice.HumanArcanist:
-                return "Arcane spell beam  |  +15% damage  |  +1 pickup radius";
+                return "Elemental spell kit  |  +15% damage  |  +1 pickup radius";
             case PlayableCharacterChoice.HumanVanguard:
             default:
                 return "Melee only  |  +35 max HP  |  Vanguard Cleave";
@@ -232,7 +232,75 @@ public static class RunLoadoutState
 
     public static string BuildCharacterSummary()
     {
-        return $"{GetCharacterName(CharacterChoice)}  |  {GetCharacterStatsSummary(CharacterChoice)}";
+        return $"{GetCharacterName(CharacterChoice)}  |  {GetPrimaryAttackName(CharacterChoice, WeaponChoice)}  |  {GetCharacterStatsSummary(CharacterChoice)}";
+    }
+
+    public static string GetPrimaryAttackName(PlayableCharacterChoice character, StartingWeaponChoice weapon)
+    {
+        switch (character)
+        {
+            case PlayableCharacterChoice.HumanRanger:
+                return GetWeaponName(weapon);
+
+            case PlayableCharacterChoice.HumanArcanist:
+                switch (weapon)
+                {
+                    case StartingWeaponChoice.FrostLance:
+                        return "Frost Ray";
+                    case StartingWeaponChoice.VenomCaster:
+                        return "Venom Bloom";
+                    case StartingWeaponChoice.StormNeedler:
+                        return "Storm Arc";
+                    case StartingWeaponChoice.EmberRepeater:
+                    default:
+                        return "Ember Wave";
+                }
+
+            case PlayableCharacterChoice.HumanVanguard:
+            default:
+                return "Vanguard Cleave";
+        }
+    }
+
+    public static string GetPrimaryAttackDescription(PlayableCharacterChoice character, StartingWeaponChoice weapon)
+    {
+        switch (character)
+        {
+            case PlayableCharacterChoice.HumanRanger:
+                return GetWeaponDescription(weapon);
+
+            case PlayableCharacterChoice.HumanArcanist:
+                switch (weapon)
+                {
+                    case StartingWeaponChoice.FrostLance:
+                        return "A cold spell beam that slows enemies and rewards clean positioning.";
+                    case StartingWeaponChoice.VenomCaster:
+                        return "A toxic bloom that detonates at range and punishes clustered enemies.";
+                    case StartingWeaponChoice.StormNeedler:
+                        return "A shorter lightning strike that jumps unpredictably between nearby targets.";
+                    case StartingWeaponChoice.EmberRepeater:
+                    default:
+                        return "A forward fire wave that burns packs caught in its cone.";
+                }
+
+            case PlayableCharacterChoice.HumanVanguard:
+            default:
+                return "A melee-only forward cleave. Aim into the pack and hold fire to carve space.";
+        }
+    }
+
+    public static string GetPrimaryAttackCategory(PlayableCharacterChoice character)
+    {
+        switch (character)
+        {
+            case PlayableCharacterChoice.HumanRanger:
+                return "Projectile";
+            case PlayableCharacterChoice.HumanArcanist:
+                return "Spell";
+            case PlayableCharacterChoice.HumanVanguard:
+            default:
+                return "Melee";
+        }
     }
 
     public static string GetWeaponName(StartingWeaponChoice choice)
@@ -369,12 +437,12 @@ public static class RunLoadoutState
 
     public static string BuildSummary()
     {
-        return $"Character: {GetCharacterName(CharacterChoice)}  |  Weapon: {GetWeaponName(WeaponChoice)}  |  Bomb: {GetBombName(BombChoice)}  |  Skill: {GetSkillName(SkillChoice)}  |  Passive: {GetPassiveName(PassiveChoice)}";
+        return $"Character: {GetCharacterName(CharacterChoice)}  |  Primary: {GetPrimaryAttackName(CharacterChoice, WeaponChoice)}  |  Bomb: {GetBombName(BombChoice)}  |  Skill: {GetSkillName(SkillChoice)}  |  Passive: {GetPassiveName(PassiveChoice)}";
     }
 
     public static string BuildKitSummary()
     {
-        return $"Weapon: {GetWeaponName(WeaponChoice)}  |  Bomb: {GetBombName(BombChoice)}  |  Skill: {GetSkillName(SkillChoice)}  |  Passive: {GetPassiveName(PassiveChoice)}";
+        return $"Primary: {GetPrimaryAttackName(CharacterChoice, WeaponChoice)}  |  Bomb: {GetBombName(BombChoice)}  |  Skill: {GetSkillName(SkillChoice)}  |  Passive: {GetPassiveName(PassiveChoice)}";
     }
 
     private static T CycleEnum<T>(T current, int delta) where T : struct
