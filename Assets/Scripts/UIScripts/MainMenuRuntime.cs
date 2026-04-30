@@ -47,11 +47,41 @@ public class MainMenuRuntime : MonoBehaviour
     {
         public GameObject Root;
         public TextMeshProUGUI HeaderText;
-        public TalentCardView RootNode;
-        public TalentCardView LeftNode;
-        public TalentCardView RightNode;
-        public TalentCardView CapstoneNode;
+        public TalentCardView[] Nodes;
+        public Image[] Connectors;
+        public int[] ConnectorParentIndex;
     }
+
+    private static readonly Vector2[] TalentTreeNodePositions =
+    {
+        new Vector2(0f, 138f),    // Tier 1 root
+        new Vector2(-150f, 56f),  // Tier 2 left
+        new Vector2(0f, 56f),     // Tier 2 middle
+        new Vector2(150f, 56f),   // Tier 2 right
+        new Vector2(-150f, -32f), // Tier 3 left
+        new Vector2(0f, -32f),    // Tier 3 middle
+        new Vector2(150f, -32f),  // Tier 3 right
+        new Vector2(-90f, -136f), // Tier 4 capstone left (parents tier-3 left)
+        new Vector2(90f, -136f)   // Tier 4 capstone right (parents tier-3 right)
+    };
+
+    private static readonly Vector2[] TalentTreeNodeSizes =
+    {
+        new Vector2(220f, 70f),
+        new Vector2(140f, 70f),
+        new Vector2(140f, 70f),
+        new Vector2(140f, 70f),
+        new Vector2(140f, 70f),
+        new Vector2(140f, 70f),
+        new Vector2(140f, 70f),
+        new Vector2(170f, 70f),
+        new Vector2(170f, 70f)
+    };
+
+    private static readonly int[] TalentTreeConnectorParents = { 0, 0, 0, 1, 2, 3, 4, 6 };
+    private static readonly int[] TalentTreeConnectorChildren = { 1, 2, 3, 4, 5, 6, 7, 8 };
+    private static readonly Color TreeConnectorActiveColor = new Color(0.93f, 0.79f, 0.35f, 0.55f);
+    private static readonly Color TreeConnectorIdleColor = new Color(0.6f, 0.62f, 0.55f, 0.18f);
 
     private bool _isLoading;
     private RectTransform _root;
@@ -388,17 +418,17 @@ public class MainMenuRuntime : MonoBehaviour
         _talentKitSummaryText = CreateHintLabel(panel, string.Empty, new Vector2(0f, 114f), 900f);
         _talentTagSummaryText = CreateHintLabel(panel, string.Empty, new Vector2(0f, 84f), 900f);
 
-        RectTransform talentContent = CreateTalentScrollContent(panel, new Vector2(0f, -94f), new Vector2(1060f, 430f), new Vector2(1040f, 1120f));
-        CreateTalentCardText(talentContent, "AttackHeader", new Vector2(-270f, 520f), new Vector2(420f, 28f), 18f, HintColor).text = "Attack";
-        CreateTalentCardText(talentContent, "DefenseHeader", new Vector2(270f, 520f), new Vector2(420f, 28f), 18f, HintColor).text = "Defense";
+        RectTransform talentContent = CreateTalentScrollContent(panel, new Vector2(0f, -94f), new Vector2(1060f, 430f), new Vector2(1040f, 1420f));
+        CreateTalentCardText(talentContent, "AttackHeader", new Vector2(-270f, 670f), new Vector2(420f, 28f), 18f, HintColor).text = "Attack";
+        CreateTalentCardText(talentContent, "DefenseHeader", new Vector2(270f, 670f), new Vector2(420f, 28f), 18f, HintColor).text = "Defense";
 
         _runTalentTreeViews = new RunTalentTreeView[6];
-        _runTalentTreeViews[0] = CreateRunTalentTreeView(talentContent, new Vector2(-270f, 338f));
+        _runTalentTreeViews[0] = CreateRunTalentTreeView(talentContent, new Vector2(-270f, 440f));
         _runTalentTreeViews[1] = CreateRunTalentTreeView(talentContent, new Vector2(-270f, 0f));
-        _runTalentTreeViews[2] = CreateRunTalentTreeView(talentContent, new Vector2(-270f, -338f));
-        _runTalentTreeViews[3] = CreateRunTalentTreeView(talentContent, new Vector2(270f, 338f));
+        _runTalentTreeViews[2] = CreateRunTalentTreeView(talentContent, new Vector2(-270f, -440f));
+        _runTalentTreeViews[3] = CreateRunTalentTreeView(talentContent, new Vector2(270f, 440f));
         _runTalentTreeViews[4] = CreateRunTalentTreeView(talentContent, new Vector2(270f, 0f));
-        _runTalentTreeViews[5] = CreateRunTalentTreeView(talentContent, new Vector2(270f, -338f));
+        _runTalentTreeViews[5] = CreateRunTalentTreeView(talentContent, new Vector2(270f, -440f));
 
         CreateButton(panel, "Change Loadout", new Vector2(-150f, -326f), new Vector2(250f, 48f), AccentColor, true, ShowLoadoutSetup, string.Empty);
         CreateButton(panel, "Back to Setup", new Vector2(150f, -326f), new Vector2(250f, 48f), SecondaryButtonColor, true, ShowSinglePlayerSetup, string.Empty);
@@ -736,24 +766,55 @@ public class MainMenuRuntime : MonoBehaviour
         rect.anchorMax = new Vector2(0.5f, 0.5f);
         rect.pivot = new Vector2(0.5f, 0.5f);
         rect.anchoredPosition = anchoredPosition;
-        rect.sizeDelta = new Vector2(500f, 330f);
+        rect.sizeDelta = new Vector2(440f, 380f);
 
-        RunTalentTreeView view = new RunTalentTreeView
+        TextMeshProUGUI header = CreateTalentCardText(treeObject.transform, "TreeHeader", new Vector2(0f, 178f), new Vector2(420f, 22f), 13f, HintColor);
+
+        Image[] connectors = new Image[TalentTreeConnectorParents.Length];
+        for (int i = 0; i < connectors.Length; i++)
+        {
+            int parentIdx = TalentTreeConnectorParents[i];
+            int childIdx = TalentTreeConnectorChildren[i];
+            connectors[i] = CreateTreeConnector(treeObject.transform, TalentTreeNodePositions[parentIdx], TalentTreeNodePositions[childIdx]);
+        }
+
+        TalentCardView[] nodes = new TalentCardView[TalentTreeNodePositions.Length];
+        for (int i = 0; i < nodes.Length; i++)
+            nodes[i] = CreateTalentCard(treeObject.transform, TalentTreeNodePositions[i], TalentTreeNodeSizes[i]);
+
+        return new RunTalentTreeView
         {
             Root = treeObject,
-            HeaderText = CreateTalentCardText(treeObject.transform, "TreeHeader", new Vector2(0f, 154f), new Vector2(450f, 24f), 14f, HintColor),
-            RootNode = CreateTalentCard(treeObject.transform, new Vector2(0f, 86f), new Vector2(230f, 86f)),
-            LeftNode = CreateTalentCard(treeObject.transform, new Vector2(-128f, -34f), new Vector2(220f, 92f)),
-            RightNode = CreateTalentCard(treeObject.transform, new Vector2(128f, -34f), new Vector2(220f, 92f)),
-            CapstoneNode = CreateTalentCard(treeObject.transform, new Vector2(0f, -160f), new Vector2(250f, 92f))
+            HeaderText = header,
+            Nodes = nodes,
+            Connectors = connectors,
+            ConnectorParentIndex = TalentTreeConnectorParents
         };
+    }
 
-        CreateTalentCardText(treeObject.transform, "SplitConnectorLeft", new Vector2(-64f, 28f), new Vector2(42f, 28f), 18f, HintColor).text = "/";
-        CreateTalentCardText(treeObject.transform, "SplitConnectorRight", new Vector2(64f, 28f), new Vector2(42f, 28f), 18f, HintColor).text = "\\";
-        CreateTalentCardText(treeObject.transform, "MergeConnectorLeft", new Vector2(-64f, -96f), new Vector2(42f, 28f), 18f, HintColor).text = "\\";
-        CreateTalentCardText(treeObject.transform, "MergeConnectorRight", new Vector2(64f, -96f), new Vector2(42f, 28f), 18f, HintColor).text = "/";
+    private static Image CreateTreeConnector(Transform parent, Vector2 fromAnchor, Vector2 toAnchor)
+    {
+        GameObject lineObject = new GameObject("TreeConnector");
+        lineObject.transform.SetParent(parent, false);
 
-        return view;
+        Image image = lineObject.AddComponent<Image>();
+        image.color = TreeConnectorIdleColor;
+        image.raycastTarget = false;
+
+        Vector2 delta = toAnchor - fromAnchor;
+        float length = Mathf.Max(1f, delta.magnitude);
+        Vector2 mid = (fromAnchor + toAnchor) * 0.5f;
+        float angle = Mathf.Atan2(-delta.x, delta.y) * Mathf.Rad2Deg;
+
+        RectTransform rect = lineObject.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = mid;
+        rect.sizeDelta = new Vector2(2.5f, length);
+        rect.localEulerAngles = new Vector3(0f, 0f, angle);
+
+        return image;
     }
 
     private static RunChainView CreateRunChainView(Transform parent, Vector2 anchoredPosition)
@@ -1145,10 +1206,13 @@ public class MainMenuRuntime : MonoBehaviour
             if (view.HeaderText != null)
                 view.HeaderText.text = tree.ChainName;
 
-            ApplyTreeNode(view.RootNode, tree, 0);
-            ApplyTreeNode(view.LeftNode, tree, 1);
-            ApplyTreeNode(view.RightNode, tree, 2);
-            ApplyTreeNode(view.CapstoneNode, tree, 3);
+            if (view.Nodes != null)
+            {
+                for (int n = 0; n < view.Nodes.Length; n++)
+                    ApplyTreeNode(view.Nodes[n], tree, n);
+            }
+
+            ApplyTreeConnectors(view, tree);
         }
     }
 
@@ -1163,14 +1227,37 @@ public class MainMenuRuntime : MonoBehaviour
             return;
 
         RunUpgradeNodeDisplayInfo node = tree.Nodes[index];
+        bool locked = !string.IsNullOrEmpty(node.RequirementText)
+            && (node.RequirementText.StartsWith("Locked", System.StringComparison.OrdinalIgnoreCase));
+
         ApplyTalentCardView(
             view,
             node.AccentColor,
-            true,
+            !locked,
             node.StageText,
             node.Title,
             node.RequirementText,
             node.EffectText);
+    }
+
+    private static void ApplyTreeConnectors(RunTalentTreeView view, RunUpgradeChainDisplayInfo tree)
+    {
+        if (view.Connectors == null || view.ConnectorParentIndex == null || tree.Nodes == null)
+            return;
+
+        for (int i = 0; i < view.Connectors.Length; i++)
+        {
+            Image connector = view.Connectors[i];
+            if (connector == null)
+                continue;
+
+            int parentIdx = view.ConnectorParentIndex[i];
+            bool active = parentIdx < tree.Nodes.Length
+                && !string.IsNullOrEmpty(tree.Nodes[parentIdx].StageText)
+                && !tree.Nodes[parentIdx].StageText.StartsWith("0 ", System.StringComparison.Ordinal);
+
+            connector.color = active ? TreeConnectorActiveColor : TreeConnectorIdleColor;
+        }
     }
 
     private static void ApplyTalentCardView(
