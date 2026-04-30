@@ -19,10 +19,13 @@ public class PlayerSecondaryActiveSkill : MonoBehaviour
     public Color SkillPrimaryColor => _config != null ? _config.iconPrimaryColor : Color.white;
     public Color SkillSecondaryColor => _config != null ? _config.iconSecondaryColor : Color.white;
 
+    private Camera _mainCamera;
+
     private void Awake()
     {
         _playerHealth = GetComponent<PlayerHealth>();
         _rigidbody2D = GetComponent<Rigidbody2D>();
+        _mainCamera = Camera.main;
     }
 
     private void Update()
@@ -83,9 +86,72 @@ public class PlayerSecondaryActiveSkill : MonoBehaviour
             return;
         }
 
+        TryPhaseShiftBlink();
         ActivateCurrentSkill();
+        TryConsumeStatusForBurst();
         _cooldownRemaining = _config.cooldown;
         Debug.Log($"ACTIVE SKILL USED: {_config.displayName}");
+    }
+
+    private void TryPhaseShiftBlink()
+    {
+        PlayerCombatModifiers modifiers = PlayerCombatModifiers.Instance;
+        if (modifiers == null || modifiers.SkillBlinkDistance <= 0f)
+            return;
+
+        if (_mainCamera == null)
+            _mainCamera = Camera.main;
+        if (_mainCamera == null || Mouse.current == null)
+            return;
+
+        Vector3 mouseWorld = _mainCamera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+        mouseWorld.z = transform.position.z;
+
+        Vector2 toCursor = (Vector2)(mouseWorld - transform.position);
+        float distance = Mathf.Min(modifiers.SkillBlinkDistance, toCursor.magnitude);
+        if (distance <= 0.01f)
+            return;
+
+        Vector2 dir = toCursor.normalized;
+        Vector2 newPosition = (Vector2)transform.position + dir * distance;
+
+        if (_rigidbody2D != null)
+            _rigidbody2D.position = newPosition;
+        else
+            transform.position = newPosition;
+
+        Debug.Log($"PHASE SHIFT: blinked {distance:0.##}m toward cursor.");
+    }
+
+    private void TryConsumeStatusForBurst()
+    {
+        PlayerCombatModifiers modifiers = PlayerCombatModifiers.Instance;
+        if (modifiers == null || modifiers.SkillElementBurstDamage <= 0f)
+            return;
+
+        Vector2 origin = transform.position;
+        int count = Physics2D.OverlapCircleNonAlloc(origin, _config.radius, _enemyHits);
+        int consumed = 0;
+
+        for (int i = 0; i < count; i++)
+        {
+            Collider2D hit = _enemyHits[i];
+            if (hit == null || !hit.TryGetComponent<EnemyHealth>(out EnemyHealth enemy))
+                continue;
+
+            StatusReceiver receiver = hit.GetComponent<StatusReceiver>();
+            if (receiver == null || !receiver.HasActiveStatus)
+                continue;
+
+            int burstDamage = Mathf.Max(1, Mathf.RoundToInt(modifiers.SkillElementBurstDamage));
+            DamagePacket burstPacket = new DamagePacket(burstDamage, DamageElement.Physical, 0f, origin);
+            enemy.TakeDamage(burstPacket);
+            receiver.ClearMostRecentStatus();
+            consumed++;
+        }
+
+        if (consumed > 0)
+            Debug.Log($"ELEMENT UNLEASHED: consumed status on {consumed} enemies for +{Mathf.RoundToInt(modifiers.SkillElementBurstDamage)} damage each.");
     }
 
     private void ActivateCurrentSkill()

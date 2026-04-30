@@ -6,6 +6,13 @@ public class StatusReceiver : MonoBehaviour
     public float SpeedMultiplier { get; private set; } = 1f;
     public bool IsStunned => _shockActive || _freezeActive;
 
+    public StatusEffect MostRecentStatus { get; private set; } = StatusEffect.None;
+    public float MostRecentStatusDuration { get; private set; }
+    public float MostRecentStatusStrength { get; private set; }
+    public float MostRecentStatusExpiresAt { get; private set; }
+    public bool HasActiveStatus =>
+        MostRecentStatus != StatusEffect.None && Time.time < MostRecentStatusExpiresAt;
+
     [Header("Status VFX")]
     [SerializeField] private ParticleSystem burnVFX;
     [SerializeField] private ParticleSystem frostVFX;
@@ -46,6 +53,11 @@ public class StatusReceiver : MonoBehaviour
         if (packet.status == StatusEffect.None)
             return;
 
+        MostRecentStatus = packet.status;
+        MostRecentStatusDuration = packet.statusDuration;
+        MostRecentStatusStrength = packet.statusStrength;
+        MostRecentStatusExpiresAt = Time.time + Mathf.Max(0.1f, packet.statusDuration);
+
         switch (packet.status)
         {
             case StatusEffect.Slow:
@@ -68,6 +80,14 @@ public class StatusReceiver : MonoBehaviour
                 ApplyShock(packet.statusStrength, packet.statusDuration);
                 break;
         }
+    }
+
+    public void ClearMostRecentStatus()
+    {
+        MostRecentStatus = StatusEffect.None;
+        MostRecentStatusDuration = 0f;
+        MostRecentStatusStrength = 0f;
+        MostRecentStatusExpiresAt = 0f;
     }
 
     private void ApplySlow(float strength, float duration)

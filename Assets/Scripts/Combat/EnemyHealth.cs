@@ -103,6 +103,17 @@ public class EnemyHealth : MonoBehaviour
             multiplier = _resists.GetMultiplier(packet.element);
 
         int finalDamage = Mathf.RoundToInt(packet.amount * multiplier);
+
+        if (IsPlayerSourcedDamage(attacker))
+        {
+            PlayerCombatModifiers modifiers = PlayerCombatModifiers.Instance;
+            if (modifiers != null && maxHealth > 0)
+            {
+                float hpFraction = (float)currentHealth / maxHealth;
+                finalDamage = modifiers.ApplyExecuteIfApplicable(finalDamage, hpFraction);
+            }
+        }
+
         currentHealth -= finalDamage;
 
         if (_statusReceiver != null && packet.HasStatus && currentHealth > 0)
@@ -110,6 +121,11 @@ public class EnemyHealth : MonoBehaviour
 
         if (currentHealth <= 0)
             Die();
+    }
+
+    private static bool IsPlayerSourcedDamage(FactionMember attacker)
+    {
+        return attacker == null || attacker.Faction == FactionType.Human;
     }
 
     public void ApplyEliteModifiers(float healthMultiplier, float rewardMultiplier, float pickupDropChanceBonus)
@@ -154,8 +170,26 @@ public class EnemyHealth : MonoBehaviour
         Died?.Invoke(this);
         GameAudio.PlayEnemyDeath();
 
+        TrySpreadStatusOnKill();
+
         // TODO: add death VFX, score popup, loot drop, etc.
         Destroy(gameObject);
+    }
+
+    private void TrySpreadStatusOnKill()
+    {
+        PlayerCombatModifiers modifiers = PlayerCombatModifiers.Instance;
+        if (modifiers == null || modifiers.OnKillStatusSpreadRadius <= 0f)
+            return;
+
+        if (_statusReceiver == null || !_statusReceiver.HasActiveStatus)
+            return;
+
+        modifiers.TrySpreadStatusOnKill(
+            transform.position,
+            _statusReceiver.MostRecentStatus,
+            _statusReceiver.MostRecentStatusDuration,
+            _statusReceiver.MostRecentStatusStrength);
     }
 
     private bool ShouldAwardRewardsOnDeath()

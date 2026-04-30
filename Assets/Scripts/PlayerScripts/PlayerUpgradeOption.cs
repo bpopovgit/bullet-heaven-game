@@ -23,7 +23,15 @@ public enum PlayerUpgradeType
     BombDamagePercent,
     SkillCooldownReduction,
     SkillRadius,
-    SkillDuration
+    SkillDuration,
+    ExecuteThreshold,
+    ExecuteBonusDamage,
+    BurstShotFrequency,
+    OnKillStatusSpreadRadius,
+    OnKillStatusSpreadStrength,
+    SkillElementBurstDamage,
+    BombSecondaryBlastFraction,
+    SkillBlinkDistance
 }
 
 public enum PlayerUpgradeScope
@@ -118,11 +126,14 @@ public class PlayerUpgradeOption
         PlayerMagicAttack magic = player.GetComponent<PlayerMagicAttack>();
         PlayerActiveBomb bomb = player.GetComponent<PlayerActiveBomb>();
         PlayerSecondaryActiveSkill secondarySkill = player.GetComponent<PlayerSecondaryActiveSkill>();
+        PlayerCombatModifiers modifiers = player.GetComponent<PlayerCombatModifiers>();
+        if (modifiers == null)
+            modifiers = player.AddComponent<PlayerCombatModifiers>();
 
-        ApplyUpgrade(player, stats, health, melee, magic, bomb, secondarySkill, upgradeType, amount, intAmount);
+        ApplyUpgrade(player, stats, health, melee, magic, bomb, secondarySkill, modifiers, upgradeType, amount, intAmount);
 
         if (hasSecondaryUpgrade)
-            ApplyUpgrade(player, stats, health, melee, magic, bomb, secondarySkill, secondaryUpgradeType, secondaryAmount, secondaryIntAmount);
+            ApplyUpgrade(player, stats, health, melee, magic, bomb, secondarySkill, modifiers, secondaryUpgradeType, secondaryAmount, secondaryIntAmount);
 
         if (IsRunTalent)
         {
@@ -144,6 +155,7 @@ public class PlayerUpgradeOption
         PlayerMagicAttack magic,
         PlayerActiveBomb bomb,
         PlayerSecondaryActiveSkill secondarySkill,
+        PlayerCombatModifiers modifiers,
         PlayerUpgradeType type,
         float amount,
         int intAmount)
@@ -232,6 +244,38 @@ public class PlayerUpgradeOption
 
             case PlayerUpgradeType.SkillDuration:
                 if (secondarySkill != null) secondarySkill.AddDuration(amount);
+                break;
+
+            case PlayerUpgradeType.ExecuteThreshold:
+                if (modifiers != null) modifiers.AddExecuteThreshold(amount);
+                break;
+
+            case PlayerUpgradeType.ExecuteBonusDamage:
+                if (modifiers != null) modifiers.AddExecuteBonusDamage(amount);
+                break;
+
+            case PlayerUpgradeType.BurstShotFrequency:
+                if (modifiers != null) modifiers.AddBurstShotFrequency(Mathf.Max(1, intAmount));
+                break;
+
+            case PlayerUpgradeType.OnKillStatusSpreadRadius:
+                if (modifiers != null) modifiers.AddOnKillStatusSpreadRadius(amount);
+                break;
+
+            case PlayerUpgradeType.OnKillStatusSpreadStrength:
+                if (modifiers != null) modifiers.AddOnKillStatusSpreadStrength(amount);
+                break;
+
+            case PlayerUpgradeType.SkillElementBurstDamage:
+                if (modifiers != null) modifiers.AddSkillElementBurstDamage(amount);
+                break;
+
+            case PlayerUpgradeType.BombSecondaryBlastFraction:
+                if (modifiers != null) modifiers.AddBombSecondaryBlastFraction(amount);
+                break;
+
+            case PlayerUpgradeType.SkillBlinkDistance:
+                if (modifiers != null) modifiers.AddSkillBlinkDistance(amount);
                 break;
         }
     }

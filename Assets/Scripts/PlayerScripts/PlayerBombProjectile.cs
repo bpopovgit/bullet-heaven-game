@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class PlayerBombProjectile : MonoBehaviour
@@ -62,16 +63,45 @@ public class PlayerBombProjectile : MonoBehaviour
         }
 
         Vector2 center = transform.position;
-        Collider2D[] hits = Physics2D.OverlapCircleAll(center, _config.radius);
+        DetonateAt(center, 1f, isSecondary: false);
+
+        PlayerCombatModifiers modifiers = PlayerCombatModifiers.Instance;
+        if (modifiers != null && modifiers.BombSecondaryBlastFraction > 0f)
+        {
+            if (_renderer != null)
+                _renderer.enabled = false;
+            StartCoroutine(SecondaryBlastRoutine(center, modifiers.BombSecondaryBlastFraction, modifiers.BombSecondaryBlastDelay));
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    private IEnumerator SecondaryBlastRoutine(Vector2 center, float fraction, float delay)
+    {
+        yield return new WaitForSeconds(Mathf.Max(0.1f, delay));
+        DetonateAt(center, Mathf.Clamp01(fraction), isSecondary: true);
+        Destroy(gameObject);
+    }
+
+    private void DetonateAt(Vector2 center, float damageFraction, bool isSecondary)
+    {
+        if (_config == null)
+            return;
+
+        float radius = isSecondary ? _config.radius * 0.85f : _config.radius;
+        Collider2D[] hits = Physics2D.OverlapCircleAll(center, radius);
         int hitCount = 0;
 
+        int scaledDamage = Mathf.Max(1, Mathf.RoundToInt(_config.damage * damageFraction));
         DamagePacket packet = new DamagePacket(
-            _config.damage,
+            scaledDamage,
             _config.element,
             _config.status,
             _config.statusDuration,
             _config.statusStrength,
-            splashRadius: _config.radius,
+            splashRadius: radius,
             sourcePos: center);
 
         packet.Clamp();
@@ -86,9 +116,8 @@ public class PlayerBombProjectile : MonoBehaviour
             hitCount++;
         }
 
-        BombExplosionVisual.Spawn(transform.position, _config.explosionPrimaryColor, _config.explosionSecondaryColor, _config.radius);
+        BombExplosionVisual.Spawn(center, _config.explosionPrimaryColor, _config.explosionSecondaryColor, radius);
         GameAudio.PlayBombImpact();
-        Debug.Log($"ACTIVE BOMB USED: {_config.displayName} hit {hitCount} enemies at {transform.position}.");
-        Destroy(gameObject);
+        Debug.Log($"ACTIVE BOMB {(isSecondary ? "AFTERSHOCK" : "USED")}: {_config.displayName} hit {hitCount} enemies at {center}.");
     }
 }

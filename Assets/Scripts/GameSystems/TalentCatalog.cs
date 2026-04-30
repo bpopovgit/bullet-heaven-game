@@ -1401,30 +1401,28 @@ public static class TalentCatalog
 
     private static PlayerUpgradeOption BuildPrimaryOverchargeOption(TalentContext context, RunTalentState state)
     {
-        switch (context.Character)
-        {
-            case PlayableCharacterChoice.HumanRanger:
-                return CreateTalentOption("atk_primary_overcharge", context, state, PlayerUpgradeType.DamagePercent, amount: 0.22f, hasSecondaryUpgrade: true, secondaryType: PlayerUpgradeType.FireRatePercent, secondaryAmount: 0.1f, scope: PlayerUpgradeScope.Ranger);
-            case PlayableCharacterChoice.HumanArcanist:
-                return CreateTalentOption("atk_primary_overcharge", context, state, PlayerUpgradeType.DamagePercent, amount: 0.22f, hasSecondaryUpgrade: true, secondaryType: PlayerUpgradeType.MagicCooldownReduction, secondaryAmount: 0.06f, scope: PlayerUpgradeScope.Arcanist);
-            case PlayableCharacterChoice.HumanVanguard:
-            default:
-                return CreateTalentOption("atk_primary_overcharge", context, state, PlayerUpgradeType.DamagePercent, amount: 0.22f, hasSecondaryUpgrade: true, secondaryType: PlayerUpgradeType.MeleeCooldownReduction, secondaryAmount: 0.05f, scope: PlayerUpgradeScope.Vanguard);
-        }
+        return CreateTalentOption(
+            "atk_primary_overcharge",
+            context,
+            state,
+            PlayerUpgradeType.BurstShotFrequency,
+            intAmount: 1,
+            hasSecondaryUpgrade: true,
+            secondaryType: PlayerUpgradeType.DamagePercent,
+            secondaryAmount: 0.1f);
     }
 
     private static PlayerUpgradeOption BuildPrimaryAnnihilatorOption(TalentContext context, RunTalentState state)
     {
-        switch (context.Character)
-        {
-            case PlayableCharacterChoice.HumanRanger:
-                return CreateTalentOption("atk_primary_annihilator", context, state, PlayerUpgradeType.DamagePercent, amount: 0.2f, hasSecondaryUpgrade: true, secondaryType: PlayerUpgradeType.Pierce, secondaryIntAmount: 1, scope: PlayerUpgradeScope.Ranger);
-            case PlayableCharacterChoice.HumanArcanist:
-                return CreateTalentOption("atk_primary_annihilator", context, state, PlayerUpgradeType.DamagePercent, amount: 0.2f, hasSecondaryUpgrade: true, secondaryType: PlayerUpgradeType.MagicBeamWidth, secondaryAmount: 0.12f, scope: PlayerUpgradeScope.Arcanist);
-            case PlayableCharacterChoice.HumanVanguard:
-            default:
-                return CreateTalentOption("atk_primary_annihilator", context, state, PlayerUpgradeType.DamagePercent, amount: 0.2f, hasSecondaryUpgrade: true, secondaryType: PlayerUpgradeType.MeleeRadius, secondaryAmount: 0.25f, scope: PlayerUpgradeScope.Vanguard);
-        }
+        return CreateTalentOption(
+            "atk_primary_annihilator",
+            context,
+            state,
+            PlayerUpgradeType.ExecuteThreshold,
+            amount: 0.15f,
+            hasSecondaryUpgrade: true,
+            secondaryType: PlayerUpgradeType.ExecuteBonusDamage,
+            secondaryAmount: 0.25f);
     }
 
     private static PlayerUpgradeOption BuildElementMasteryDeepOption(TalentContext context, RunTalentState state)
@@ -1432,12 +1430,12 @@ public static class TalentCatalog
         switch (context.Character)
         {
             case PlayableCharacterChoice.HumanRanger:
-                return CreateTalentOption("atk_element_master", context, state, PlayerUpgradeType.SplashRadius, amount: 0.24f, scope: PlayerUpgradeScope.Ranger);
+                return CreateTalentOption("atk_element_master", context, state, PlayerUpgradeType.SplashRadius, amount: 0.24f, hasSecondaryUpgrade: true, secondaryType: PlayerUpgradeType.OnKillStatusSpreadRadius, secondaryAmount: 1f, scope: PlayerUpgradeScope.Ranger);
             case PlayableCharacterChoice.HumanArcanist:
-                return CreateTalentOption("atk_element_master", context, state, PlayerUpgradeType.MagicStatusChance, amount: 0.12f, scope: PlayerUpgradeScope.Arcanist);
+                return CreateTalentOption("atk_element_master", context, state, PlayerUpgradeType.MagicStatusChance, amount: 0.12f, hasSecondaryUpgrade: true, secondaryType: PlayerUpgradeType.OnKillStatusSpreadRadius, secondaryAmount: 1f, scope: PlayerUpgradeScope.Arcanist);
             case PlayableCharacterChoice.HumanVanguard:
             default:
-                return CreateTalentOption("atk_element_master", context, state, PlayerUpgradeType.MeleeRadius, amount: 0.2f, scope: PlayerUpgradeScope.Vanguard);
+                return CreateTalentOption("atk_element_master", context, state, PlayerUpgradeType.MeleeRadius, amount: 0.2f, hasSecondaryUpgrade: true, secondaryType: PlayerUpgradeType.OnKillStatusSpreadRadius, secondaryAmount: 1f, scope: PlayerUpgradeScope.Vanguard);
         }
     }
 
@@ -1462,21 +1460,28 @@ public static class TalentCatalog
 
     private static PlayerUpgradeOption BuildElementAvatarOption(TalentContext context, RunTalentState state)
     {
-        return CreateTalentOption("atk_element_avatar", context, state, PlayerUpgradeType.DamagePercent, amount: 0.2f, hasSecondaryUpgrade: true, secondaryType: PlayerUpgradeType.PickupRadius, secondaryAmount: 0.3f);
+        return CreateTalentOption(
+            "atk_element_avatar",
+            context,
+            state,
+            PlayerUpgradeType.OnKillStatusSpreadRadius,
+            amount: 2.5f,
+            hasSecondaryUpgrade: true,
+            secondaryType: PlayerUpgradeType.OnKillStatusSpreadStrength,
+            secondaryAmount: 1.2f);
     }
 
     private static PlayerUpgradeOption BuildElementUnleashedOption(TalentContext context, RunTalentState state)
     {
-        switch (context.Character)
-        {
-            case PlayableCharacterChoice.HumanRanger:
-                return CreateTalentOption("atk_element_unleashed", context, state, PlayerUpgradeType.FireRatePercent, amount: 0.14f, hasSecondaryUpgrade: true, secondaryType: PlayerUpgradeType.SplashRadius, secondaryAmount: 0.3f, scope: PlayerUpgradeScope.Ranger);
-            case PlayableCharacterChoice.HumanArcanist:
-                return CreateTalentOption("atk_element_unleashed", context, state, PlayerUpgradeType.MagicStatusChance, amount: 0.14f, hasSecondaryUpgrade: true, secondaryType: PlayerUpgradeType.MagicCooldownReduction, secondaryAmount: 0.08f, scope: PlayerUpgradeScope.Arcanist);
-            case PlayableCharacterChoice.HumanVanguard:
-            default:
-                return CreateTalentOption("atk_element_unleashed", context, state, PlayerUpgradeType.MeleeCooldownReduction, amount: 0.07f, hasSecondaryUpgrade: true, secondaryType: PlayerUpgradeType.MeleeRadius, secondaryAmount: 0.22f, scope: PlayerUpgradeScope.Vanguard);
-        }
+        return CreateTalentOption(
+            "atk_element_unleashed",
+            context,
+            state,
+            PlayerUpgradeType.SkillElementBurstDamage,
+            amount: 14f,
+            hasSecondaryUpgrade: true,
+            secondaryType: PlayerUpgradeType.SkillRadius,
+            secondaryAmount: 0.4f);
     }
 
     private static PlayerUpgradeOption BuildBombPayloadMasterOption(TalentContext context, RunTalentState state)
@@ -1491,7 +1496,7 @@ public static class TalentCatalog
 
     private static PlayerUpgradeOption BuildBombRhythmMasterOption(TalentContext context, RunTalentState state)
     {
-        return CreateTalentOption("atk_bomb_rhythm_master", context, state, PlayerUpgradeType.BombCooldownReduction, amount: 0.4f, hasSecondaryUpgrade: true, secondaryType: PlayerUpgradeType.SkillCooldownReduction, secondaryAmount: 0.35f);
+        return CreateTalentOption("atk_bomb_rhythm_master", context, state, PlayerUpgradeType.BombCooldownReduction, amount: 0.4f, hasSecondaryUpgrade: true, secondaryType: PlayerUpgradeType.BombSecondaryBlastFraction, secondaryAmount: 0.1f);
     }
 
     private static PlayerUpgradeOption BuildBombDevastatorOption(TalentContext context, RunTalentState state)
@@ -1501,7 +1506,15 @@ public static class TalentCatalog
 
     private static PlayerUpgradeOption BuildBombChainedOption(TalentContext context, RunTalentState state)
     {
-        return CreateTalentOption("atk_bomb_chained", context, state, PlayerUpgradeType.BombCooldownReduction, amount: 0.55f, hasSecondaryUpgrade: true, secondaryType: PlayerUpgradeType.BombDamagePercent, secondaryAmount: 0.12f);
+        return CreateTalentOption(
+            "atk_bomb_chained",
+            context,
+            state,
+            PlayerUpgradeType.BombSecondaryBlastFraction,
+            amount: 0.3f,
+            hasSecondaryUpgrade: true,
+            secondaryType: PlayerUpgradeType.BombCooldownReduction,
+            secondaryAmount: 0.3f);
     }
 
     private static PlayerUpgradeOption BuildStepsMasterOption(TalentContext context, RunTalentState state)
@@ -1541,7 +1554,7 @@ public static class TalentCatalog
 
     private static PlayerUpgradeOption BuildFieldMagnetMasterOption(TalentContext context, RunTalentState state)
     {
-        return CreateTalentOption("def_field_magnet_master", context, state, PlayerUpgradeType.PickupRadius, amount: 0.9f);
+        return CreateTalentOption("def_field_magnet_master", context, state, PlayerUpgradeType.PickupRadius, amount: 0.9f, hasSecondaryUpgrade: true, secondaryType: PlayerUpgradeType.SkillBlinkDistance, secondaryAmount: 1.5f);
     }
 
     private static PlayerUpgradeOption BuildFieldDominionOption(TalentContext context, RunTalentState state)
@@ -1551,7 +1564,15 @@ public static class TalentCatalog
 
     private static PlayerUpgradeOption BuildFieldPhaseshiftOption(TalentContext context, RunTalentState state)
     {
-        return CreateTalentOption("def_field_phaseshift", context, state, PlayerUpgradeType.SkillCooldownReduction, amount: 0.55f, hasSecondaryUpgrade: true, secondaryType: PlayerUpgradeType.PickupRadius, secondaryAmount: 0.7f);
+        return CreateTalentOption(
+            "def_field_phaseshift",
+            context,
+            state,
+            PlayerUpgradeType.SkillBlinkDistance,
+            amount: 4f,
+            hasSecondaryUpgrade: true,
+            secondaryType: PlayerUpgradeType.SkillCooldownReduction,
+            secondaryAmount: 0.5f);
     }
 
     private static PlayerUpgradeOption BuildGuardMasterOption(TalentContext context, RunTalentState state)
@@ -1700,6 +1721,22 @@ public static class TalentCatalog
                 return $"+{FormatDecimal(amount)} E skill radius";
             case PlayerUpgradeType.SkillDuration:
                 return $"+{FormatSeconds(amount)} E skill duration";
+            case PlayerUpgradeType.ExecuteThreshold:
+                return $"+{FormatPercent(amount)} execute HP threshold";
+            case PlayerUpgradeType.ExecuteBonusDamage:
+                return $"+{FormatPercent(amount)} bonus damage to executed enemies";
+            case PlayerUpgradeType.BurstShotFrequency:
+                return "fires a free piercing burst more often";
+            case PlayerUpgradeType.OnKillStatusSpreadRadius:
+                return $"+{FormatDecimal(amount)} on-kill status spread radius";
+            case PlayerUpgradeType.OnKillStatusSpreadStrength:
+                return $"+{FormatSeconds(amount)} on-kill spread duration";
+            case PlayerUpgradeType.SkillElementBurstDamage:
+                return $"+{Mathf.RoundToInt(amount)} burst damage when E consumes status";
+            case PlayerUpgradeType.BombSecondaryBlastFraction:
+                return $"adds a {FormatPercent(amount)} aftershock blast";
+            case PlayerUpgradeType.SkillBlinkDistance:
+                return $"+{FormatDecimal(amount)} E skill blink toward cursor";
             default:
                 return "Improve this talent";
         }

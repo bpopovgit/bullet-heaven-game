@@ -16,6 +16,7 @@ public class PlayerShooting : MonoBehaviour
     private PlayerStats _stats;
     private FactionMember _faction;
     private float _cooldown;
+    private int _shotCounter;
 
     public WeaponDefinition GetWeaponDefinition()
     {
@@ -83,9 +84,38 @@ public class PlayerShooting : MonoBehaviour
                 bullet.Init(weapon, shotDir, _stats, _faction);
         }
 
+        _shotCounter++;
+        TryFireOverchargeBurst(dir);
+
         GameAudio.PlayPlayerShoot();
 
         // rotate the muzzle/arm for visuals (optional)
         muzzle.right = dir;
+    }
+
+    private void TryFireOverchargeBurst(Vector2 aimDir)
+    {
+        PlayerCombatModifiers modifiers = PlayerCombatModifiers.Instance;
+        if (modifiers == null || modifiers.BurstShotInterval <= 0)
+            return;
+
+        if (_shotCounter % modifiers.BurstShotInterval != 0)
+            return;
+
+        int extra = modifiers.BurstShotProjectiles;
+        if (extra <= 0)
+            return;
+
+        const float burstSpacing = 0.22f;
+        for (int i = 0; i < extra; i++)
+        {
+            Vector3 spawnPosition = muzzle.position + (Vector3)(aimDir * (i + 1) * burstSpacing);
+            var go = Instantiate(weapon.bulletPrefab, spawnPosition, Quaternion.identity);
+            var bullet = go.GetComponent<BulletElemental>();
+            if (bullet != null)
+                bullet.Init(weapon, aimDir, _stats, _faction);
+        }
+
+        Debug.Log($"OVERCHARGE BURST: +{extra} bullets fired (shot #{_shotCounter}, interval {modifiers.BurstShotInterval}).");
     }
 }
