@@ -44,6 +44,30 @@ public class PlayerActiveBomb : MonoBehaviour
         Debug.Log($"ACTIVE BOMB READY: {_config.displayName} on Q ({_config.cooldown:0.#}s cooldown, cursor-targeted)");
     }
 
+    public void ReduceCooldown(float seconds)
+    {
+        if (_config == null)
+            return;
+
+        _config.cooldown = Mathf.Max(3f, _config.cooldown - Mathf.Max(0f, seconds));
+    }
+
+    public void AddRadius(float amount)
+    {
+        if (_config == null)
+            return;
+
+        _config.radius += Mathf.Max(0f, amount);
+    }
+
+    public void AddDamagePercent(float percent)
+    {
+        if (_config == null)
+            return;
+
+        _config.damage = Mathf.Max(1, Mathf.RoundToInt(_config.damage * (1f + Mathf.Max(0f, percent))));
+    }
+
     private void TryActivate()
     {
         if (_config == null)

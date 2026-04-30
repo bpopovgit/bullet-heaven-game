@@ -5,6 +5,8 @@ using UnityEngine;
 public enum TalentTag
 {
     Human,
+    Angel,
+    Demon,
     Melee,
     Projectile,
     Spell,
@@ -25,6 +27,7 @@ public enum TalentTag
 
 public readonly struct TalentContext
 {
+    public readonly PlayableFactionChoice Faction;
     public readonly PlayableCharacterChoice Character;
     public readonly StartingWeaponChoice Weapon;
     public readonly StartingBombChoice Bomb;
@@ -32,12 +35,14 @@ public readonly struct TalentContext
     public readonly StartingPassiveChoice Passive;
 
     public TalentContext(
+        PlayableFactionChoice faction,
         PlayableCharacterChoice character,
         StartingWeaponChoice weapon,
         StartingBombChoice bomb,
         StartingSkillChoice skill,
         StartingPassiveChoice passive)
     {
+        Faction = faction;
         Character = character;
         Weapon = weapon;
         Bomb = bomb;
@@ -46,6 +51,7 @@ public readonly struct TalentContext
     }
 
     public string CharacterName => RunLoadoutState.GetCharacterName(Character);
+    public string FactionName => RunLoadoutState.GetFactionName(Faction);
     public string PrimaryName => RunLoadoutState.GetPrimaryAttackName(Character, Weapon);
     public string BombName => RunLoadoutState.GetBombName(Bomb);
     public string SkillName => RunLoadoutState.GetSkillName(Skill);
@@ -113,6 +119,76 @@ public sealed class RunUpgradeChainDisplayInfo
     {
         ChainName = chainName;
         Nodes = nodes;
+    }
+}
+
+public enum RunTalentCategory
+{
+    Attack,
+    Defense
+}
+
+public sealed class RunTalentDefinition
+{
+    private readonly Func<TalentContext, RunTalentState, PlayerUpgradeOption> _optionBuilder;
+    private readonly Func<TalentContext, string> _effectBuilder;
+
+    public readonly string Id;
+    public readonly string RowId;
+    public readonly string RowName;
+    public readonly RunTalentCategory Category;
+    public readonly string ParentId;
+    public readonly string Title;
+    public readonly int MaxPoints;
+    public readonly Color AccentColor;
+
+    public RunTalentDefinition(
+        string id,
+        string rowId,
+        string rowName,
+        RunTalentCategory category,
+        string parentId,
+        string title,
+        int maxPoints,
+        Color accentColor,
+        Func<TalentContext, string> effectBuilder,
+        Func<TalentContext, RunTalentState, PlayerUpgradeOption> optionBuilder)
+    {
+        Id = id;
+        RowId = rowId;
+        RowName = rowName;
+        Category = category;
+        ParentId = parentId;
+        Title = title;
+        MaxPoints = Mathf.Max(1, maxPoints);
+        AccentColor = accentColor;
+        _effectBuilder = effectBuilder;
+        _optionBuilder = optionBuilder;
+    }
+
+    public bool IsRoot => string.IsNullOrWhiteSpace(ParentId);
+
+    public bool IsUnlocked(RunTalentState state)
+    {
+        if (IsRoot)
+            return true;
+
+        return state != null && state.HasPoints(ParentId);
+    }
+
+    public bool IsMaxed(RunTalentState state)
+    {
+        return state != null && state.GetPoints(Id) >= MaxPoints;
+    }
+
+    public string BuildEffectText(TalentContext context)
+    {
+        return _effectBuilder != null ? _effectBuilder(context) : string.Empty;
+    }
+
+    public PlayerUpgradeOption BuildOption(TalentContext context, RunTalentState state)
+    {
+        return _optionBuilder?.Invoke(context, state);
     }
 }
 
@@ -213,9 +289,43 @@ public static class TalentCatalog
             BuildFactionCommandEffect)
     };
 
+    private static readonly RunTalentDefinition[] RunTalentDefinitions =
+    {
+        new RunTalentDefinition("atk_primary_power", "attack_primary", "Primary Damage Tree", RunTalentCategory.Attack, null, "Power Shot", 5, new Color(0.9f, 0.68f, 0.24f, 1f), context => $"{context.PrimaryName} gains +8% damage per point.", BuildPrimaryPowerOption),
+        new RunTalentDefinition("atk_primary_heavy", "attack_primary", "Primary Damage Tree", RunTalentCategory.Attack, "atk_primary_power", "Big Shot", 5, new Color(1f, 0.76f, 0.32f, 1f), BuildPrimaryHeavyEffect, BuildPrimaryHeavyOption),
+        new RunTalentDefinition("atk_primary_splinter", "attack_primary", "Primary Damage Tree", RunTalentCategory.Attack, "atk_primary_power", "Splinter", 5, new Color(1f, 0.84f, 0.42f, 1f), BuildPrimarySplinterEffect, BuildPrimarySplinterOption),
+        new RunTalentDefinition("atk_primary_reaper", "attack_primary", "Primary Damage Tree", RunTalentCategory.Attack, "atk_primary_power", "Reaper Rounds", 5, new Color(0.96f, 0.62f, 0.2f, 1f), BuildPrimaryReaperEffect, BuildPrimaryReaperOption),
+
+        new RunTalentDefinition("atk_element_spark", "attack_element", "Elemental Tree", RunTalentCategory.Attack, null, "Elemental Spark", 5, new Color(0.62f, 0.88f, 1f, 1f), context => $"{GetPrimaryElementName(context)} effects gain +6% damage per point.", BuildElementSparkOption),
+        new RunTalentDefinition("atk_element_control", "attack_element", "Elemental Tree", RunTalentCategory.Attack, "atk_element_spark", "Elemental Control", 5, GetElementPreviewColor(), BuildElementControlEffect, BuildElementControlOption),
+        new RunTalentDefinition("atk_element_surge", "attack_element", "Elemental Tree", RunTalentCategory.Attack, "atk_element_spark", "Elemental Surge", 5, GetElementPreviewColor(), BuildElementSurgeEffect, BuildElementSurgeOption),
+        new RunTalentDefinition("atk_element_ascendant", "attack_element", "Elemental Tree", RunTalentCategory.Attack, "atk_element_spark", "Ascendant", 5, GetElementPreviewColor(), BuildElementCapstoneEffect, BuildElementAscendantOption),
+
+        new RunTalentDefinition("atk_bomb_craft", "attack_bomb", "Bombcraft Tree", RunTalentCategory.Attack, null, "Bomb Craft", 5, new Color(1f, 0.48f, 0.18f, 1f), context => $"{context.BombName} cooldown is reduced by 0.45s per point.", BuildBombCraftOption),
+        new RunTalentDefinition("atk_bomb_payload", "attack_bomb", "Bombcraft Tree", RunTalentCategory.Attack, "atk_bomb_craft", "Bigger Payload", 5, new Color(1f, 0.58f, 0.18f, 1f), context => $"{context.BombName} gains +10% damage per point.", BuildBombPayloadOption),
+        new RunTalentDefinition("atk_bomb_radius", "attack_bomb", "Bombcraft Tree", RunTalentCategory.Attack, "atk_bomb_craft", "Blast Radius", 5, new Color(1f, 0.68f, 0.26f, 1f), context => $"{context.BombName} gains +0.25 explosion radius per point.", BuildBombRadiusOption),
+        new RunTalentDefinition("atk_bomb_rhythm", "attack_bomb", "Bombcraft Tree", RunTalentCategory.Attack, "atk_bomb_craft", "Combat Rhythm", 5, new Color(1f, 0.78f, 0.34f, 1f), BuildKitRhythmEffect, BuildBombRhythmOption),
+
+        new RunTalentDefinition("def_vital_core", "defense_vital", "Survival Tree", RunTalentCategory.Defense, null, "Vital Core", 5, new Color(0.55f, 0.95f, 0.58f, 1f), context => "+12 max HP and heal 12 per point.", BuildVitalCoreOption),
+        new RunTalentDefinition("def_vital_steps", "defense_vital", "Survival Tree", RunTalentCategory.Defense, "def_vital_core", "Guarded Steps", 5, new Color(0.62f, 1f, 0.66f, 1f), context => "+7% movement speed per point.", BuildGuardedStepsOption),
+        new RunTalentDefinition("def_vital_secondwind", "defense_vital", "Survival Tree", RunTalentCategory.Defense, "def_vital_core", "Second Wind", 5, new Color(0.72f, 1f, 0.72f, 1f), context => "+8 max HP and +4% damage per point.", BuildSecondWindOption),
+        new RunTalentDefinition("def_vital_instinct", "defense_vital", "Survival Tree", RunTalentCategory.Defense, "def_vital_core", "Survivor's Instinct", 5, new Color(0.82f, 1f, 0.78f, 1f), BuildSurvivorInstinctEffect, BuildSurvivorInstinctOption),
+
+        new RunTalentDefinition("def_field_control", "defense_field", "Field Control Tree", RunTalentCategory.Defense, null, "Field Control", 5, new Color(0.46f, 0.9f, 0.86f, 1f), context => $"{context.SkillName} cooldown is reduced by 0.4s per point.", BuildFieldRootOption),
+        new RunTalentDefinition("def_field_wider", "defense_field", "Field Control Tree", RunTalentCategory.Defense, "def_field_control", "Wider Field", 5, new Color(0.56f, 0.98f, 0.92f, 1f), context => $"{context.SkillName} gains +0.3 radius per point.", BuildFieldWiderOption),
+        new RunTalentDefinition("def_field_lasting", "defense_field", "Field Control Tree", RunTalentCategory.Defense, "def_field_control", "Lasting Ward", 5, new Color(0.66f, 1f, 0.96f, 1f), context => $"{context.SkillName} effects last +0.25s longer per point.", BuildFieldLastingOption),
+        new RunTalentDefinition("def_field_magnet", "defense_field", "Field Control Tree", RunTalentCategory.Defense, "def_field_control", "Magnet Harvest", 5, new Color(0.76f, 1f, 0.9f, 1f), context => "+0.65 pickup radius per point.", BuildFieldMagnetOption),
+
+        new RunTalentDefinition("def_command_rally", "defense_command", "Faction Command Tree", RunTalentCategory.Defense, null, "Rallying Banner", 5, new Color(0.78f, 0.74f, 1f, 1f), context => "+5% damage and +5 max HP per point.", BuildRallyingBannerOption),
+        new RunTalentDefinition("def_command_guard", "defense_command", "Faction Command Tree", RunTalentCategory.Defense, "def_command_rally", "Guard Detail", 5, new Color(0.86f, 0.82f, 1f, 1f), context => "+10 max HP per point.", BuildGuardDetailOption),
+        new RunTalentDefinition("def_command_crossfire", "defense_command", "Faction Command Tree", RunTalentCategory.Defense, "def_command_rally", "Crossfire Drills", 5, new Color(0.9f, 0.86f, 1f, 1f), BuildFactionCommandEffect, BuildCrossfireDrillsOption),
+        new RunTalentDefinition("def_command_supply", "defense_command", "Faction Command Tree", RunTalentCategory.Defense, "def_command_rally", "Supply Line", 5, new Color(0.82f, 0.9f, 1f, 1f), context => "+0.45 pickup radius and +4% movement speed per point.", BuildSupplyLineOption)
+    };
+
     public static TalentContext CreateCurrentContext()
     {
         return new TalentContext(
+            RunLoadoutState.FactionChoice,
             RunLoadoutState.CharacterChoice,
             RunLoadoutState.WeaponChoice,
             RunLoadoutState.BombChoice,
@@ -247,6 +357,61 @@ public static class TalentCatalog
         return BuildRunUpgradeChains(CreateCurrentContext());
     }
 
+    public static RunUpgradeChainDisplayInfo[] BuildCurrentRunTalentTrees()
+    {
+        return BuildRunTalentRows(CreateCurrentContext(), null);
+    }
+
+    public static RunUpgradeChainDisplayInfo[] BuildRunTalentTrees(TalentContext context)
+    {
+        return BuildRunTalentRows(context, null);
+    }
+
+    public static RunUpgradeChainDisplayInfo[] BuildCurrentRunTalentRows(RunTalentState state = null)
+    {
+        return BuildRunTalentRows(CreateCurrentContext(), state);
+    }
+
+    public static RunUpgradeChainDisplayInfo[] BuildRunTalentRows(TalentContext context, RunTalentState state)
+    {
+        List<RunUpgradeChainDisplayInfo> rows = new List<RunUpgradeChainDisplayInfo>();
+        HashSet<string> rowIds = new HashSet<string>();
+
+        for (int i = 0; i < RunTalentDefinitions.Length; i++)
+        {
+            RunTalentDefinition definition = RunTalentDefinitions[i];
+            if (!rowIds.Add(definition.RowId))
+                continue;
+
+            rows.Add(BuildRunTalentRow(context, state, definition.RowId));
+        }
+
+        return rows.ToArray();
+    }
+
+    public static List<PlayerUpgradeOption> BuildAvailableRunTalentOptions(
+        RunTalentState state,
+        TalentContext context,
+        PlayableCharacterChoice character)
+    {
+        List<PlayerUpgradeOption> options = new List<PlayerUpgradeOption>();
+        if (state == null)
+            return options;
+
+        for (int i = 0; i < RunTalentDefinitions.Length; i++)
+        {
+            RunTalentDefinition definition = RunTalentDefinitions[i];
+            if (!definition.IsUnlocked(state) || definition.IsMaxed(state))
+                continue;
+
+            PlayerUpgradeOption option = definition.BuildOption(context, state);
+            if (option != null && option.IsAvailableFor(character))
+                options.Add(option);
+        }
+
+        return options;
+    }
+
     public static RunUpgradeChainDisplayInfo[] BuildRunUpgradeChains(TalentContext context)
     {
         return new[]
@@ -257,10 +422,72 @@ public static class TalentCatalog
         };
     }
 
+    private static RunUpgradeChainDisplayInfo BuildRunTalentRow(TalentContext context, RunTalentState state, string rowId)
+    {
+        List<RunUpgradeNodeDisplayInfo> nodes = new List<RunUpgradeNodeDisplayInfo>();
+        string rowName = rowId;
+
+        for (int i = 0; i < RunTalentDefinitions.Length; i++)
+        {
+            RunTalentDefinition definition = RunTalentDefinitions[i];
+            if (definition.RowId != rowId)
+                continue;
+
+            rowName = $"{definition.Category}: {definition.RowName}";
+            nodes.Add(BuildRunTalentNode(context, state, definition));
+        }
+
+        return new RunUpgradeChainDisplayInfo(rowName, nodes.ToArray());
+    }
+
+    private static RunUpgradeNodeDisplayInfo BuildRunTalentNode(
+        TalentContext context,
+        RunTalentState state,
+        RunTalentDefinition definition)
+    {
+        int points = state != null ? state.GetPoints(definition.Id) : 0;
+        bool unlocked = definition.IsUnlocked(state);
+        bool maxed = points >= definition.MaxPoints;
+        string requirement = definition.IsRoot
+            ? "Root talent"
+            : $"Requires {GetTalentTitle(definition.ParentId)}";
+
+        if (state != null)
+        {
+            if (!unlocked)
+                requirement = $"Locked: {requirement}";
+            else if (maxed)
+                requirement = "Maxed";
+        }
+
+        PlayerUpgradeOption previewOption = definition.BuildOption(context, state);
+        string effectText = previewOption != null
+            ? StripRequirementFromDescription(previewOption.Description)
+            : definition.BuildEffectText(context);
+
+        return new RunUpgradeNodeDisplayInfo(
+            $"{points} / {definition.MaxPoints} points",
+            definition.Title,
+            requirement,
+            effectText,
+            definition.AccentColor);
+    }
+
+    private static string GetTalentTitle(string id)
+    {
+        for (int i = 0; i < RunTalentDefinitions.Length; i++)
+        {
+            if (RunTalentDefinitions[i].Id == id)
+                return RunTalentDefinitions[i].Title;
+        }
+
+        return "parent talent";
+    }
+
     public static string BuildTagSummary(TalentContext context)
     {
         List<string> tags = new List<string>();
-        AddTag(tags, TalentTag.Human);
+        AddTag(tags, GetFactionTag(context));
         AddTag(tags, GetPrimaryFormTag(context));
         AddTag(tags, GetPrimaryElementTag(context));
         AddTag(tags, GetPrimaryPatternTag(context));
@@ -270,6 +497,20 @@ public static class TalentCatalog
         AddTag(tags, TalentTag.Allies);
 
         return $"Current tags: {string.Join("  |  ", tags)}";
+    }
+
+    private static TalentTag GetFactionTag(TalentContext context)
+    {
+        switch (context.Faction)
+        {
+            case PlayableFactionChoice.Angels:
+                return TalentTag.Angel;
+            case PlayableFactionChoice.Demons:
+                return TalentTag.Demon;
+            case PlayableFactionChoice.Humans:
+            default:
+                return TalentTag.Human;
+        }
     }
 
     private static void AddTag(List<string> tags, TalentTag tag)
@@ -579,6 +820,21 @@ public static class TalentCatalog
         }
     }
 
+    private static string BuildPrimaryHeavyEffect(TalentContext context)
+    {
+        return BuildPrimaryTechniqueEffect(context);
+    }
+
+    private static string BuildPrimarySplinterEffect(TalentContext context)
+    {
+        return BuildPrimaryPressureEffect(context);
+    }
+
+    private static string BuildPrimaryReaperEffect(TalentContext context)
+    {
+        return BuildPrimaryCapstoneEffect(context);
+    }
+
     private static string BuildSpellPatternPressureEffect(TalentContext context)
     {
         switch (context.Weapon)
@@ -716,6 +972,328 @@ public static class TalentCatalog
     private static string BuildKitCapstoneEffect(TalentContext context)
     {
         return $"Using {context.BombName} and {context.SkillName} close together empowers your next {context.PrimaryName}.";
+    }
+
+    private static PlayerUpgradeOption BuildPrimaryPowerOption(TalentContext context, RunTalentState state)
+    {
+        return CreateTalentOption("atk_primary_power", context, state, PlayerUpgradeType.DamagePercent, amount: 0.08f);
+    }
+
+    private static PlayerUpgradeOption BuildPrimaryHeavyOption(TalentContext context, RunTalentState state)
+    {
+        switch (context.Character)
+        {
+            case PlayableCharacterChoice.HumanRanger:
+                return CreateTalentOption("atk_primary_heavy", context, state, PlayerUpgradeType.DamagePercent, amount: 0.08f, hasSecondaryUpgrade: true, secondaryType: PlayerUpgradeType.SplashRadius, secondaryAmount: 0.18f, scope: PlayerUpgradeScope.Ranger);
+            case PlayableCharacterChoice.HumanArcanist:
+                return CreateTalentOption("atk_primary_heavy", context, state, PlayerUpgradeType.DamagePercent, amount: 0.08f, hasSecondaryUpgrade: true, secondaryType: PlayerUpgradeType.MagicBeamWidth, secondaryAmount: 0.08f, scope: PlayerUpgradeScope.Arcanist);
+            case PlayableCharacterChoice.HumanVanguard:
+            default:
+                return CreateTalentOption("atk_primary_heavy", context, state, PlayerUpgradeType.DamagePercent, amount: 0.08f, hasSecondaryUpgrade: true, secondaryType: PlayerUpgradeType.MeleeRadius, secondaryAmount: 0.18f, scope: PlayerUpgradeScope.Vanguard);
+        }
+    }
+
+    private static PlayerUpgradeOption BuildPrimarySplinterOption(TalentContext context, RunTalentState state)
+    {
+        switch (context.Character)
+        {
+            case PlayableCharacterChoice.HumanRanger:
+                return CreateTalentOption("atk_primary_splinter", context, state, PlayerUpgradeType.ProjectileCount, intAmount: 1, scope: PlayerUpgradeScope.Ranger);
+            case PlayableCharacterChoice.HumanArcanist:
+                return CreateTalentOption("atk_primary_splinter", context, state, PlayerUpgradeType.MagicStatusChance, amount: 0.08f, scope: PlayerUpgradeScope.Arcanist);
+            case PlayableCharacterChoice.HumanVanguard:
+            default:
+                return CreateTalentOption("atk_primary_splinter", context, state, PlayerUpgradeType.MeleeArcAngle, amount: 8f, scope: PlayerUpgradeScope.Vanguard);
+        }
+    }
+
+    private static PlayerUpgradeOption BuildPrimaryReaperOption(TalentContext context, RunTalentState state)
+    {
+        switch (context.Character)
+        {
+            case PlayableCharacterChoice.HumanRanger:
+                return CreateTalentOption("atk_primary_reaper", context, state, PlayerUpgradeType.DamagePercent, amount: 0.1f, hasSecondaryUpgrade: true, secondaryType: PlayerUpgradeType.Pierce, secondaryIntAmount: 1, scope: PlayerUpgradeScope.Ranger);
+            case PlayableCharacterChoice.HumanArcanist:
+                return CreateTalentOption("atk_primary_reaper", context, state, PlayerUpgradeType.DamagePercent, amount: 0.1f, hasSecondaryUpgrade: true, secondaryType: PlayerUpgradeType.MagicStatusChance, secondaryAmount: 0.06f, scope: PlayerUpgradeScope.Arcanist);
+            case PlayableCharacterChoice.HumanVanguard:
+            default:
+                return CreateTalentOption("atk_primary_reaper", context, state, PlayerUpgradeType.DamagePercent, amount: 0.1f, hasSecondaryUpgrade: true, secondaryType: PlayerUpgradeType.MeleeCooldownReduction, secondaryAmount: 0.025f, scope: PlayerUpgradeScope.Vanguard);
+        }
+    }
+
+    private static PlayerUpgradeOption BuildElementSparkOption(TalentContext context, RunTalentState state)
+    {
+        return CreateTalentOption("atk_element_spark", context, state, PlayerUpgradeType.DamagePercent, amount: 0.06f);
+    }
+
+    private static PlayerUpgradeOption BuildElementControlOption(TalentContext context, RunTalentState state)
+    {
+        switch (context.Character)
+        {
+            case PlayableCharacterChoice.HumanRanger:
+                return CreateTalentOption("atk_element_control", context, state, PlayerUpgradeType.SplashRadius, amount: 0.18f, scope: PlayerUpgradeScope.Ranger);
+            case PlayableCharacterChoice.HumanArcanist:
+                return CreateTalentOption("atk_element_control", context, state, PlayerUpgradeType.MagicStatusChance, amount: 0.08f, scope: PlayerUpgradeScope.Arcanist);
+            case PlayableCharacterChoice.HumanVanguard:
+            default:
+                return CreateTalentOption("atk_element_control", context, state, PlayerUpgradeType.MeleeRadius, amount: 0.15f, scope: PlayerUpgradeScope.Vanguard);
+        }
+    }
+
+    private static PlayerUpgradeOption BuildElementSurgeOption(TalentContext context, RunTalentState state)
+    {
+        switch (context.Character)
+        {
+            case PlayableCharacterChoice.HumanRanger:
+                return CreateTalentOption("atk_element_surge", context, state, PlayerUpgradeType.FireRatePercent, amount: 0.08f, scope: PlayerUpgradeScope.Ranger);
+            case PlayableCharacterChoice.HumanArcanist:
+                return CreateTalentOption("atk_element_surge", context, state, PlayerUpgradeType.MagicCooldownReduction, amount: 0.04f, scope: PlayerUpgradeScope.Arcanist);
+            case PlayableCharacterChoice.HumanVanguard:
+            default:
+                return CreateTalentOption("atk_element_surge", context, state, PlayerUpgradeType.MeleeCooldownReduction, amount: 0.035f, scope: PlayerUpgradeScope.Vanguard);
+        }
+    }
+
+    private static PlayerUpgradeOption BuildElementAscendantOption(TalentContext context, RunTalentState state)
+    {
+        return CreateTalentOption("atk_element_ascendant", context, state, PlayerUpgradeType.DamagePercent, amount: 0.1f);
+    }
+
+    private static PlayerUpgradeOption BuildBombCraftOption(TalentContext context, RunTalentState state)
+    {
+        return CreateTalentOption("atk_bomb_craft", context, state, PlayerUpgradeType.BombCooldownReduction, amount: 0.45f);
+    }
+
+    private static PlayerUpgradeOption BuildBombPayloadOption(TalentContext context, RunTalentState state)
+    {
+        return CreateTalentOption("atk_bomb_payload", context, state, PlayerUpgradeType.BombDamagePercent, amount: 0.1f);
+    }
+
+    private static PlayerUpgradeOption BuildBombRadiusOption(TalentContext context, RunTalentState state)
+    {
+        return CreateTalentOption("atk_bomb_radius", context, state, PlayerUpgradeType.BombRadius, amount: 0.25f);
+    }
+
+    private static PlayerUpgradeOption BuildBombRhythmOption(TalentContext context, RunTalentState state)
+    {
+        return CreateTalentOption("atk_bomb_rhythm", context, state, PlayerUpgradeType.BombCooldownReduction, amount: 0.25f, hasSecondaryUpgrade: true, secondaryType: PlayerUpgradeType.SkillCooldownReduction, secondaryAmount: 0.25f);
+    }
+
+    private static PlayerUpgradeOption BuildVitalCoreOption(TalentContext context, RunTalentState state)
+    {
+        return CreateTalentOption("def_vital_core", context, state, PlayerUpgradeType.MaxHealth, intAmount: 12);
+    }
+
+    private static PlayerUpgradeOption BuildGuardedStepsOption(TalentContext context, RunTalentState state)
+    {
+        return CreateTalentOption("def_vital_steps", context, state, PlayerUpgradeType.MoveSpeedPercent, amount: 0.07f);
+    }
+
+    private static PlayerUpgradeOption BuildSecondWindOption(TalentContext context, RunTalentState state)
+    {
+        return CreateTalentOption("def_vital_secondwind", context, state, PlayerUpgradeType.MaxHealth, intAmount: 8, hasSecondaryUpgrade: true, secondaryType: PlayerUpgradeType.DamagePercent, secondaryAmount: 0.04f);
+    }
+
+    private static PlayerUpgradeOption BuildSurvivorInstinctOption(TalentContext context, RunTalentState state)
+    {
+        return CreateTalentOption("def_vital_instinct", context, state, PlayerUpgradeType.MaxHealth, intAmount: 6, hasSecondaryUpgrade: true, secondaryType: PlayerUpgradeType.MoveSpeedPercent, secondaryAmount: 0.04f);
+    }
+
+    private static PlayerUpgradeOption BuildFieldRootOption(TalentContext context, RunTalentState state)
+    {
+        return CreateTalentOption("def_field_control", context, state, PlayerUpgradeType.SkillCooldownReduction, amount: 0.4f);
+    }
+
+    private static PlayerUpgradeOption BuildFieldWiderOption(TalentContext context, RunTalentState state)
+    {
+        return CreateTalentOption("def_field_wider", context, state, PlayerUpgradeType.SkillRadius, amount: 0.3f);
+    }
+
+    private static PlayerUpgradeOption BuildFieldLastingOption(TalentContext context, RunTalentState state)
+    {
+        return CreateTalentOption("def_field_lasting", context, state, PlayerUpgradeType.SkillDuration, amount: 0.25f);
+    }
+
+    private static PlayerUpgradeOption BuildFieldMagnetOption(TalentContext context, RunTalentState state)
+    {
+        return CreateTalentOption("def_field_magnet", context, state, PlayerUpgradeType.PickupRadius, amount: 0.65f);
+    }
+
+    private static PlayerUpgradeOption BuildRallyingBannerOption(TalentContext context, RunTalentState state)
+    {
+        return CreateTalentOption("def_command_rally", context, state, PlayerUpgradeType.DamagePercent, amount: 0.05f, hasSecondaryUpgrade: true, secondaryType: PlayerUpgradeType.MaxHealth, secondaryIntAmount: 5);
+    }
+
+    private static PlayerUpgradeOption BuildGuardDetailOption(TalentContext context, RunTalentState state)
+    {
+        return CreateTalentOption("def_command_guard", context, state, PlayerUpgradeType.MaxHealth, intAmount: 10);
+    }
+
+    private static PlayerUpgradeOption BuildCrossfireDrillsOption(TalentContext context, RunTalentState state)
+    {
+        switch (context.Character)
+        {
+            case PlayableCharacterChoice.HumanRanger:
+                return CreateTalentOption("def_command_crossfire", context, state, PlayerUpgradeType.FireRatePercent, amount: 0.08f, scope: PlayerUpgradeScope.Ranger);
+            case PlayableCharacterChoice.HumanArcanist:
+                return CreateTalentOption("def_command_crossfire", context, state, PlayerUpgradeType.MagicRange, amount: 0.25f, scope: PlayerUpgradeScope.Arcanist);
+            case PlayableCharacterChoice.HumanVanguard:
+            default:
+                return CreateTalentOption("def_command_crossfire", context, state, PlayerUpgradeType.MeleeRadius, amount: 0.12f, scope: PlayerUpgradeScope.Vanguard);
+        }
+    }
+
+    private static PlayerUpgradeOption BuildSupplyLineOption(TalentContext context, RunTalentState state)
+    {
+        return CreateTalentOption("def_command_supply", context, state, PlayerUpgradeType.PickupRadius, amount: 0.45f, hasSecondaryUpgrade: true, secondaryType: PlayerUpgradeType.MoveSpeedPercent, secondaryAmount: 0.04f);
+    }
+
+    private static PlayerUpgradeOption CreateTalentOption(
+        string id,
+        TalentContext context,
+        RunTalentState state,
+        PlayerUpgradeType type,
+        float amount = 0f,
+        int intAmount = 0,
+        bool hasSecondaryUpgrade = false,
+        PlayerUpgradeType secondaryType = PlayerUpgradeType.DamagePercent,
+        float secondaryAmount = 0f,
+        int secondaryIntAmount = 0,
+        PlayerUpgradeScope scope = PlayerUpgradeScope.All)
+    {
+        RunTalentDefinition definition = FindRunTalentDefinition(id);
+        if (definition == null)
+            return null;
+
+        int currentPoints = state != null ? state.GetPoints(id) : 0;
+        string requirement = definition.IsRoot ? "Root talent" : $"Requires {GetTalentTitle(definition.ParentId)}";
+        string description = $"{BuildAppliedTalentEffectText(type, amount, intAmount, hasSecondaryUpgrade, secondaryType, secondaryAmount, secondaryIntAmount)}\n{requirement}";
+
+        return new PlayerUpgradeOption(
+            definition.Title,
+            description,
+            type,
+            amount,
+            intAmount,
+            hasSecondaryUpgrade,
+            secondaryType,
+            secondaryAmount,
+            secondaryIntAmount,
+            scope,
+            definition.Id,
+            currentPoints,
+            definition.MaxPoints);
+    }
+
+    private static string StripRequirementFromDescription(string description)
+    {
+        if (string.IsNullOrWhiteSpace(description))
+            return string.Empty;
+
+        string[] lines = description.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+        if (lines.Length <= 1)
+            return description.Trim();
+
+        return string.Join(" ", lines, 0, lines.Length - 1).Trim();
+    }
+
+    private static string BuildAppliedTalentEffectText(
+        PlayerUpgradeType type,
+        float amount,
+        int intAmount,
+        bool hasSecondaryUpgrade,
+        PlayerUpgradeType secondaryType,
+        float secondaryAmount,
+        int secondaryIntAmount)
+    {
+        string primary = BuildSingleAppliedEffectText(type, amount, intAmount);
+        if (!hasSecondaryUpgrade)
+            return $"{primary} per point.";
+
+        string secondary = BuildSingleAppliedEffectText(secondaryType, secondaryAmount, secondaryIntAmount);
+        return $"{primary} and {secondary} per point.";
+    }
+
+    private static string BuildSingleAppliedEffectText(PlayerUpgradeType type, float amount, int intAmount)
+    {
+        switch (type)
+        {
+            case PlayerUpgradeType.DamagePercent:
+                return $"+{FormatPercent(amount)} player damage";
+            case PlayerUpgradeType.FireRatePercent:
+                return $"+{FormatPercent(amount)} attack speed";
+            case PlayerUpgradeType.MoveSpeedPercent:
+                return $"+{FormatPercent(amount)} movement speed";
+            case PlayerUpgradeType.PickupRadius:
+                return $"+{FormatDecimal(amount)} pickup radius";
+            case PlayerUpgradeType.ProjectileCount:
+                return $"+{Mathf.Max(1, intAmount)} projectile";
+            case PlayerUpgradeType.Pierce:
+                return $"+{Mathf.Max(1, intAmount)} pierce";
+            case PlayerUpgradeType.MaxHealth:
+                return $"+{Mathf.Max(1, intAmount)} max HP and heal {Mathf.Max(1, intAmount)}";
+            case PlayerUpgradeType.SplashRadius:
+                return $"+{FormatDecimal(amount)} splash radius";
+            case PlayerUpgradeType.MeleeRadius:
+                return $"+{FormatDecimal(amount)} melee range";
+            case PlayerUpgradeType.MeleeArcAngle:
+                return $"+{FormatDecimal(amount)} melee arc";
+            case PlayerUpgradeType.MeleeCooldownReduction:
+                return $"-{FormatSeconds(amount)} melee recovery";
+            case PlayerUpgradeType.MagicRange:
+                return $"+{FormatDecimal(amount)} spell range";
+            case PlayerUpgradeType.MagicBeamWidth:
+                return $"+{FormatDecimal(amount)} spell width";
+            case PlayerUpgradeType.MagicCooldownReduction:
+                return $"-{FormatSeconds(amount)} spell cooldown";
+            case PlayerUpgradeType.MagicStatusChance:
+                return $"+{FormatPercent(amount)} spell status chance";
+            case PlayerUpgradeType.BombCooldownReduction:
+                return $"-{FormatSeconds(amount)} bomb cooldown";
+            case PlayerUpgradeType.BombRadius:
+                return $"+{FormatDecimal(amount)} bomb radius";
+            case PlayerUpgradeType.BombDamagePercent:
+                return $"+{FormatPercent(amount)} bomb damage";
+            case PlayerUpgradeType.SkillCooldownReduction:
+                return $"-{FormatSeconds(amount)} E skill cooldown";
+            case PlayerUpgradeType.SkillRadius:
+                return $"+{FormatDecimal(amount)} E skill radius";
+            case PlayerUpgradeType.SkillDuration:
+                return $"+{FormatSeconds(amount)} E skill duration";
+            default:
+                return "Improve this talent";
+        }
+    }
+
+    private static string FormatPercent(float value)
+    {
+        return Mathf.RoundToInt(value * 100f).ToString();
+    }
+
+    private static string FormatDecimal(float value)
+    {
+        return value.ToString("0.##");
+    }
+
+    private static string FormatSeconds(float value)
+    {
+        return $"{value:0.##}s";
+    }
+
+    private static RunTalentDefinition FindRunTalentDefinition(string id)
+    {
+        for (int i = 0; i < RunTalentDefinitions.Length; i++)
+        {
+            if (RunTalentDefinitions[i].Id == id)
+                return RunTalentDefinitions[i];
+        }
+
+        return null;
+    }
+
+    private static Color GetElementPreviewColor()
+    {
+        return new Color(0.62f, 0.88f, 1f, 1f);
     }
 
     private static Color GetPrimaryAccentColor(TalentContext context)

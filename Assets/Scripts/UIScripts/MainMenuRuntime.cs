@@ -43,16 +43,30 @@ public class MainMenuRuntime : MonoBehaviour
         public TextMeshProUGUI[] Arrows;
     }
 
+    private sealed class RunTalentTreeView
+    {
+        public GameObject Root;
+        public TextMeshProUGUI HeaderText;
+        public TalentCardView RootNode;
+        public TalentCardView LeftNode;
+        public TalentCardView RightNode;
+        public TalentCardView CapstoneNode;
+    }
+
     private bool _isLoading;
-    private bool _showingRunChains;
     private RectTransform _root;
     private RectTransform _modeSelectionPanel;
+    private RectTransform _factionSelectionPanel;
     private RectTransform _characterSelectionPanel;
     private RectTransform _singlePlayerPanel;
     private RectTransform _multiplayerPanel;
     private RectTransform _loadoutPanel;
     private RectTransform _talentPanel;
+    private RectTransform _accountTalentPanel;
 
+    private TextMeshProUGUI _factionChoiceText;
+    private TextMeshProUGUI _factionDescriptionText;
+    private TextMeshProUGUI _factionStatusText;
     private TextMeshProUGUI _singlePlayerCharacterSummaryText;
     private TextMeshProUGUI _singlePlayerLoadoutSummaryText;
     private TextMeshProUGUI _characterChoiceText;
@@ -64,6 +78,7 @@ public class MainMenuRuntime : MonoBehaviour
     private TextMeshProUGUI _loadoutHeaderSummaryText;
     private TextMeshProUGUI _weaponChoiceText;
     private TextMeshProUGUI _weaponDescriptionText;
+    private TextMeshProUGUI _weaponPreviewText;
     private TextMeshProUGUI _bombChoiceText;
     private TextMeshProUGUI _bombDescriptionText;
     private TextMeshProUGUI _skillChoiceText;
@@ -72,10 +87,8 @@ public class MainMenuRuntime : MonoBehaviour
     private TextMeshProUGUI _passiveDescriptionText;
     private TextMeshProUGUI _talentKitSummaryText;
     private TextMeshProUGUI _talentTagSummaryText;
-    private GameObject _profileTalentRoot;
-    private GameObject _runChainRoot;
-    private TalentCardView[] _talentCards;
-    private RunChainView[] _runChainViews;
+    private TalentCardView[] _accountTalentCards;
+    private RunTalentTreeView[] _runTalentTreeViews;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Bootstrap()
@@ -103,8 +116,8 @@ public class MainMenuRuntime : MonoBehaviour
         EnsureEventSystem();
 
         Canvas existingCanvas = FindObjectOfType<Canvas>();
-        if (existingCanvas != null && existingCanvas.transform.childCount > 0)
-            return;
+        if (existingCanvas != null && existingCanvas.name == "MainMenuCanvas")
+            Destroy(existingCanvas.gameObject);
 
         Canvas canvas = CreateCanvas();
         _root = canvas.GetComponent<RectTransform>();
@@ -115,6 +128,9 @@ public class MainMenuRuntime : MonoBehaviour
 
         _modeSelectionPanel = CreatePanel("ModeSelectionPanel", _root, new Vector2(0f, -34f), new Vector2(900f, 540f));
         BuildModeSelectionPanel(_modeSelectionPanel);
+
+        _factionSelectionPanel = CreatePanel("FactionSelectionPanel", _root, new Vector2(0f, -30f), new Vector2(980f, 590f));
+        BuildFactionSelectionPanel(_factionSelectionPanel);
 
         _characterSelectionPanel = CreatePanel("CharacterSelectionPanel", _root, new Vector2(0f, -30f), new Vector2(980f, 590f));
         BuildCharacterSelectionPanel(_characterSelectionPanel);
@@ -128,8 +144,13 @@ public class MainMenuRuntime : MonoBehaviour
         _loadoutPanel = CreatePanel("LoadoutPanel", _root, new Vector2(0f, -28f), new Vector2(1000f, 600f));
         BuildLoadoutPanel(_loadoutPanel);
 
-        _talentPanel = CreatePanel("TalentPanel", _root, new Vector2(0f, -30f), new Vector2(1080f, 650f));
+        _talentPanel = CreatePanel("TalentPanel", _root, new Vector2(0f, -30f), new Vector2(1120f, 650f));
         BuildTalentPanel(_talentPanel);
+
+        _accountTalentPanel = CreatePanel("AccountTalentPanel", _root, new Vector2(0f, -30f), new Vector2(1080f, 650f));
+        BuildAccountTalentPanel(_accountTalentPanel);
+
+        CreateFooter(_root);
     }
 
     private static void EnsureEventSystem()
@@ -254,60 +275,79 @@ public class MainMenuRuntime : MonoBehaviour
     private void BuildModeSelectionPanel(RectTransform panel)
     {
         CreatePanelTitle(panel, "Choose Mode", new Vector2(0f, 188f));
-        CreatePanelBody(panel, "Step into a solo run now, or leave room for party adventures later. Clean choices first; bigger systems can grow around them.", new Vector2(0f, 148f), 700f);
+        CreatePanelBody(panel, "Account talents live here before you enter a mode. After that: faction, character, starting weapon, then the run.", new Vector2(0f, 148f), 720f);
         CreateDivider(panel, new Vector2(0f, 102f), 640f);
 
-        CreateButton(panel, "Single Player", new Vector2(0f, 32f), new Vector2(440f, 64f), AccentColor, true, ShowCharacterSelection, string.Empty);
+        CreateButton(panel, "Single Player", new Vector2(0f, 32f), new Vector2(440f, 64f), AccentColor, true, ShowFactionSelection, string.Empty);
         CreateButton(panel, "Multiplayer", new Vector2(0f, -48f), new Vector2(440f, 56f), PlaceholderArcane, true, ShowMultiplayerSetup, "Soon");
 
         CreateSectionLabel(panel, "Camp Desk", new Vector2(0f, -110f));
         CreateButton(panel, "Settings", new Vector2(-240f, -160f), new Vector2(190f, 48f), UtilityButtonColor, false, null, string.Empty);
         CreateButton(panel, "Sound", new Vector2(0f, -160f), new Vector2(190f, 48f), PlaceholderWar, false, null, string.Empty);
-        CreateButton(panel, "Profile", new Vector2(240f, -160f), new Vector2(190f, 48f), PlaceholderRanger, false, null, string.Empty);
+        CreateButton(panel, "Account Talents", new Vector2(240f, -160f), new Vector2(220f, 48f), PlaceholderRanger, true, ShowAccountTalentBrowser, string.Empty);
         CreateButton(panel, "Quit", new Vector2(0f, -230f), new Vector2(240f, 50f), SecondaryButtonColor, true, QuitGame, string.Empty);
 
-        CreateHintLabel(panel, "Loadouts come after mode selection, so each mode can grow into its own flavor of adventure.", new Vector2(0f, -292f), 760f);
+        CreateHintLabel(panel, "Account talents are global progression. Run talents are shown later with the selected character and kit.", new Vector2(0f, -292f), 760f);
+    }
+
+    private void BuildFactionSelectionPanel(RectTransform panel)
+    {
+        CreatePanelTitle(panel, "Choose Faction", new Vector2(0f, 202f));
+        CreatePanelBody(panel, "Start with the side you represent. Zombies remain enemy-only; Angels and Demons are prepared as future player factions.", new Vector2(0f, 160f), 820f);
+        CreateDivider(panel, new Vector2(0f, 116f), 760f);
+
+        CreateButton(panel, "Humans", new Vector2(-300f, 36f), new Vector2(220f, 64f), AccentColor, true, SelectHumanFaction, "Ready");
+        CreateButton(panel, "Angels", new Vector2(0f, 36f), new Vector2(220f, 64f), new Color(0.3f, 0.55f, 0.66f, 1f), true, SelectAngelFaction, "Later");
+        CreateButton(panel, "Demons", new Vector2(300f, 36f), new Vector2(220f, 64f), new Color(0.72f, 0.22f, 0.14f, 1f), true, SelectDemonFaction, "Later");
+
+        _factionChoiceText = CreateLargeCenterLabel(panel, string.Empty, new Vector2(0f, -48f), 760f, 28f, TitleColor);
+        _factionDescriptionText = CreateLargeCenterLabel(panel, string.Empty, new Vector2(0f, -102f), 780f, 16f, BodyColor);
+        _factionStatusText = CreateLargeCenterLabel(panel, string.Empty, new Vector2(0f, -158f), 760f, 15f, HintColor);
+
+        CreateButton(panel, "Continue", new Vector2(0f, -234f), new Vector2(300f, 58f), AccentColor, true, ContinueFromFactionSelection, string.Empty);
+        CreateButton(panel, "Back", new Vector2(0f, -306f), new Vector2(220f, 48f), SecondaryButtonColor, true, ShowModeSelection, string.Empty);
+        CreateHintLabel(panel, "Faction choice will later drive available characters, weapons, allies, and aggro politics.", new Vector2(0f, -358f), 800f);
     }
 
     private void BuildCharacterSelectionPanel(RectTransform panel)
     {
         CreatePanelTitle(panel, "Choose Character", new Vector2(0f, 202f));
-        CreatePanelBody(panel, "Pick the survivor who enters the faction war. Characters set your opening stats and the allies who land beside you.", new Vector2(0f, 160f), 760f);
+        CreatePanelBody(panel, "Characters belong to the selected faction. Pick the role, then choose the starting weapon that defines the opening run.", new Vector2(0f, 160f), 800f);
         CreateDivider(panel, new Vector2(0f, 116f), 720f);
 
-        CreateButton(panel, "<", new Vector2(-360f, 16f), new Vector2(66f, 54f), UtilityButtonColor, true, CycleCharacterBackward, string.Empty);
-        CreateButton(panel, ">", new Vector2(360f, 16f), new Vector2(66f, 54f), UtilityButtonColor, true, CycleCharacterForward, string.Empty);
+        CreateButton(panel, "<", new Vector2(-350f, 28f), new Vector2(66f, 54f), UtilityButtonColor, true, CycleCharacterBackward, string.Empty);
+        CreateButton(panel, ">", new Vector2(10f, 28f), new Vector2(66f, 54f), UtilityButtonColor, true, CycleCharacterForward, string.Empty);
 
-        _characterChoiceText = CreateLargeCenterLabel(panel, string.Empty, new Vector2(0f, 62f), 620f, 30f, TitleColor);
-        _characterRoleText = CreateLargeCenterLabel(panel, string.Empty, new Vector2(0f, 26f), 520f, 17f, HintColor);
-        _characterPrimaryText = CreateLargeCenterLabel(panel, string.Empty, new Vector2(0f, -12f), 700f, 16f, TitleColor);
-        _characterDescriptionText = CreateLargeCenterLabel(panel, string.Empty, new Vector2(0f, -56f), 700f, 16f, BodyColor);
-        _characterStatsText = CreateLargeCenterLabel(panel, string.Empty, new Vector2(0f, -112f), 760f, 15f, HintColor);
-        _characterAlliesText = CreateLargeCenterLabel(panel, string.Empty, new Vector2(0f, -154f), 760f, 15f, BodyColor);
+        _characterChoiceText = CreateLargeCenterLabel(panel, string.Empty, new Vector2(-170f, 70f), 420f, 30f, TitleColor);
+        _characterRoleText = CreateLargeCenterLabel(panel, string.Empty, new Vector2(-170f, 34f), 380f, 17f, HintColor);
+        _characterPrimaryText = CreateLargeCenterLabel(panel, string.Empty, new Vector2(-170f, -12f), 480f, 16f, TitleColor);
+        _characterDescriptionText = CreateLargeCenterLabel(panel, string.Empty, new Vector2(260f, 50f), 430f, 16f, BodyColor);
+        _characterStatsText = CreateLargeCenterLabel(panel, string.Empty, new Vector2(260f, -34f), 430f, 15f, HintColor);
+        _characterAlliesText = CreateLargeCenterLabel(panel, string.Empty, new Vector2(260f, -100f), 430f, 15f, BodyColor);
 
         CreateButton(panel, "Continue", new Vector2(0f, -226f), new Vector2(300f, 58f), AccentColor, true, ShowSinglePlayerSetup, string.Empty);
-        CreateButton(panel, "Back", new Vector2(0f, -298f), new Vector2(220f, 48f), SecondaryButtonColor, true, ShowModeSelection, string.Empty);
-        CreateHintLabel(panel, "Zombies are not playable. Angels and Demons can join this screen later once their player kits are ready.", new Vector2(0f, -350f), 760f);
+        CreateButton(panel, "Back", new Vector2(0f, -298f), new Vector2(220f, 48f), SecondaryButtonColor, true, ShowFactionSelection, string.Empty);
+        CreateHintLabel(panel, "The side panel is reserved for character flavor, stats, and ally expectations. This will matter more as factions grow.", new Vector2(0f, -350f), 820f);
     }
 
     private void BuildSinglePlayerPanel(RectTransform panel)
     {
         CreatePanelTitle(panel, "Single Player Setup", new Vector2(0f, 184f));
-        CreatePanelBody(panel, "Shape the run before the first enemy shows up. Your opening kit, route, and pace should feel chosen rather than accidental.", new Vector2(0f, 142f), 720f);
+        CreatePanelBody(panel, "Review the chosen faction and character, then tune the starting weapon and preview the run talent paths.", new Vector2(0f, 142f), 760f);
         CreateDivider(panel, new Vector2(0f, 98f), 680f);
 
         CreateSectionLabel(panel, "Run Setup", new Vector2(0f, 48f));
-        CreateButton(panel, "Character", new Vector2(-360f, -4f), new Vector2(160f, 52f), UtilityButtonColor, true, ShowCharacterSelection, string.Empty);
-        CreateButton(panel, "Loadout", new Vector2(-180f, -4f), new Vector2(160f, 52f), PlaceholderArcane, true, ShowLoadoutSetup, string.Empty);
-        CreateButton(panel, "Talents", new Vector2(0f, -4f), new Vector2(160f, 52f), AccentColor, true, ShowTalentBrowser, string.Empty);
-        CreateButton(panel, "Map Select", new Vector2(180f, -4f), new Vector2(160f, 52f), UtilityButtonColor, false, null, "Soon");
-        CreateButton(panel, "Difficulty", new Vector2(360f, -4f), new Vector2(160f, 52f), PlaceholderWar, false, null, "Soon");
+        CreateButton(panel, "Faction", new Vector2(-360f, -4f), new Vector2(160f, 52f), UtilityButtonColor, true, ShowFactionSelection, string.Empty);
+        CreateButton(panel, "Character", new Vector2(-180f, -4f), new Vector2(160f, 52f), UtilityButtonColor, true, ShowCharacterSelection, string.Empty);
+        CreateButton(panel, "Starting Kit", new Vector2(0f, -4f), new Vector2(160f, 52f), PlaceholderArcane, true, ShowLoadoutSetup, string.Empty);
+        CreateButton(panel, "Run Talents", new Vector2(180f, -4f), new Vector2(160f, 52f), AccentColor, true, ShowTalentBrowser, string.Empty);
+        CreateButton(panel, "Map Select", new Vector2(360f, -4f), new Vector2(160f, 52f), UtilityButtonColor, false, null, "Soon");
 
         _singlePlayerCharacterSummaryText = CreateHintLabel(panel, string.Empty, new Vector2(0f, -64f), 760f);
         _singlePlayerLoadoutSummaryText = CreateHintLabel(panel, string.Empty, new Vector2(0f, -112f), 760f);
         CreateButton(panel, "Start Run", new Vector2(0f, -178f), new Vector2(320f, 60f), AccentColor, true, LoadGameplayScene, string.Empty);
         CreateButton(panel, "Back", new Vector2(0f, -252f), new Vector2(220f, 48f), SecondaryButtonColor, true, ShowModeSelection, string.Empty);
-        CreateHintLabel(panel, "Your selected loadout carries straight into the run. Press Q for your bomb and E for your active skill.", new Vector2(0f, -314f), 720f);
+        CreateHintLabel(panel, "Current flow: Faction -> Character -> Starting Kit -> Run Talents -> Start Run.", new Vector2(0f, -314f), 720f);
     }
 
     private void BuildMultiplayerPanel(RectTransform panel)
@@ -325,11 +365,12 @@ public class MainMenuRuntime : MonoBehaviour
     private void BuildLoadoutPanel(RectTransform panel)
     {
         CreatePanelTitle(panel, "Starting Loadout", new Vector2(0f, 204f));
-        CreatePanelBody(panel, "Choose the weapon, bomb skill, active skill, and passive that define your first steps into danger.", new Vector2(0f, 164f), 760f);
+        CreatePanelBody(panel, "Choose the character's starting weapon first, then the bomb, active skill, and passive that support it.", new Vector2(0f, 164f), 780f);
         CreateDivider(panel, new Vector2(0f, 120f), 720f);
         _loadoutHeaderSummaryText = CreateHintLabel(panel, string.Empty, new Vector2(0f, 94f), 760f);
 
         _weaponChoiceText = CreateChoiceBlock(panel, "Primary", new Vector2(0f, 18f), CycleWeaponBackward, CycleWeaponForward, out _weaponDescriptionText);
+        _weaponPreviewText = CreateWeaponPreviewBox(panel, new Vector2(390f, 18f));
         _bombChoiceText = CreateChoiceBlock(panel, "Bomb Skill", new Vector2(0f, -82f), CycleBombBackward, CycleBombForward, out _bombDescriptionText);
         _skillChoiceText = CreateChoiceBlock(panel, "Active Skill", new Vector2(0f, -182f), CycleSkillBackward, CycleSkillForward, out _skillDescriptionText);
         _passiveChoiceText = CreateChoiceBlock(panel, "Passive", new Vector2(0f, -282f), CyclePassiveBackward, CyclePassiveForward, out _passiveDescriptionText);
@@ -340,37 +381,47 @@ public class MainMenuRuntime : MonoBehaviour
 
     private void BuildTalentPanel(RectTransform panel)
     {
-        CreatePanelTitle(panel, "Talent Codex", new Vector2(0f, 236f));
-        CreatePanelBody(panel, "Browse future build paths without adding noise to combat. Profile talents unlock long-term options; run chains show how one in-run upgrade can unlock the next.", new Vector2(0f, 192f), 900f);
-        CreateDivider(panel, new Vector2(0f, 144f), 820f);
+        CreatePanelTitle(panel, "Run Talents", new Vector2(0f, 236f));
+        CreatePanelBody(panel, "Preview the in-run talent pools. Root talents appear first; taking one unlocks its connected follow-ups. Every talent can hold up to 5 points.", new Vector2(0f, 192f), 920f);
+        CreateDivider(panel, new Vector2(0f, 144f), 840f);
 
         _talentKitSummaryText = CreateHintLabel(panel, string.Empty, new Vector2(0f, 114f), 900f);
         _talentTagSummaryText = CreateHintLabel(panel, string.Empty, new Vector2(0f, 84f), 900f);
 
-        CreateButton(panel, "Profile Talents", new Vector2(-150f, 44f), new Vector2(230f, 42f), AccentColor, true, ShowProfileTalentTab, string.Empty);
-        CreateButton(panel, "Run Chains", new Vector2(150f, 44f), new Vector2(230f, 42f), UtilityButtonColor, true, ShowRunChainTab, string.Empty);
+        RectTransform talentContent = CreateTalentScrollContent(panel, new Vector2(0f, -94f), new Vector2(1060f, 430f), new Vector2(1040f, 1120f));
+        CreateTalentCardText(talentContent, "AttackHeader", new Vector2(-270f, 520f), new Vector2(420f, 28f), 18f, HintColor).text = "Attack";
+        CreateTalentCardText(talentContent, "DefenseHeader", new Vector2(270f, 520f), new Vector2(420f, 28f), 18f, HintColor).text = "Defense";
 
-        _profileTalentRoot = CreateViewRoot("ProfileTalentView", panel);
-        _runChainRoot = CreateViewRoot("RunChainView", panel);
-
-        _talentCards = new TalentCardView[6];
-        Vector2 cardSize = new Vector2(490f, 96f);
-        _talentCards[0] = CreateTalentCard(_profileTalentRoot.transform, new Vector2(-260f, -24f), cardSize);
-        _talentCards[1] = CreateTalentCard(_profileTalentRoot.transform, new Vector2(260f, -24f), cardSize);
-        _talentCards[2] = CreateTalentCard(_profileTalentRoot.transform, new Vector2(-260f, -134f), cardSize);
-        _talentCards[3] = CreateTalentCard(_profileTalentRoot.transform, new Vector2(260f, -134f), cardSize);
-        _talentCards[4] = CreateTalentCard(_profileTalentRoot.transform, new Vector2(-260f, -244f), cardSize);
-        _talentCards[5] = CreateTalentCard(_profileTalentRoot.transform, new Vector2(260f, -244f), cardSize);
-
-        _runChainViews = new RunChainView[3];
-        _runChainViews[0] = CreateRunChainView(_runChainRoot.transform, new Vector2(0f, -18f));
-        _runChainViews[1] = CreateRunChainView(_runChainRoot.transform, new Vector2(0f, -138f));
-        _runChainViews[2] = CreateRunChainView(_runChainRoot.transform, new Vector2(0f, -258f));
+        _runTalentTreeViews = new RunTalentTreeView[6];
+        _runTalentTreeViews[0] = CreateRunTalentTreeView(talentContent, new Vector2(-270f, 338f));
+        _runTalentTreeViews[1] = CreateRunTalentTreeView(talentContent, new Vector2(-270f, 0f));
+        _runTalentTreeViews[2] = CreateRunTalentTreeView(talentContent, new Vector2(-270f, -338f));
+        _runTalentTreeViews[3] = CreateRunTalentTreeView(talentContent, new Vector2(270f, 338f));
+        _runTalentTreeViews[4] = CreateRunTalentTreeView(talentContent, new Vector2(270f, 0f));
+        _runTalentTreeViews[5] = CreateRunTalentTreeView(talentContent, new Vector2(270f, -338f));
 
         CreateButton(panel, "Change Loadout", new Vector2(-150f, -326f), new Vector2(250f, 48f), AccentColor, true, ShowLoadoutSetup, string.Empty);
         CreateButton(panel, "Back to Setup", new Vector2(150f, -326f), new Vector2(250f, 48f), SecondaryButtonColor, true, ShowSinglePlayerSetup, string.Empty);
-        CreateHintLabel(panel, "For now, this is a preview layer. Later, the in-run level-up pool can use these prerequisites so follow-up cards only appear after their root card is picked.", new Vector2(0f, -388f), 900f);
-        SetTalentSubView(showRunChains: false);
+        CreateHintLabel(panel, "Scroll to inspect all rows. In-game level-ups now use this tree and hide locked or maxed talents.", new Vector2(0f, -388f), 900f);
+    }
+
+    private void BuildAccountTalentPanel(RectTransform panel)
+    {
+        CreatePanelTitle(panel, "Account Talents", new Vector2(0f, 236f));
+        CreatePanelBody(panel, "Permanent progression belongs before mode selection. These talents unlock long-term options across runs instead of changing one run's level-up pool.", new Vector2(0f, 192f), 900f);
+        CreateDivider(panel, new Vector2(0f, 144f), 820f);
+
+        _accountTalentCards = new TalentCardView[6];
+        Vector2 cardSize = new Vector2(490f, 96f);
+        _accountTalentCards[0] = CreateTalentCard(panel, new Vector2(-260f, 72f), cardSize);
+        _accountTalentCards[1] = CreateTalentCard(panel, new Vector2(260f, 72f), cardSize);
+        _accountTalentCards[2] = CreateTalentCard(panel, new Vector2(-260f, -38f), cardSize);
+        _accountTalentCards[3] = CreateTalentCard(panel, new Vector2(260f, -38f), cardSize);
+        _accountTalentCards[4] = CreateTalentCard(panel, new Vector2(-260f, -148f), cardSize);
+        _accountTalentCards[5] = CreateTalentCard(panel, new Vector2(260f, -148f), cardSize);
+
+        CreateButton(panel, "Back", new Vector2(0f, -326f), new Vector2(240f, 50f), SecondaryButtonColor, true, ShowModeSelection, string.Empty);
+        CreateHintLabel(panel, "This screen is global. Character-specific run talent trees live inside Single Player setup.", new Vector2(0f, -388f), 900f);
     }
 
     private static void CreatePanelTitle(Transform parent, string label, Vector2 anchoredPosition)
@@ -543,6 +594,41 @@ public class MainMenuRuntime : MonoBehaviour
         return choiceText;
     }
 
+    private static TextMeshProUGUI CreateWeaponPreviewBox(Transform parent, Vector2 anchoredPosition)
+    {
+        GameObject boxObject = new GameObject("WeaponPreview");
+        boxObject.transform.SetParent(parent, false);
+
+        Image image = boxObject.AddComponent<Image>();
+        image.color = new Color(0.03f, 0.13f, 0.04f, 0.82f);
+
+        Outline outline = boxObject.AddComponent<Outline>();
+        outline.effectColor = OutlineColor;
+        outline.effectDistance = new Vector2(1.5f, -1.5f);
+
+        RectTransform rect = boxObject.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = anchoredPosition;
+        rect.sizeDelta = new Vector2(150f, 72f);
+
+        GameObject textObject = new GameObject("PreviewText");
+        textObject.transform.SetParent(boxObject.transform, false);
+
+        TextMeshProUGUI text = textObject.AddComponent<TextMeshProUGUI>();
+        text.fontSize = 11f;
+        text.alignment = TextAlignmentOptions.Center;
+        text.enableWordWrapping = true;
+        text.overflowMode = TextOverflowModes.Ellipsis;
+        text.color = BodyColor;
+
+        RectTransform textRect = textObject.GetComponent<RectTransform>();
+        Stretch(textRect, 8f);
+
+        return text;
+    }
+
     private static TalentCardView CreateTalentCard(Transform parent, Vector2 anchoredPosition, Vector2 size)
     {
         GameObject cardObject = new GameObject("TalentCard");
@@ -591,6 +677,83 @@ public class MainMenuRuntime : MonoBehaviour
         Stretch(rect, 0f);
 
         return rootObject;
+    }
+
+    private static RectTransform CreateTalentScrollContent(Transform parent, Vector2 anchoredPosition, Vector2 viewportSize, Vector2 contentSize)
+    {
+        GameObject scrollObject = new GameObject("RunTalentScrollView");
+        scrollObject.transform.SetParent(parent, false);
+
+        RectTransform scrollRectTransform = scrollObject.AddComponent<RectTransform>();
+        scrollRectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+        scrollRectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+        scrollRectTransform.pivot = new Vector2(0.5f, 0.5f);
+        scrollRectTransform.anchoredPosition = anchoredPosition;
+        scrollRectTransform.sizeDelta = viewportSize;
+
+        Image scrollBackground = scrollObject.AddComponent<Image>();
+        scrollBackground.color = new Color(0.02f, 0.08f, 0.03f, 0.35f);
+
+        ScrollRect scrollRect = scrollObject.AddComponent<ScrollRect>();
+        scrollRect.horizontal = false;
+        scrollRect.vertical = true;
+        scrollRect.movementType = ScrollRect.MovementType.Clamped;
+        scrollRect.scrollSensitivity = 32f;
+
+        GameObject viewportObject = new GameObject("Viewport");
+        viewportObject.transform.SetParent(scrollObject.transform, false);
+        RectTransform viewportRect = viewportObject.AddComponent<RectTransform>();
+        Stretch(viewportRect, 8f);
+
+        Image viewportImage = viewportObject.AddComponent<Image>();
+        viewportImage.color = new Color(0f, 0f, 0f, 0.05f);
+        Mask mask = viewportObject.AddComponent<Mask>();
+        mask.showMaskGraphic = false;
+
+        GameObject contentObject = new GameObject("Content");
+        contentObject.transform.SetParent(viewportObject.transform, false);
+        RectTransform contentRect = contentObject.AddComponent<RectTransform>();
+        contentRect.anchorMin = new Vector2(0.5f, 1f);
+        contentRect.anchorMax = new Vector2(0.5f, 1f);
+        contentRect.pivot = new Vector2(0.5f, 1f);
+        contentRect.anchoredPosition = Vector2.zero;
+        contentRect.sizeDelta = contentSize;
+
+        scrollRect.viewport = viewportRect;
+        scrollRect.content = contentRect;
+        scrollRect.verticalNormalizedPosition = 1f;
+
+        return contentRect;
+    }
+
+    private static RunTalentTreeView CreateRunTalentTreeView(Transform parent, Vector2 anchoredPosition)
+    {
+        GameObject treeObject = new GameObject("RunTalentTree");
+        treeObject.transform.SetParent(parent, false);
+
+        RectTransform rect = treeObject.AddComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = anchoredPosition;
+        rect.sizeDelta = new Vector2(500f, 330f);
+
+        RunTalentTreeView view = new RunTalentTreeView
+        {
+            Root = treeObject,
+            HeaderText = CreateTalentCardText(treeObject.transform, "TreeHeader", new Vector2(0f, 154f), new Vector2(450f, 24f), 14f, HintColor),
+            RootNode = CreateTalentCard(treeObject.transform, new Vector2(0f, 86f), new Vector2(230f, 86f)),
+            LeftNode = CreateTalentCard(treeObject.transform, new Vector2(-128f, -34f), new Vector2(220f, 92f)),
+            RightNode = CreateTalentCard(treeObject.transform, new Vector2(128f, -34f), new Vector2(220f, 92f)),
+            CapstoneNode = CreateTalentCard(treeObject.transform, new Vector2(0f, -160f), new Vector2(250f, 92f))
+        };
+
+        CreateTalentCardText(treeObject.transform, "SplitConnectorLeft", new Vector2(-64f, 28f), new Vector2(42f, 28f), 18f, HintColor).text = "/";
+        CreateTalentCardText(treeObject.transform, "SplitConnectorRight", new Vector2(64f, 28f), new Vector2(42f, 28f), 18f, HintColor).text = "\\";
+        CreateTalentCardText(treeObject.transform, "MergeConnectorLeft", new Vector2(-64f, -96f), new Vector2(42f, 28f), 18f, HintColor).text = "\\";
+        CreateTalentCardText(treeObject.transform, "MergeConnectorRight", new Vector2(64f, -96f), new Vector2(42f, 28f), 18f, HintColor).text = "/";
+
+        return view;
     }
 
     private static RunChainView CreateRunChainView(Transform parent, Vector2 anchoredPosition)
@@ -769,6 +932,36 @@ public class MainMenuRuntime : MonoBehaviour
         RefreshLoadoutTexts();
     }
 
+    private void SelectHumanFaction()
+    {
+        RunLoadoutState.SelectFaction(PlayableFactionChoice.Humans);
+        RefreshLoadoutTexts();
+    }
+
+    private void SelectAngelFaction()
+    {
+        RunLoadoutState.SelectFaction(PlayableFactionChoice.Angels);
+        RefreshLoadoutTexts();
+    }
+
+    private void SelectDemonFaction()
+    {
+        RunLoadoutState.SelectFaction(PlayableFactionChoice.Demons);
+        RefreshLoadoutTexts();
+    }
+
+    private void ContinueFromFactionSelection()
+    {
+        if (!RunLoadoutState.IsFactionPlayable(RunLoadoutState.FactionChoice))
+        {
+            Debug.Log($"{RunLoadoutState.GetFactionName(RunLoadoutState.FactionChoice)} faction is not playable yet.");
+            RefreshLoadoutTexts();
+            return;
+        }
+
+        ShowCharacterSelection();
+    }
+
     private void CycleWeaponBackward()
     {
         RunLoadoutState.CycleWeapon(-1);
@@ -855,6 +1048,9 @@ public class MainMenuRuntime : MonoBehaviour
         if (_weaponDescriptionText != null)
             _weaponDescriptionText.text = RunLoadoutState.GetPrimaryAttackDescription(RunLoadoutState.CharacterChoice, RunLoadoutState.WeaponChoice);
 
+        if (_weaponPreviewText != null)
+            _weaponPreviewText.text = RunLoadoutState.GetPrimaryAttackPreviewText(RunLoadoutState.CharacterChoice, RunLoadoutState.WeaponChoice);
+
         if (_bombChoiceText != null)
             _bombChoiceText.text = RunLoadoutState.GetBombName(RunLoadoutState.BombChoice);
 
@@ -878,85 +1074,103 @@ public class MainMenuRuntime : MonoBehaviour
 
     private void RefreshTalentTexts()
     {
+        if (_factionChoiceText != null)
+            _factionChoiceText.text = RunLoadoutState.GetFactionName(RunLoadoutState.FactionChoice);
+
+        if (_factionDescriptionText != null)
+            _factionDescriptionText.text = RunLoadoutState.GetFactionDescription(RunLoadoutState.FactionChoice);
+
+        if (_factionStatusText != null)
+        {
+            string status = RunLoadoutState.GetFactionStatus(RunLoadoutState.FactionChoice);
+            string nextStep = RunLoadoutState.IsFactionPlayable(RunLoadoutState.FactionChoice)
+                ? "Continue to character selection."
+                : "This faction is visible for planning but is not playable yet.";
+            _factionStatusText.text = $"{status}  |  {nextStep}";
+        }
+
         if (_talentKitSummaryText != null)
             _talentKitSummaryText.text = RunLoadoutState.BuildSummary();
 
         if (_talentTagSummaryText != null)
             _talentTagSummaryText.text = TalentCatalog.BuildCurrentTagSummary();
 
-        if (_talentCards == null)
-            return;
-
         TalentDisplayInfo[] cards = TalentCatalog.BuildCurrentDisplayCards();
-        for (int i = 0; i < _talentCards.Length; i++)
+        if (_accountTalentCards != null)
         {
-            TalentCardView view = _talentCards[i];
-            if (view == null || view.Root == null)
-                continue;
-
-            bool hasCard = i < cards.Length;
-            view.Root.SetActive(hasCard);
-            if (!hasCard)
-                continue;
-
-            TalentDisplayInfo card = cards[i];
-            ApplyTalentCardView(
-                view,
-                card.AccentColor,
-                card.IsUnlocked,
-                $"{card.TreeName}  |  {card.UnlockText}",
-                card.Title,
-                card.RequirementText,
-                card.EffectText);
-        }
-
-        RefreshRunChainTexts();
-        SetTalentSubView(_showingRunChains);
-    }
-
-    private void RefreshRunChainTexts()
-    {
-        if (_runChainViews == null)
-            return;
-
-        RunUpgradeChainDisplayInfo[] chains = TalentCatalog.BuildCurrentRunUpgradeChains();
-        for (int i = 0; i < _runChainViews.Length; i++)
-        {
-            RunChainView view = _runChainViews[i];
-            if (view == null || view.Root == null)
-                continue;
-
-            bool hasChain = i < chains.Length;
-            view.Root.SetActive(hasChain);
-            if (!hasChain)
-                continue;
-
-            RunUpgradeChainDisplayInfo chain = chains[i];
-            if (view.ChainNameText != null)
-                view.ChainNameText.text = chain.ChainName;
-
-            for (int nodeIndex = 0; nodeIndex < view.Nodes.Length; nodeIndex++)
+            for (int i = 0; i < _accountTalentCards.Length; i++)
             {
-                TalentCardView nodeView = view.Nodes[nodeIndex];
-                if (nodeView == null || nodeView.Root == null)
+                TalentCardView view = _accountTalentCards[i];
+                if (view == null || view.Root == null)
                     continue;
 
-                bool hasNode = chain.Nodes != null && nodeIndex < chain.Nodes.Length;
-                nodeView.Root.SetActive(hasNode);
-                if (!hasNode)
+                bool hasCard = i < cards.Length;
+                view.Root.SetActive(hasCard);
+                if (!hasCard)
                     continue;
 
-                RunUpgradeNodeDisplayInfo node = chain.Nodes[nodeIndex];
+                TalentDisplayInfo card = cards[i];
                 ApplyTalentCardView(
-                    nodeView,
-                    node.AccentColor,
-                    true,
-                    node.StageText,
-                    node.Title,
-                    node.RequirementText,
-                    node.EffectText);
+                    view,
+                    card.AccentColor,
+                    card.IsUnlocked,
+                    $"{card.TreeName}  |  {card.UnlockText}",
+                    card.Title,
+                    card.RequirementText,
+                    card.EffectText);
             }
         }
+
+        RefreshRunTalentTrees();
+    }
+
+    private void RefreshRunTalentTrees()
+    {
+        if (_runTalentTreeViews == null)
+            return;
+
+        RunUpgradeChainDisplayInfo[] trees = TalentCatalog.BuildCurrentRunTalentTrees();
+        for (int i = 0; i < _runTalentTreeViews.Length; i++)
+        {
+            RunTalentTreeView view = _runTalentTreeViews[i];
+            if (view == null || view.Root == null)
+                continue;
+
+            bool hasTree = i < trees.Length;
+            view.Root.SetActive(hasTree);
+            if (!hasTree)
+                continue;
+
+            RunUpgradeChainDisplayInfo tree = trees[i];
+            if (view.HeaderText != null)
+                view.HeaderText.text = tree.ChainName;
+
+            ApplyTreeNode(view.RootNode, tree, 0);
+            ApplyTreeNode(view.LeftNode, tree, 1);
+            ApplyTreeNode(view.RightNode, tree, 2);
+            ApplyTreeNode(view.CapstoneNode, tree, 3);
+        }
+    }
+
+    private static void ApplyTreeNode(TalentCardView view, RunUpgradeChainDisplayInfo tree, int index)
+    {
+        if (view == null || view.Root == null)
+            return;
+
+        bool hasNode = tree.Nodes != null && index < tree.Nodes.Length;
+        view.Root.SetActive(hasNode);
+        if (!hasNode)
+            return;
+
+        RunUpgradeNodeDisplayInfo node = tree.Nodes[index];
+        ApplyTalentCardView(
+            view,
+            node.AccentColor,
+            true,
+            node.StageText,
+            node.Title,
+            node.RequirementText,
+            node.EffectText);
     }
 
     private static void ApplyTalentCardView(
@@ -993,66 +1207,59 @@ public class MainMenuRuntime : MonoBehaviour
         }
     }
 
-    private void ShowProfileTalentTab()
-    {
-        _showingRunChains = false;
-        SetTalentSubView(showRunChains: false);
-    }
-
-    private void ShowRunChainTab()
-    {
-        _showingRunChains = true;
-        RefreshRunChainTexts();
-        SetTalentSubView(showRunChains: true);
-    }
-
-    private void SetTalentSubView(bool showRunChains)
-    {
-        if (_profileTalentRoot != null)
-            _profileTalentRoot.SetActive(!showRunChains);
-
-        if (_runChainRoot != null)
-            _runChainRoot.SetActive(showRunChains);
-    }
-
     private void ShowModeSelection()
     {
-        SetPanelState(modeSelection: true, characterSelection: false, singlePlayer: false, multiplayer: false, loadout: false);
+        SetPanelState(modeSelection: true, factionSelection: false, characterSelection: false, singlePlayer: false, multiplayer: false, loadout: false);
+    }
+
+    private void ShowFactionSelection()
+    {
+        RefreshLoadoutTexts();
+        SetPanelState(modeSelection: false, factionSelection: true, characterSelection: false, singlePlayer: false, multiplayer: false, loadout: false);
     }
 
     private void ShowCharacterSelection()
     {
         RefreshLoadoutTexts();
-        SetPanelState(modeSelection: false, characterSelection: true, singlePlayer: false, multiplayer: false, loadout: false);
+        SetPanelState(modeSelection: false, factionSelection: false, characterSelection: true, singlePlayer: false, multiplayer: false, loadout: false);
     }
 
     private void ShowSinglePlayerSetup()
     {
         RefreshLoadoutTexts();
-        SetPanelState(modeSelection: false, characterSelection: false, singlePlayer: true, multiplayer: false, loadout: false);
+        SetPanelState(modeSelection: false, factionSelection: false, characterSelection: false, singlePlayer: true, multiplayer: false, loadout: false);
     }
 
     private void ShowMultiplayerSetup()
     {
-        SetPanelState(modeSelection: false, characterSelection: false, singlePlayer: false, multiplayer: true, loadout: false);
+        SetPanelState(modeSelection: false, factionSelection: false, characterSelection: false, singlePlayer: false, multiplayer: true, loadout: false);
     }
 
     private void ShowLoadoutSetup()
     {
         RefreshLoadoutTexts();
-        SetPanelState(modeSelection: false, characterSelection: false, singlePlayer: false, multiplayer: false, loadout: true);
+        SetPanelState(modeSelection: false, factionSelection: false, characterSelection: false, singlePlayer: false, multiplayer: false, loadout: true);
     }
 
     private void ShowTalentBrowser()
     {
         RefreshLoadoutTexts();
-        SetPanelState(modeSelection: false, characterSelection: false, singlePlayer: false, multiplayer: false, loadout: false, talent: true);
+        SetPanelState(modeSelection: false, factionSelection: false, characterSelection: false, singlePlayer: false, multiplayer: false, loadout: false, talent: true);
     }
 
-    private void SetPanelState(bool modeSelection, bool characterSelection, bool singlePlayer, bool multiplayer, bool loadout, bool talent = false)
+    private void ShowAccountTalentBrowser()
+    {
+        RefreshLoadoutTexts();
+        SetPanelState(modeSelection: false, factionSelection: false, characterSelection: false, singlePlayer: false, multiplayer: false, loadout: false, accountTalent: true);
+    }
+
+    private void SetPanelState(bool modeSelection, bool factionSelection, bool characterSelection, bool singlePlayer, bool multiplayer, bool loadout, bool talent = false, bool accountTalent = false)
     {
         if (_modeSelectionPanel != null)
             _modeSelectionPanel.gameObject.SetActive(modeSelection);
+
+        if (_factionSelectionPanel != null)
+            _factionSelectionPanel.gameObject.SetActive(factionSelection);
 
         if (_characterSelectionPanel != null)
             _characterSelectionPanel.gameObject.SetActive(characterSelection);
@@ -1068,6 +1275,9 @@ public class MainMenuRuntime : MonoBehaviour
 
         if (_talentPanel != null)
             _talentPanel.gameObject.SetActive(talent);
+
+        if (_accountTalentPanel != null)
+            _accountTalentPanel.gameObject.SetActive(accountTalent);
     }
 
     private void LoadGameplayScene()

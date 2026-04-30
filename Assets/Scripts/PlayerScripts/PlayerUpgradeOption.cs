@@ -17,7 +17,13 @@ public enum PlayerUpgradeType
     MagicRange,
     MagicBeamWidth,
     MagicCooldownReduction,
-    MagicStatusChance
+    MagicStatusChance,
+    BombCooldownReduction,
+    BombRadius,
+    BombDamagePercent,
+    SkillCooldownReduction,
+    SkillRadius,
+    SkillDuration
 }
 
 public enum PlayerUpgradeScope
@@ -42,9 +48,23 @@ public class PlayerUpgradeOption
     [SerializeField] private float secondaryAmount;
     [SerializeField] private int secondaryIntAmount;
     [SerializeField] private PlayerUpgradeScope scope = PlayerUpgradeScope.All;
+    [SerializeField] private string runTalentId;
+    [SerializeField] private int runTalentPointsBefore;
+    [SerializeField] private int runTalentMaxPoints;
 
     public string Title => title;
     public string Description => description;
+    public string RunTalentId => runTalentId;
+    public int RunTalentPointsBefore => runTalentPointsBefore;
+    public int RunTalentMaxPoints => runTalentMaxPoints;
+    public int RunTalentPointsAfter => runTalentMaxPoints > 0
+        ? Mathf.Min(runTalentMaxPoints, runTalentPointsBefore + 1)
+        : runTalentPointsBefore;
+    public bool IsRunTalent => !string.IsNullOrWhiteSpace(runTalentId);
+    public string DisplayTitle => IsRunTalent && runTalentMaxPoints > 0
+        ? $"{title} ({runTalentPointsBefore}/{runTalentMaxPoints} -> {RunTalentPointsAfter}/{runTalentMaxPoints})"
+        : title;
+    public string DisplayDescription => description;
 
     public PlayerUpgradeOption(
         string title,
@@ -56,7 +76,10 @@ public class PlayerUpgradeOption
         PlayerUpgradeType secondaryUpgradeType = PlayerUpgradeType.DamagePercent,
         float secondaryAmount = 0f,
         int secondaryIntAmount = 0,
-        PlayerUpgradeScope scope = PlayerUpgradeScope.All)
+        PlayerUpgradeScope scope = PlayerUpgradeScope.All,
+        string runTalentId = null,
+        int runTalentPointsBefore = 0,
+        int runTalentMaxPoints = 0)
     {
         this.title = title;
         this.description = description;
@@ -68,6 +91,9 @@ public class PlayerUpgradeOption
         this.secondaryAmount = secondaryAmount;
         this.secondaryIntAmount = secondaryIntAmount;
         this.scope = scope;
+        this.runTalentId = runTalentId;
+        this.runTalentPointsBefore = Mathf.Max(0, runTalentPointsBefore);
+        this.runTalentMaxPoints = Mathf.Max(0, runTalentMaxPoints);
     }
 
     public bool IsAvailableFor(PlayableCharacterChoice character)
@@ -90,11 +116,22 @@ public class PlayerUpgradeOption
         PlayerHealth health = player.GetComponent<PlayerHealth>();
         PlayerMeleeAttack melee = player.GetComponent<PlayerMeleeAttack>();
         PlayerMagicAttack magic = player.GetComponent<PlayerMagicAttack>();
+        PlayerActiveBomb bomb = player.GetComponent<PlayerActiveBomb>();
+        PlayerSecondaryActiveSkill secondarySkill = player.GetComponent<PlayerSecondaryActiveSkill>();
 
-        ApplyUpgrade(player, stats, health, melee, magic, upgradeType, amount, intAmount);
+        ApplyUpgrade(player, stats, health, melee, magic, bomb, secondarySkill, upgradeType, amount, intAmount);
 
         if (hasSecondaryUpgrade)
-            ApplyUpgrade(player, stats, health, melee, magic, secondaryUpgradeType, secondaryAmount, secondaryIntAmount);
+            ApplyUpgrade(player, stats, health, melee, magic, bomb, secondarySkill, secondaryUpgradeType, secondaryAmount, secondaryIntAmount);
+
+        if (IsRunTalent)
+        {
+            RunTalentState talentState = player.GetComponent<RunTalentState>();
+            if (talentState == null)
+                talentState = player.AddComponent<RunTalentState>();
+
+            talentState.AddPoint(runTalentId, runTalentMaxPoints);
+        }
 
         Debug.Log($"UPGRADE APPLIED: {title}");
     }
@@ -105,6 +142,8 @@ public class PlayerUpgradeOption
         PlayerHealth health,
         PlayerMeleeAttack melee,
         PlayerMagicAttack magic,
+        PlayerActiveBomb bomb,
+        PlayerSecondaryActiveSkill secondarySkill,
         PlayerUpgradeType type,
         float amount,
         int intAmount)
@@ -170,6 +209,30 @@ public class PlayerUpgradeOption
             case PlayerUpgradeType.MagicStatusChance:
                 if (magic != null) magic.AddStatusChance(amount);
                 break;
+
+            case PlayerUpgradeType.BombCooldownReduction:
+                if (bomb != null) bomb.ReduceCooldown(amount);
+                break;
+
+            case PlayerUpgradeType.BombRadius:
+                if (bomb != null) bomb.AddRadius(amount);
+                break;
+
+            case PlayerUpgradeType.BombDamagePercent:
+                if (bomb != null) bomb.AddDamagePercent(amount);
+                break;
+
+            case PlayerUpgradeType.SkillCooldownReduction:
+                if (secondarySkill != null) secondarySkill.ReduceCooldown(amount);
+                break;
+
+            case PlayerUpgradeType.SkillRadius:
+                if (secondarySkill != null) secondarySkill.AddRadius(amount);
+                break;
+
+            case PlayerUpgradeType.SkillDuration:
+                if (secondarySkill != null) secondarySkill.AddDuration(amount);
+                break;
         }
     }
 
@@ -208,6 +271,14 @@ public class PlayerUpgradeOption
             case PlayerUpgradeType.MagicCooldownReduction:
             case PlayerUpgradeType.MagicStatusChance:
                 return character == PlayableCharacterChoice.HumanArcanist;
+
+            case PlayerUpgradeType.BombCooldownReduction:
+            case PlayerUpgradeType.BombRadius:
+            case PlayerUpgradeType.BombDamagePercent:
+            case PlayerUpgradeType.SkillCooldownReduction:
+            case PlayerUpgradeType.SkillRadius:
+            case PlayerUpgradeType.SkillDuration:
+                return true;
 
             default:
                 return true;

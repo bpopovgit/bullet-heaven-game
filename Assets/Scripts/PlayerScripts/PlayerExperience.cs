@@ -13,6 +13,7 @@ public class PlayerExperience : MonoBehaviour
     [SerializeField] private int choicesPerLevel = 3;
 
     [Header("Upgrade Pool")]
+    [SerializeField] private bool useRunTalentTree = true;
     [SerializeField] private List<PlayerUpgradeOption> upgradePool = new List<PlayerUpgradeOption>();
 
     private int _pendingLevelUps;
@@ -28,6 +29,9 @@ public class PlayerExperience : MonoBehaviour
     private void Awake()
     {
         EnsureDefaultUpgradePool();
+
+        if (GetComponent<RunTalentState>() == null)
+            gameObject.AddComponent<RunTalentState>();
     }
 
     private void Start()
@@ -133,6 +137,21 @@ public class PlayerExperience : MonoBehaviour
     private List<PlayerUpgradeOption> BuildAvailableUpgradePool(PlayableCharacterChoice character)
     {
         List<PlayerUpgradeOption> available = new List<PlayerUpgradeOption>();
+
+        if (useRunTalentTree)
+        {
+            RunTalentState talentState = GetComponent<RunTalentState>();
+            if (talentState == null)
+                talentState = gameObject.AddComponent<RunTalentState>();
+
+            available.AddRange(TalentCatalog.BuildAvailableRunTalentOptions(
+                talentState,
+                TalentCatalog.CreateCurrentContext(),
+                character));
+
+            if (available.Count > 0)
+                return available;
+        }
 
         for (int i = 0; i < upgradePool.Count; i++)
         {

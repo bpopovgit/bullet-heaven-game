@@ -38,17 +38,85 @@ public enum PlayableCharacterChoice
     HumanArcanist
 }
 
+public enum PlayableFactionChoice
+{
+    Humans,
+    Angels,
+    Demons
+}
+
 public static class RunLoadoutState
 {
+    public static PlayableFactionChoice FactionChoice { get; private set; } = PlayableFactionChoice.Humans;
     public static PlayableCharacterChoice CharacterChoice { get; private set; } = PlayableCharacterChoice.HumanVanguard;
     public static StartingWeaponChoice WeaponChoice { get; private set; } = StartingWeaponChoice.EmberRepeater;
     public static StartingBombChoice BombChoice { get; private set; } = StartingBombChoice.FragBomb;
     public static StartingSkillChoice SkillChoice { get; private set; } = StartingSkillChoice.MagneticPulse;
     public static StartingPassiveChoice PassiveChoice { get; private set; } = StartingPassiveChoice.Vitality;
 
+    public static void SelectFaction(PlayableFactionChoice faction)
+    {
+        FactionChoice = faction;
+
+        if (faction != PlayableFactionChoice.Humans)
+            CharacterChoice = PlayableCharacterChoice.HumanVanguard;
+    }
+
     public static void CycleCharacter(int delta)
     {
         CharacterChoice = CycleEnum(CharacterChoice, delta);
+    }
+
+    public static string GetFactionName(PlayableFactionChoice choice)
+    {
+        switch (choice)
+        {
+            case PlayableFactionChoice.Angels:
+                return "Angels";
+            case PlayableFactionChoice.Demons:
+                return "Demons";
+            case PlayableFactionChoice.Humans:
+            default:
+                return "Humans";
+        }
+    }
+
+    public static string GetFactionDescription(PlayableFactionChoice choice)
+    {
+        switch (choice)
+        {
+            case PlayableFactionChoice.Angels:
+                return "Radiant warriors who will eventually clash directly with Demons and cleanse undead pressure.";
+            case PlayableFactionChoice.Demons:
+                return "Aggressive invaders who will eventually hunt Angels first, then tear through everyone else.";
+            case PlayableFactionChoice.Humans:
+            default:
+                return "Playable now. Flexible survivors supported by guards, rangers, and arcanists in the middle of the faction war.";
+        }
+    }
+
+    public static string GetFactionStatus(PlayableFactionChoice choice)
+    {
+        return choice == PlayableFactionChoice.Humans ? "Ready" : "Coming Later";
+    }
+
+    public static bool IsFactionPlayable(PlayableFactionChoice choice)
+    {
+        return choice == PlayableFactionChoice.Humans;
+    }
+
+    public static Color GetFactionColor(PlayableFactionChoice choice)
+    {
+        switch (choice)
+        {
+            case PlayableFactionChoice.Angels:
+                return new Color(0.72f, 0.9f, 1f, 1f);
+            case PlayableFactionChoice.Demons:
+                return new Color(0.86f, 0.24f, 0.16f, 1f);
+            case PlayableFactionChoice.Humans:
+            default:
+                return new Color(0.34f, 0.68f, 0.28f, 1f);
+        }
     }
 
     public static void CycleWeapon(int delta)
@@ -232,7 +300,7 @@ public static class RunLoadoutState
 
     public static string BuildCharacterSummary()
     {
-        return $"{GetCharacterName(CharacterChoice)}  |  {GetPrimaryAttackName(CharacterChoice, WeaponChoice)}  |  {GetCharacterStatsSummary(CharacterChoice)}";
+        return $"{GetFactionName(FactionChoice)}  |  {GetCharacterName(CharacterChoice)}  |  {GetPrimaryAttackName(CharacterChoice, WeaponChoice)}  |  {GetCharacterStatsSummary(CharacterChoice)}";
     }
 
     public static string GetPrimaryAttackName(PlayableCharacterChoice character, StartingWeaponChoice weapon)
@@ -286,6 +354,33 @@ public static class RunLoadoutState
             case PlayableCharacterChoice.HumanVanguard:
             default:
                 return "A melee-only forward cleave. Aim into the pack and hold fire to carve space.";
+        }
+    }
+
+    public static string GetPrimaryAttackPreviewText(PlayableCharacterChoice character, StartingWeaponChoice weapon)
+    {
+        switch (character)
+        {
+            case PlayableCharacterChoice.HumanRanger:
+                return $"Preview\n{GetWeaponName(weapon)}\nProjectile shot";
+
+            case PlayableCharacterChoice.HumanArcanist:
+                switch (weapon)
+                {
+                    case StartingWeaponChoice.FrostLance:
+                        return "Preview\nFrost Ray\nLine beam";
+                    case StartingWeaponChoice.VenomCaster:
+                        return "Preview\nVenom Bloom\nTargeted AoE";
+                    case StartingWeaponChoice.StormNeedler:
+                        return "Preview\nStorm Arc\nShort chain";
+                    case StartingWeaponChoice.EmberRepeater:
+                    default:
+                        return "Preview\nEmber Wave\nFire cone";
+                }
+
+            case PlayableCharacterChoice.HumanVanguard:
+            default:
+                return "Preview\nVanguard Cleave\nMelee arc";
         }
     }
 
@@ -437,7 +532,7 @@ public static class RunLoadoutState
 
     public static string BuildSummary()
     {
-        return $"Character: {GetCharacterName(CharacterChoice)}  |  Primary: {GetPrimaryAttackName(CharacterChoice, WeaponChoice)}  |  Bomb: {GetBombName(BombChoice)}  |  Skill: {GetSkillName(SkillChoice)}  |  Passive: {GetPassiveName(PassiveChoice)}";
+        return $"Faction: {GetFactionName(FactionChoice)}  |  Character: {GetCharacterName(CharacterChoice)}  |  Primary: {GetPrimaryAttackName(CharacterChoice, WeaponChoice)}  |  Bomb: {GetBombName(BombChoice)}  |  Skill: {GetSkillName(SkillChoice)}  |  Passive: {GetPassiveName(PassiveChoice)}";
     }
 
     public static string BuildKitSummary()

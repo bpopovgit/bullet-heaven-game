@@ -47,6 +47,31 @@ public class PlayerSecondaryActiveSkill : MonoBehaviour
         Debug.Log($"ACTIVE SKILL READY: {_config.displayName} on E ({_config.cooldown:0.#}s cooldown)");
     }
 
+    public void ReduceCooldown(float seconds)
+    {
+        if (_config == null)
+            return;
+
+        _config.cooldown = Mathf.Max(3f, _config.cooldown - Mathf.Max(0f, seconds));
+    }
+
+    public void AddRadius(float amount)
+    {
+        if (_config == null)
+            return;
+
+        _config.radius += Mathf.Max(0f, amount);
+    }
+
+    public void AddDuration(float amount)
+    {
+        if (_config == null)
+            return;
+
+        _config.duration += Mathf.Max(0f, amount);
+        _config.statusDuration += Mathf.Max(0f, amount);
+    }
+
     private void TryActivate()
     {
         if (_config == null)
