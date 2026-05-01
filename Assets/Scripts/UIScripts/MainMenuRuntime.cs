@@ -10,19 +10,22 @@ public class MainMenuRuntime : MonoBehaviour
     private const string MenuSceneName = "Main";
     private const string GameplaySceneName = "Game";
 
-    private static readonly Color BackgroundColor = new Color(0.04f, 0.05f, 0.08f, 1f);
-    private static readonly Color AccentColor = new Color(0.24f, 0.56f, 0.21f, 1f);
-    private static readonly Color AccentHighlightColor = new Color(0.31f, 0.68f, 0.28f, 1f);
-    private static readonly Color AccentPressedColor = new Color(0.18f, 0.42f, 0.16f, 1f);
-    private static readonly Color SecondaryButtonColor = new Color(0.73f, 0.36f, 0.14f, 1f);
-    private static readonly Color UtilityButtonColor = new Color(0.18f, 0.34f, 0.18f, 1f);
-    private static readonly Color PlaceholderArcane = new Color(0.22f, 0.42f, 0.24f, 1f);
-    private static readonly Color PlaceholderWar = new Color(0.65f, 0.31f, 0.12f, 1f);
-    private static readonly Color PlaceholderRanger = new Color(0.17f, 0.29f, 0.2f, 1f);
-    private static readonly Color OutlineColor = new Color(0.92f, 0.71f, 0.34f, 0.24f);
-    private static readonly Color TitleColor = new Color(0.96f, 0.9f, 0.74f, 1f);
-    private static readonly Color BodyColor = new Color(0.83f, 0.88f, 0.82f, 1f);
-    private static readonly Color HintColor = new Color(0.93f, 0.79f, 0.35f, 1f);
+    // The War of Death Metal — dark void, blood crimson, burnished gold, aged bone.
+    private static readonly Color BackgroundColor = new Color(0.05f, 0.04f, 0.06f, 1f);
+    private static readonly Color AccentColor = new Color(0.62f, 0.10f, 0.10f, 1f);
+    private static readonly Color AccentHighlightColor = new Color(0.85f, 0.20f, 0.18f, 1f);
+    private static readonly Color AccentPressedColor = new Color(0.42f, 0.06f, 0.06f, 1f);
+    private static readonly Color SecondaryButtonColor = new Color(0.32f, 0.16f, 0.16f, 1f);
+    private static readonly Color UtilityButtonColor = new Color(0.16f, 0.14f, 0.18f, 1f);
+    private static readonly Color PlaceholderArcane = new Color(0.22f, 0.16f, 0.32f, 1f);
+    private static readonly Color PlaceholderWar = new Color(0.50f, 0.14f, 0.10f, 1f);
+    private static readonly Color PlaceholderRanger = new Color(0.18f, 0.22f, 0.18f, 1f);
+    private static readonly Color OutlineColor = new Color(0.86f, 0.68f, 0.30f, 0.42f);
+    private static readonly Color TitleColor = new Color(0.96f, 0.91f, 0.78f, 1f);
+    private static readonly Color BodyColor = new Color(0.86f, 0.84f, 0.80f, 1f);
+    private static readonly Color HintColor = new Color(0.92f, 0.74f, 0.36f, 1f);
+    private static readonly Color TitleStrokeColor = new Color(0.42f, 0.05f, 0.06f, 1f);
+    private static readonly Color SteelColor = new Color(0.66f, 0.66f, 0.74f, 1f);
 
     private sealed class TalentCardView
     {
@@ -236,17 +239,22 @@ public class MainMenuRuntime : MonoBehaviour
         titleObject.transform.SetParent(parent, false);
 
         TextMeshProUGUI text = titleObject.AddComponent<TextMeshProUGUI>();
-        text.text = "Spas and Bobkata's Amazing Game";
-        text.fontSize = 42f;
+        text.text = "THE WAR OF DEATH METAL";
+        text.fontSize = 60f;
         text.alignment = TextAlignmentOptions.Center;
         text.color = TitleColor;
+        text.fontStyle = FontStyles.Bold | FontStyles.UpperCase;
+        text.characterSpacing = 6f;
+        text.outlineWidth = 0.22f;
+        text.outlineColor = TitleStrokeColor;
+        text.raycastTarget = false;
 
         RectTransform rect = titleObject.GetComponent<RectTransform>();
         rect.anchorMin = new Vector2(0.5f, 0.5f);
         rect.anchorMax = new Vector2(0.5f, 0.5f);
         rect.pivot = new Vector2(0.5f, 0.5f);
-        rect.anchoredPosition = new Vector2(0f, 310f);
-        rect.sizeDelta = new Vector2(1200f, 72f);
+        rect.anchoredPosition = new Vector2(0f, 318f);
+        rect.sizeDelta = new Vector2(1320f, 96f);
     }
 
     private static void CreateSubtitle(Transform parent)
@@ -256,17 +264,19 @@ public class MainMenuRuntime : MonoBehaviour
 
         TextMeshProUGUI text = subtitleObject.AddComponent<TextMeshProUGUI>();
         text.text = "Choose your mode, shape a loadout, and enter the faction war.";
-        text.fontSize = 18f;
+        text.fontSize = 20f;
         text.alignment = TextAlignmentOptions.Center;
         text.enableWordWrapping = true;
         text.color = BodyColor;
+        text.characterSpacing = 1.5f;
+        text.raycastTarget = false;
 
         RectTransform rect = subtitleObject.GetComponent<RectTransform>();
         rect.anchorMin = new Vector2(0.5f, 0.5f);
         rect.anchorMax = new Vector2(0.5f, 0.5f);
         rect.pivot = new Vector2(0.5f, 0.5f);
-        rect.anchoredPosition = new Vector2(0f, 254f);
-        rect.sizeDelta = new Vector2(900f, 62f);
+        rect.anchoredPosition = new Vector2(0f, 240f);
+        rect.sizeDelta = new Vector2(960f, 56f);
     }
 
     private static void CreateFooter(Transform parent)
@@ -279,6 +289,7 @@ public class MainMenuRuntime : MonoBehaviour
         text.fontSize = 12f;
         text.alignment = TextAlignmentOptions.Center;
         text.color = new Color(0.72f, 0.68f, 0.55f, 0.92f);
+        text.raycastTarget = false;
 
         RectTransform rect = footerObject.GetComponent<RectTransform>();
         rect.anchorMin = new Vector2(0.5f, 0f);
@@ -415,8 +426,10 @@ public class MainMenuRuntime : MonoBehaviour
         CreatePanelBody(panel, "Preview the in-run talent pools. Root talents appear first; taking one unlocks its connected follow-ups. Every talent can hold up to 5 points.", new Vector2(0f, 192f), 920f);
         CreateDivider(panel, new Vector2(0f, 144f), 840f);
 
-        _talentKitSummaryText = CreateHintLabel(panel, string.Empty, new Vector2(0f, 114f), 900f);
-        _talentTagSummaryText = CreateHintLabel(panel, string.Empty, new Vector2(0f, 84f), 900f);
+        _talentKitSummaryText = CreateHintLabel(panel, string.Empty, new Vector2(0f, 116f), 900f);
+        _talentKitSummaryText.rectTransform.sizeDelta = new Vector2(900f, 26f);
+        _talentTagSummaryText = CreateHintLabel(panel, string.Empty, new Vector2(0f, 86f), 900f);
+        _talentTagSummaryText.rectTransform.sizeDelta = new Vector2(900f, 26f);
 
         RectTransform talentContent = CreateTalentScrollContent(panel, new Vector2(0f, -94f), new Vector2(1060f, 430f), new Vector2(1040f, 1420f));
         CreateTalentCardText(talentContent, "AttackHeader", new Vector2(-270f, 670f), new Vector2(420f, 28f), 18f, HintColor).text = "Attack";
@@ -461,16 +474,21 @@ public class MainMenuRuntime : MonoBehaviour
 
         TextMeshProUGUI text = labelObject.AddComponent<TextMeshProUGUI>();
         text.text = label;
-        text.fontSize = 28f;
+        text.fontSize = 32f;
         text.alignment = TextAlignmentOptions.Center;
         text.color = TitleColor;
+        text.fontStyle = FontStyles.Bold | FontStyles.UpperCase;
+        text.characterSpacing = 3f;
+        text.outlineWidth = 0.12f;
+        text.outlineColor = TitleStrokeColor;
+        text.raycastTarget = false;
 
         RectTransform rect = labelObject.GetComponent<RectTransform>();
         rect.anchorMin = new Vector2(0.5f, 0.5f);
         rect.anchorMax = new Vector2(0.5f, 0.5f);
         rect.pivot = new Vector2(0.5f, 0.5f);
         rect.anchoredPosition = anchoredPosition;
-        rect.sizeDelta = new Vector2(620f, 40f);
+        rect.sizeDelta = new Vector2(720f, 44f);
     }
 
     private static void CreatePanelBody(Transform parent, string body, Vector2 anchoredPosition, float width)
@@ -480,17 +498,18 @@ public class MainMenuRuntime : MonoBehaviour
 
         TextMeshProUGUI text = bodyObject.AddComponent<TextMeshProUGUI>();
         text.text = body;
-        text.fontSize = 16f;
+        text.fontSize = 18f;
         text.alignment = TextAlignmentOptions.Center;
         text.enableWordWrapping = true;
         text.color = BodyColor;
+        text.raycastTarget = false;
 
         RectTransform rect = bodyObject.GetComponent<RectTransform>();
         rect.anchorMin = new Vector2(0.5f, 0.5f);
         rect.anchorMax = new Vector2(0.5f, 0.5f);
         rect.pivot = new Vector2(0.5f, 0.5f);
         rect.anchoredPosition = anchoredPosition;
-        rect.sizeDelta = new Vector2(width, 64f);
+        rect.sizeDelta = new Vector2(width, 70f);
     }
 
     private static void CreateSectionLabel(Transform parent, string label, Vector2 anchoredPosition)
@@ -500,16 +519,19 @@ public class MainMenuRuntime : MonoBehaviour
 
         TextMeshProUGUI text = labelObject.AddComponent<TextMeshProUGUI>();
         text.text = label;
-        text.fontSize = 18f;
+        text.fontSize = 22f;
         text.alignment = TextAlignmentOptions.Center;
         text.color = HintColor;
+        text.fontStyle = FontStyles.UpperCase;
+        text.characterSpacing = 4f;
+        text.raycastTarget = false;
 
         RectTransform rect = labelObject.GetComponent<RectTransform>();
         rect.anchorMin = new Vector2(0.5f, 0.5f);
         rect.anchorMax = new Vector2(0.5f, 0.5f);
         rect.pivot = new Vector2(0.5f, 0.5f);
         rect.anchoredPosition = anchoredPosition;
-        rect.sizeDelta = new Vector2(360f, 30f);
+        rect.sizeDelta = new Vector2(440f, 32f);
     }
 
     private static TextMeshProUGUI CreateHintLabel(Transform parent, string label, Vector2 anchoredPosition, float width)
@@ -519,17 +541,18 @@ public class MainMenuRuntime : MonoBehaviour
 
         TextMeshProUGUI text = labelObject.AddComponent<TextMeshProUGUI>();
         text.text = label;
-        text.fontSize = 13f;
+        text.fontSize = 15f;
         text.alignment = TextAlignmentOptions.Center;
         text.enableWordWrapping = true;
         text.color = HintColor;
+        text.raycastTarget = false;
 
         RectTransform rect = labelObject.GetComponent<RectTransform>();
         rect.anchorMin = new Vector2(0.5f, 0.5f);
         rect.anchorMax = new Vector2(0.5f, 0.5f);
         rect.pivot = new Vector2(0.5f, 0.5f);
         rect.anchoredPosition = anchoredPosition;
-        rect.sizeDelta = new Vector2(width, 48f);
+        rect.sizeDelta = new Vector2(width, 50f);
 
         return text;
     }
@@ -551,6 +574,7 @@ public class MainMenuRuntime : MonoBehaviour
         text.alignment = TextAlignmentOptions.Center;
         text.enableWordWrapping = true;
         text.color = color;
+        text.raycastTarget = false;
 
         RectTransform rect = labelObject.GetComponent<RectTransform>();
         rect.anchorMin = new Vector2(0.5f, 0.5f);
@@ -597,6 +621,7 @@ public class MainMenuRuntime : MonoBehaviour
         choiceText.fontSize = 24f;
         choiceText.alignment = TextAlignmentOptions.Center;
         choiceText.color = TitleColor;
+        choiceText.raycastTarget = false;
 
         RectTransform choiceRect = choiceObject.GetComponent<RectTransform>();
         choiceRect.anchorMin = new Vector2(0.5f, 0.5f);
@@ -613,6 +638,7 @@ public class MainMenuRuntime : MonoBehaviour
         descriptionText.alignment = TextAlignmentOptions.Center;
         descriptionText.enableWordWrapping = true;
         descriptionText.color = BodyColor;
+        descriptionText.raycastTarget = false;
 
         RectTransform descriptionRect = descriptionObject.GetComponent<RectTransform>();
         descriptionRect.anchorMin = new Vector2(0.5f, 0.5f);
@@ -679,10 +705,10 @@ public class MainMenuRuntime : MonoBehaviour
         rect.sizeDelta = size;
 
         bool compact = size.y < 96f;
-        float titleFontSize = compact ? 13f : 18f;
-        float requirementFontSize = compact ? 9f : 11f;
-        float effectFontSize = compact ? 9f : 12f;
-        float unlockFontSize = compact ? 8.5f : 11f;
+        float titleFontSize = compact ? 14f : 19f;
+        float requirementFontSize = compact ? 10f : 12f;
+        float effectFontSize = compact ? 10.5f : 13f;
+        float unlockFontSize = compact ? 9.5f : 12f;
 
         TalentCardView view = new TalentCardView
         {
@@ -870,6 +896,7 @@ public class MainMenuRuntime : MonoBehaviour
         text.enableWordWrapping = true;
         text.overflowMode = TextOverflowModes.Ellipsis;
         text.color = color;
+        text.raycastTarget = false;
 
         RectTransform rect = textObject.GetComponent<RectTransform>();
         rect.anchorMin = new Vector2(0.5f, 0.5f);
@@ -1371,6 +1398,8 @@ public class MainMenuRuntime : MonoBehaviour
     {
         if (_isLoading)
             return;
+
+        RunSession.StartNewRun();
 
         _isLoading = true;
         SceneManager.LoadScene(GameplaySceneName);

@@ -8,22 +8,38 @@ public class LevelUpManager : MonoBehaviour
 {
     public static LevelUpManager Instance { get; private set; }
 
-    private const float PanelWidth = 720f;
-    private const float ChoiceCardWidth = 580f;
-    private const float ChoiceCardHeight = 104f;
-    private const float ChoiceCardSpacing = 14f;
+    private const float PanelWidth = 920f;
+    private const float ChoiceCardWidth = 820f;
+    private const float ChoiceCardHeight = 142f;
+    private const float ChoiceCardSpacing = 16f;
+    private const float UnlockPanelWidth = 240f;
+    private const float UnlockEntryHeight = 26f;
+    private const int MaxUnlockEntriesShown = 4;
+    private const float UnlockIconTileSize = 60f;
+    private const float UnlockIconTileSpacing = 10f;
+    private const float ChooseButtonHeight = 64f;
 
-    private static readonly Color DefaultPanelColor = new Color(0.02f, 0.18f, 0.08f, 0.96f);
-    private static readonly Color DefaultPanelOutlineColor = new Color(0.86f, 0.68f, 0.26f, 0.95f);
-    private static readonly Color ChoiceCardColor = new Color(0.04f, 0.08f, 0.06f, 0.98f);
-    private static readonly Color ChoiceCardHighlightColor = new Color(0.08f, 0.23f, 0.11f, 1f);
-    private static readonly Color ChoiceCardPressedColor = new Color(0.12f, 0.34f, 0.15f, 1f);
-    private static readonly Color ChoiceTextColor = new Color(0.92f, 0.94f, 0.86f, 1f);
-    private static readonly Color ChoiceMutedTextColor = new Color(0.70f, 0.80f, 0.72f, 1f);
-    private static readonly Color ChoiceGoldTextColor = new Color(1f, 0.83f, 0.28f, 1f);
-    private static readonly Color AttackAccentColor = new Color(1f, 0.58f, 0.16f, 1f);
-    private static readonly Color DefenseAccentColor = new Color(0.28f, 0.9f, 0.55f, 1f);
-    private static readonly Color RewardAccentColor = new Color(0.92f, 0.32f, 0.16f, 1f);
+    // The War of Death Metal palette — match MainMenuRuntime tones.
+    // Wrapper window: deep cold black with very restrained crimson edge — no warm/gold border that reads as brown.
+    private static readonly Color DefaultPanelColor = new Color(0.025f, 0.025f, 0.04f, 0.98f);
+    private static readonly Color DefaultPanelOutlineColor = new Color(0.55f, 0.10f, 0.12f, 0.55f);
+    private static readonly Color ChoiceCardColor = new Color(0.05f, 0.04f, 0.06f, 0.98f);
+    private static readonly Color ChoiceCardHighlightColor = new Color(0.18f, 0.06f, 0.08f, 1f);
+    private static readonly Color ChoiceCardPressedColor = new Color(0.32f, 0.10f, 0.12f, 1f);
+    private static readonly Color ChoiceTextColor = new Color(0.96f, 0.91f, 0.78f, 1f);
+    private static readonly Color ChoiceMutedTextColor = new Color(0.84f, 0.80f, 0.74f, 1f);
+    private static readonly Color ChoiceGoldTextColor = new Color(0.94f, 0.78f, 0.36f, 1f);
+    private static readonly Color AttackAccentColor = new Color(0.85f, 0.20f, 0.18f, 1f);
+    private static readonly Color DefenseAccentColor = new Color(0.55f, 0.86f, 0.78f, 1f);
+    private static readonly Color RewardAccentColor = new Color(0.96f, 0.72f, 0.28f, 1f);
+
+    // Choose-button palette: dark blackened iron plate with crimson edge accent when active.
+    private static readonly Color ChooseButtonActiveBody = new Color(0.16f, 0.09f, 0.11f, 0.98f);
+    private static readonly Color ChooseButtonIdleBody = new Color(0.12f, 0.10f, 0.13f, 0.88f);
+    private static readonly Color ChooseButtonActiveOutline = new Color(0.82f, 0.18f, 0.18f, 0.95f);
+    private static readonly Color ChooseButtonIdleOutline = new Color(0.32f, 0.28f, 0.32f, 0.40f);
+    private static readonly Color ChooseButtonActiveText = new Color(0.98f, 0.94f, 0.82f, 1f);
+    private static readonly Color ChooseButtonIdleText = new Color(0.58f, 0.54f, 0.50f, 0.85f);
 
     [Header("UI")]
     [SerializeField] private GameObject panel;
@@ -38,6 +54,22 @@ public class LevelUpManager : MonoBehaviour
     private Image _panelImage;
     private Color _defaultPanelColor = Color.white;
     private Color _defaultTitleColor = Color.white;
+    private int _selectedIndex = -1;
+    private Button _chooseButton;
+    private TMP_Text _chooseButtonLabel;
+    private Image _chooseButtonImage;
+    private Outline _chooseButtonOutline;
+
+    private struct CardSelectionState
+    {
+        public Outline Outline;
+        public Image AccentBar;
+        public Image Background;
+        public Color BaseAccent;
+        public Color BaseBackgroundColor;
+    }
+
+    private readonly List<CardSelectionState> _cardStates = new List<CardSelectionState>();
 
     private sealed class ChoiceCardView
     {
@@ -46,6 +78,19 @@ public class LevelUpManager : MonoBehaviour
         public TMP_Text Progress;
         public TMP_Text Description;
         public TMP_Text Requirement;
+        public Image UnlocksPanel;
+        public TMP_Text UnlocksHeader;
+        public UnlockEntryView[] UnlockEntries;
+        public TMP_Text UnlocksEmptyText;
+    }
+
+    private sealed class UnlockEntryView
+    {
+        public GameObject Root;
+        public Image Frame;
+        public Image Tile;
+        public Image Highlight;
+        public UnlockTooltipHover Hover;
     }
 
     private void Awake()
@@ -101,6 +146,7 @@ public class LevelUpManager : MonoBehaviour
 
         _activeChoices = choices;
         _activeSelectionHandler = onChosen;
+        _selectedIndex = -1;
 
         if (!_isShowing)
             _previousTimeScale = Time.timeScale > 0f ? Time.timeScale : 1f;
@@ -110,6 +156,7 @@ public class LevelUpManager : MonoBehaviour
 
         panel.SetActive(true);
         ApplyPopupLayout(choices.Count, panelColor, titleColor);
+        EnsureChooseButton();
 
         if (titleText != null)
         {
@@ -120,6 +167,7 @@ public class LevelUpManager : MonoBehaviour
         if (_panelImage != null)
             _panelImage.color = panelColor ?? DefaultPanelColor;
 
+        _cardStates.Clear();
         for (int i = 0; i < choiceButtons.Length; i++)
         {
             int choiceIndex = i;
@@ -131,19 +179,170 @@ public class LevelUpManager : MonoBehaviour
             if (!hasChoice)
                 continue;
 
-            choiceButtons[i].onClick.AddListener(() => Choose(choiceIndex));
+            choiceButtons[i].onClick.AddListener(() => SelectIndex(choiceIndex));
 
             TMP_Text label = GetChoiceLabel(choiceIndex);
-            ConfigureChoiceButton(choiceButtons[i], label, choices[choiceIndex], choiceIndex, choices.Count);
+            ChoiceCardView cardView = ConfigureChoiceButton(choiceButtons[i], label, choices[choiceIndex], choiceIndex, choices.Count);
+
+            CardSelectionState state = new CardSelectionState
+            {
+                Outline = choiceButtons[i].GetComponent<Outline>(),
+                AccentBar = cardView != null ? cardView.AccentBar : null,
+                Background = choiceButtons[i].GetComponent<Image>(),
+                BaseAccent = GetChoiceAccent(choices[choiceIndex]),
+                BaseBackgroundColor = ChoiceCardColor
+            };
+            _cardStates.Add(state);
         }
 
+        UpdateSelectionVisuals();
         return true;
+    }
+
+    private void SelectIndex(int index)
+    {
+        if (_activeChoices == null || index < 0 || index >= _activeChoices.Count)
+            return;
+
+        _selectedIndex = index;
+        UpdateSelectionVisuals();
+        GameAudio.PlayUISelect();
+    }
+
+    private void UpdateSelectionVisuals()
+    {
+        for (int i = 0; i < _cardStates.Count; i++)
+        {
+            CardSelectionState state = _cardStates[i];
+            bool selected = i == _selectedIndex;
+
+            if (state.Outline != null)
+            {
+                // Big contrast: unselected outline is barely there, selected is loud bright gold with thick shadow.
+                state.Outline.effectColor = selected
+                    ? new Color(1.00f, 0.86f, 0.36f, 1.00f)
+                    : new Color(0.86f, 0.68f, 0.30f, 0.22f);
+                state.Outline.effectDistance = selected
+                    ? new Vector2(4f, -4f)
+                    : new Vector2(2f, -2f);
+            }
+
+            if (state.AccentBar != null)
+            {
+                // Brighten the accent stripe on the selected card.
+                Color baseAccent = state.BaseAccent;
+                state.AccentBar.color = selected
+                    ? new Color(
+                        Mathf.Clamp01(baseAccent.r * 1.30f + 0.10f),
+                        Mathf.Clamp01(baseAccent.g * 1.30f + 0.10f),
+                        Mathf.Clamp01(baseAccent.b * 1.30f + 0.10f),
+                        1f)
+                    : new Color(baseAccent.r * 0.75f, baseAccent.g * 0.75f, baseAccent.b * 0.75f, 1f);
+
+                RectTransform barRect = state.AccentBar.rectTransform;
+                barRect.sizeDelta = new Vector2(selected ? 16f : 12f, 0f);
+            }
+
+            if (state.Background != null)
+            {
+                // Subtly tint selected card with the accent colour for a "lit up" feel.
+                Color baseBg = state.BaseBackgroundColor;
+                if (selected)
+                {
+                    Color tint = state.BaseAccent;
+                    state.Background.color = new Color(
+                        baseBg.r + tint.r * 0.10f,
+                        baseBg.g + tint.g * 0.10f,
+                        baseBg.b + tint.b * 0.10f,
+                        baseBg.a);
+                }
+                else
+                {
+                    state.Background.color = baseBg;
+                }
+            }
+        }
+
+        if (_chooseButton != null)
+        {
+            bool ready = _selectedIndex >= 0;
+            _chooseButton.interactable = ready;
+            if (_chooseButtonImage != null)
+                _chooseButtonImage.color = ready ? ChooseButtonActiveBody : ChooseButtonIdleBody;
+            if (_chooseButtonLabel != null)
+            {
+                _chooseButtonLabel.color = ready ? ChooseButtonActiveText : ChooseButtonIdleText;
+                _chooseButtonLabel.text = ready ? "CHOOSE" : "SELECT AN UPGRADE";
+            }
+            if (_chooseButtonOutline != null)
+                _chooseButtonOutline.effectColor = ready ? ChooseButtonActiveOutline : ChooseButtonIdleOutline;
+        }
+    }
+
+    private void EnsureChooseButton()
+    {
+        if (panel == null) return;
+        if (_chooseButton != null) return;
+
+        GameObject buttonGO = new GameObject("ChooseButton");
+        buttonGO.transform.SetParent(panel.transform, false);
+
+        RectTransform rect = buttonGO.AddComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0.5f, 0f);
+        rect.anchorMax = new Vector2(0.5f, 0f);
+        rect.pivot = new Vector2(0.5f, 0f);
+        rect.anchoredPosition = new Vector2(0f, 24f);
+        rect.sizeDelta = new Vector2(360f, ChooseButtonHeight);
+
+        _chooseButtonImage = buttonGO.AddComponent<Image>();
+        _chooseButtonImage.color = ChooseButtonIdleBody;
+
+        _chooseButtonOutline = buttonGO.AddComponent<Outline>();
+        _chooseButtonOutline.effectColor = ChooseButtonIdleOutline;
+        _chooseButtonOutline.effectDistance = new Vector2(2f, -2f);
+
+        _chooseButton = buttonGO.AddComponent<Button>();
+        _chooseButton.targetGraphic = _chooseButtonImage;
+        ColorBlock cb = _chooseButton.colors;
+        cb.normalColor = Color.white;
+        cb.highlightedColor = new Color(1.15f, 1.05f, 0.95f, 1f);
+        cb.pressedColor = new Color(0.78f, 0.72f, 0.62f, 1f);
+        cb.selectedColor = Color.white;
+        cb.disabledColor = new Color(0.5f, 0.5f, 0.5f, 1f);
+        cb.fadeDuration = 0.06f;
+        _chooseButton.colors = cb;
+        _chooseButton.onClick.AddListener(ConfirmSelection);
+
+        GameObject labelGO = new GameObject("Label");
+        labelGO.transform.SetParent(buttonGO.transform, false);
+        _chooseButtonLabel = labelGO.AddComponent<TextMeshProUGUI>();
+        _chooseButtonLabel.text = "SELECT AN UPGRADE";
+        _chooseButtonLabel.fontSize = 22f;
+        _chooseButtonLabel.fontStyle = FontStyles.Bold | FontStyles.UpperCase;
+        _chooseButtonLabel.characterSpacing = 4f;
+        _chooseButtonLabel.alignment = TextAlignmentOptions.Center;
+        _chooseButtonLabel.color = ChooseButtonIdleText;
+        _chooseButtonLabel.raycastTarget = false;
+        RectTransform labelRect = labelGO.GetComponent<RectTransform>();
+        labelRect.anchorMin = Vector2.zero;
+        labelRect.anchorMax = Vector2.one;
+        labelRect.offsetMin = Vector2.zero;
+        labelRect.offsetMax = Vector2.zero;
+    }
+
+    private void ConfirmSelection()
+    {
+        if (_selectedIndex < 0)
+            return;
+        Choose(_selectedIndex);
     }
 
     private void ApplyPopupLayout(int choiceCount, Color? panelColor, Color? titleColor)
     {
         choiceCount = Mathf.Max(1, choiceCount);
-        float panelHeight = Mathf.Max(430f, 164f + choiceCount * ChoiceCardHeight + (choiceCount - 1) * ChoiceCardSpacing);
+        // Panel height = title zone + cards block + bottom Choose-button zone
+        float cardsBlock = choiceCount * ChoiceCardHeight + (choiceCount - 1) * ChoiceCardSpacing;
+        float panelHeight = Mathf.Max(560f, 184f + cardsBlock + ChooseButtonHeight + 48f);
 
         RectTransform panelRect = panel != null ? panel.GetComponent<RectTransform>() : null;
         if (panelRect != null)
@@ -165,30 +364,33 @@ public class LevelUpManager : MonoBehaviour
         if (panelOutline != null)
         {
             panelOutline.effectColor = DefaultPanelOutlineColor;
-            panelOutline.effectDistance = new Vector2(3f, -3f);
+            panelOutline.effectDistance = new Vector2(2f, -2f);
         }
 
         if (titleText != null)
         {
-            titleText.fontSize = 34f;
+            titleText.fontSize = 38f;
             titleText.color = titleColor ?? _defaultTitleColor;
             titleText.alignment = TextAlignmentOptions.Center;
             titleText.textWrappingMode = TextWrappingModes.NoWrap;
             titleText.overflowMode = TextOverflowModes.Ellipsis;
-            SetRect(titleText.rectTransform, new Vector2(0f, panelHeight * 0.5f - 56f), new Vector2(PanelWidth - 64f, 54f));
+            titleText.fontStyle = FontStyles.Bold | FontStyles.UpperCase;
+            titleText.characterSpacing = 4f;
+            SetRect(titleText.rectTransform, new Vector2(0f, panelHeight * 0.5f - 60f), new Vector2(PanelWidth - 64f, 56f));
         }
     }
 
-    private void ConfigureChoiceButton(Button button, TMP_Text titleLabel, PlayerUpgradeOption choice, int index, int totalChoices)
+    private ChoiceCardView ConfigureChoiceButton(Button button, TMP_Text titleLabel, PlayerUpgradeOption choice, int index, int totalChoices)
     {
         if (button == null || choice == null)
-            return;
+            return null;
 
         RectTransform rect = button.GetComponent<RectTransform>();
         if (rect != null)
         {
             float blockHeight = totalChoices * ChoiceCardHeight + (totalChoices - 1) * ChoiceCardSpacing;
-            float firstY = blockHeight * 0.5f - ChoiceCardHeight * 0.5f - 46f;
+            // Cards centred in the zone between title and Choose button — vertically symmetric.
+            float firstY = blockHeight * 0.5f - ChoiceCardHeight * 0.5f;
 
             rect.anchorMin = new Vector2(0.5f, 0.5f);
             rect.anchorMax = new Vector2(0.5f, 0.5f);
@@ -215,28 +417,143 @@ public class LevelUpManager : MonoBehaviour
         if (outline == null)
             outline = button.gameObject.AddComponent<Outline>();
 
-        outline.effectColor = new Color(0.7f, 0.55f, 0.18f, 0.75f);
+        outline.effectColor = new Color(0.86f, 0.68f, 0.30f, 0.65f);
         outline.effectDistance = new Vector2(2f, -2f);
 
         ChoiceCardView view = GetOrCreateChoiceCardView(button.transform, titleLabel);
         Color accent = GetChoiceAccent(choice);
 
         if (view.AccentBar != null)
+        {
             view.AccentBar.color = accent;
+            RectTransform barRect = view.AccentBar.rectTransform;
+            barRect.sizeDelta = new Vector2(12f, 0f);
+        }
 
         string effectText;
         string requirementText;
         SplitChoiceDescription(choice.DisplayDescription, out effectText, out requirementText);
 
-        ConfigureText(view.Title, choice.Title, 21f, ChoiceTextColor, TextAlignmentOptions.Left, TextOverflowModes.Ellipsis);
-        ConfigureText(view.Progress, BuildProgressText(choice), 15f, accent, TextAlignmentOptions.Center, TextOverflowModes.Ellipsis);
-        ConfigureText(view.Description, effectText, 16f, ChoiceMutedTextColor, TextAlignmentOptions.Center, TextOverflowModes.Ellipsis);
-        ConfigureText(view.Requirement, requirementText, 14f, ChoiceGoldTextColor, TextAlignmentOptions.Center, TextOverflowModes.Ellipsis);
+        // Layout zones (card spans -410 to +410):
+        //   Left content:  -395 to +145  (width 540, center -125) — title + progress + description + requirement
+        //   Right unlocks: +156 to +396  (width 240, center +276) — UnlocksPanel + entries
+        // Progress sits at the right edge of the left zone and must NOT enter the unlocks panel.
+        float leftCenterX = -125f;
+        float leftAreaWidth = 540f;
 
-        SetRect(view.Title.rectTransform, new Vector2(-98f, 28f), new Vector2(330f, 28f));
-        SetRect(view.Progress.rectTransform, new Vector2(210f, 28f), new Vector2(118f, 24f));
-        SetRect(view.Description.rectTransform, new Vector2(14f, -6f), new Vector2(500f, 34f));
-        SetRect(view.Requirement.rectTransform, new Vector2(14f, -36f), new Vector2(500f, 22f));
+        ConfigureText(view.Title, choice.Title, 25f, ChoiceTextColor, TextAlignmentOptions.Left, TextOverflowModes.Ellipsis);
+        ConfigureText(view.Progress, BuildProgressText(choice), 15f, accent, TextAlignmentOptions.Right, TextOverflowModes.Ellipsis);
+        ConfigureText(view.Description, effectText, 18f, ChoiceMutedTextColor, TextAlignmentOptions.Left, TextOverflowModes.Ellipsis);
+        ConfigureText(view.Requirement, requirementText, 13f, ChoiceGoldTextColor, TextAlignmentOptions.Left, TextOverflowModes.Ellipsis);
+
+        SetRect(view.Title.rectTransform, new Vector2(-220f, 42f), new Vector2(330f, 30f));
+        SetRect(view.Progress.rectTransform, new Vector2(60f, 42f), new Vector2(120f, 24f));
+        SetRect(view.Description.rectTransform, new Vector2(leftCenterX, 4f), new Vector2(leftAreaWidth - 40f, 36f));
+        SetRect(view.Requirement.rectTransform, new Vector2(leftCenterX, -36f), new Vector2(leftAreaWidth - 40f, 22f));
+
+        UnlockPreviewEntry[] unlocks = TalentCatalog.BuildUnlockPreview(choice);
+        ConfigureUnlocksPanel(view, accent, unlocks);
+        return view;
+    }
+
+    private void ConfigureUnlocksPanel(ChoiceCardView view, Color accent, UnlockPreviewEntry[] unlocks)
+    {
+        if (view.UnlocksPanel == null)
+            return;
+
+        // Tooltip lives at the top-level panel so it can render above the cards.
+        UnlockTooltip.Ensure(panel.transform);
+
+        Color frameColor = new Color(0.04f, 0.03f, 0.04f, 0.85f);
+        view.UnlocksPanel.color = frameColor;
+
+        float panelX = (ChoiceCardWidth * 0.5f) - (UnlockPanelWidth * 0.5f) - 14f;
+        SetRect(view.UnlocksPanel.rectTransform, new Vector2(panelX, 0f), new Vector2(UnlockPanelWidth, ChoiceCardHeight - 18f));
+
+        Outline outline = view.UnlocksPanel.GetComponent<Outline>();
+        if (outline == null)
+            outline = view.UnlocksPanel.gameObject.AddComponent<Outline>();
+        outline.effectColor = new Color(accent.r, accent.g, accent.b, 0.65f);
+        outline.effectDistance = new Vector2(2f, -2f);
+
+        if (view.UnlocksHeader != null)
+        {
+            ConfigureText(view.UnlocksHeader, "UNLOCKS NEXT", 11f, accent, TextAlignmentOptions.Center, TextOverflowModes.Ellipsis);
+            view.UnlocksHeader.fontStyle = FontStyles.Bold | FontStyles.UpperCase;
+            view.UnlocksHeader.characterSpacing = 4f;
+            SetRect(view.UnlocksHeader.rectTransform, new Vector2(panelX, ChoiceCardHeight * 0.5f - 22f), new Vector2(UnlockPanelWidth - 32f, 16f));
+        }
+
+        bool hasUnlocks = unlocks != null && unlocks.Length > 0;
+        int shownCount = hasUnlocks ? Mathf.Min(unlocks.Length, MaxUnlockEntriesShown) : 0;
+
+        // Icon tiles laid out horizontally in a single row, centred within the panel.
+        float totalRowWidth = shownCount * UnlockIconTileSize + Mathf.Max(0, shownCount - 1) * UnlockIconTileSpacing;
+        float startLocalX = -totalRowWidth * 0.5f + UnlockIconTileSize * 0.5f;
+
+        for (int i = 0; i < view.UnlockEntries.Length; i++)
+        {
+            UnlockEntryView entry = view.UnlockEntries[i];
+            if (entry == null || entry.Root == null) continue;
+
+            bool show = hasUnlocks && i < shownCount;
+            entry.Root.SetActive(show);
+            if (!show) continue;
+
+            UnlockPreviewEntry data = unlocks[i];
+
+            float xLocal = startLocalX + i * (UnlockIconTileSize + UnlockIconTileSpacing);
+            // The Frame Image lives on entry.Root (same RectTransform). Position the entry root once.
+            // Do NOT call SetRect on entry.Frame.rectTransform — it's the same object and would clobber this.
+            SetRect(entry.Root.GetComponent<RectTransform>(), new Vector2(panelX + xLocal, -6f), new Vector2(UnlockIconTileSize, UnlockIconTileSize));
+
+            if (entry.Frame != null)
+            {
+                // Frame: deep accent backdrop, the dark "ring" of the coin.
+                entry.Frame.color = new Color(data.AccentColor.r * 0.30f, data.AccentColor.g * 0.30f, data.AccentColor.b * 0.30f, 0.98f);
+
+                Outline frameOutline = entry.Frame.GetComponent<Outline>();
+                if (frameOutline == null)
+                    frameOutline = entry.Frame.gameObject.AddComponent<Outline>();
+                frameOutline.effectColor = new Color(data.AccentColor.r, data.AccentColor.g, data.AccentColor.b, 0.95f);
+                frameOutline.effectDistance = new Vector2(2f, -2f);
+            }
+
+            if (entry.Tile != null)
+            {
+                // Inner tile: bright saturated accent — the coin face.
+                entry.Tile.color = new Color(data.AccentColor.r * 0.78f, data.AccentColor.g * 0.78f, data.AccentColor.b * 0.78f, 0.98f);
+                SetRect(entry.Tile.rectTransform, Vector2.zero, new Vector2(UnlockIconTileSize - 14f, UnlockIconTileSize - 14f));
+            }
+
+            if (entry.Highlight != null)
+            {
+                // Tiny bright sheen offset toward upper-left, lifting the tile from "flat circle" to "gem".
+                Color sheen = new Color(
+                    Mathf.Clamp01(data.AccentColor.r * 1.6f + 0.20f),
+                    Mathf.Clamp01(data.AccentColor.g * 1.6f + 0.20f),
+                    Mathf.Clamp01(data.AccentColor.b * 1.6f + 0.20f),
+                    0.55f);
+                entry.Highlight.color = sheen;
+                float highlightDiameter = UnlockIconTileSize * 0.32f;
+                float highlightOffset = UnlockIconTileSize * 0.18f;
+                SetRect(entry.Highlight.rectTransform, new Vector2(-highlightOffset, highlightOffset), new Vector2(highlightDiameter, highlightDiameter));
+            }
+
+            if (entry.Hover != null)
+                entry.Hover.Configure(data.Title, data.ShortEffect, data.AccentColor);
+        }
+
+        if (view.UnlocksEmptyText != null)
+        {
+            view.UnlocksEmptyText.gameObject.SetActive(!hasUnlocks);
+            if (!hasUnlocks)
+            {
+                ConfigureText(view.UnlocksEmptyText, "Direct boost\nno follow-ups", 11f, ChoiceMutedTextColor, TextAlignmentOptions.Center, TextOverflowModes.Ellipsis);
+                view.UnlocksEmptyText.fontStyle = FontStyles.Italic;
+                SetRect(view.UnlocksEmptyText.rectTransform, new Vector2(panelX, -4f), new Vector2(UnlockPanelWidth - 28f, 36f));
+            }
+        }
     }
 
     private ChoiceCardView GetOrCreateChoiceCardView(Transform parent, TMP_Text titleFallback)
@@ -247,7 +564,95 @@ public class LevelUpManager : MonoBehaviour
         view.Progress = GetOrCreateText(parent, "ChoiceProgress", null);
         view.Description = GetOrCreateText(parent, "ChoiceDescription", null);
         view.Requirement = GetOrCreateText(parent, "ChoiceRequirement", null);
+        view.UnlocksPanel = GetOrCreateUnlocksPanel(parent);
+        view.UnlocksHeader = GetOrCreateText(parent, "UnlocksHeader", null);
+        view.UnlocksEmptyText = GetOrCreateText(parent, "UnlocksEmpty", null);
+        view.UnlockEntries = GetOrCreateUnlockEntries(parent);
         return view;
+    }
+
+    private Image GetOrCreateUnlocksPanel(Transform parent)
+    {
+        Transform existing = parent.Find("UnlocksPanel");
+        GameObject panelObject = existing != null ? existing.gameObject : new GameObject("UnlocksPanel");
+        panelObject.transform.SetParent(parent, false);
+        panelObject.transform.SetAsFirstSibling();
+
+        Image image = panelObject.GetComponent<Image>();
+        if (image == null)
+            image = panelObject.AddComponent<Image>();
+        image.raycastTarget = false;
+
+        return image;
+    }
+
+    private UnlockEntryView[] GetOrCreateUnlockEntries(Transform parent)
+    {
+        UnlockEntryView[] entries = new UnlockEntryView[MaxUnlockEntriesShown];
+        for (int i = 0; i < MaxUnlockEntriesShown; i++)
+        {
+            string entryName = $"UnlockEntry_{i}";
+            Transform existing = parent.Find(entryName);
+            GameObject entryRoot = existing != null ? existing.gameObject : new GameObject(entryName);
+            entryRoot.transform.SetParent(parent, false);
+
+            RectTransform rt = entryRoot.GetComponent<RectTransform>();
+            if (rt == null)
+                rt = entryRoot.AddComponent<RectTransform>();
+            rt.anchorMin = new Vector2(0.5f, 0.5f);
+            rt.anchorMax = new Vector2(0.5f, 0.5f);
+            rt.pivot = new Vector2(0.5f, 0.5f);
+
+            // Outer dark frame (the tile background) — circular coin shape.
+            Image frame = entryRoot.GetComponent<Image>();
+            if (frame == null)
+                frame = entryRoot.AddComponent<Image>();
+            frame.sprite = PickupSpriteFactory.CircleSprite;
+            frame.raycastTarget = true;
+            frame.preserveAspect = true;
+
+            // Inner tinted tile — smaller circle inside the frame ring.
+            Transform tileChild = entryRoot.transform.Find("Tile");
+            GameObject tileObject = tileChild != null ? tileChild.gameObject : new GameObject("Tile");
+            tileObject.transform.SetParent(entryRoot.transform, false);
+            Image tile = tileObject.GetComponent<Image>();
+            if (tile == null)
+                tile = tileObject.AddComponent<Image>();
+            tile.sprite = PickupSpriteFactory.CircleSprite;
+            tile.raycastTarget = false;
+            tile.preserveAspect = true;
+
+            // Inner highlight — a small bright dot offset toward upper-left for a "gem" sheen.
+            Transform highlightChild = entryRoot.transform.Find("Highlight");
+            GameObject highlightObject = highlightChild != null ? highlightChild.gameObject : new GameObject("Highlight");
+            highlightObject.transform.SetParent(entryRoot.transform, false);
+            Image highlight = highlightObject.GetComponent<Image>();
+            if (highlight == null)
+                highlight = highlightObject.AddComponent<Image>();
+            highlight.sprite = PickupSpriteFactory.CircleSprite;
+            highlight.raycastTarget = false;
+            highlight.preserveAspect = true;
+
+            // Remove any leftover glyph child from earlier code versions.
+            Transform legacyGlyph = entryRoot.transform.Find("Glyph");
+            if (legacyGlyph != null)
+                Destroy(legacyGlyph.gameObject);
+
+            // Hover handler — drives the shared tooltip.
+            UnlockTooltipHover hover = entryRoot.GetComponent<UnlockTooltipHover>();
+            if (hover == null)
+                hover = entryRoot.AddComponent<UnlockTooltipHover>();
+
+            entries[i] = new UnlockEntryView
+            {
+                Root = entryRoot,
+                Frame = frame,
+                Tile = tile,
+                Highlight = highlight,
+                Hover = hover
+            };
+        }
+        return entries;
     }
 
     private Image GetOrCreateAccentBar(Transform parent)

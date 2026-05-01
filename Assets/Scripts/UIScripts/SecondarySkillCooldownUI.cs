@@ -113,10 +113,10 @@ public class SecondarySkillCooldownUI : MonoBehaviour
         frameObject.transform.SetParent(_root, false);
 
         Image frameImage = frameObject.AddComponent<Image>();
-        frameImage.color = new Color(0.04f, 0.06f, 0.1f, 0.92f);
+        frameImage.color = new Color(0.07f, 0.04f, 0.06f, 0.95f);
 
         Outline frameOutline = frameObject.AddComponent<Outline>();
-        frameOutline.effectColor = new Color(0.82f, 0.7f, 0.22f, 0.8f);
+        frameOutline.effectColor = new Color(0.86f, 0.68f, 0.30f, 0.85f);
         frameOutline.effectDistance = new Vector2(2f, -2f);
 
         RectTransform frameRect = frameObject.GetComponent<RectTransform>();
@@ -155,8 +155,9 @@ public class SecondarySkillCooldownUI : MonoBehaviour
 
         _cooldownText = cooldownTextObject.AddComponent<TextMeshProUGUI>();
         _cooldownText.alignment = TextAlignmentOptions.Center;
-        _cooldownText.fontSize = 30f;
-        _cooldownText.color = Color.white;
+        _cooldownText.fontSize = 32f;
+        _cooldownText.color = new Color(0.96f, 0.91f, 0.78f, 1f);
+        _cooldownText.fontStyle = FontStyles.Bold;
         _cooldownText.outlineWidth = 0.24f;
         _cooldownText.outlineColor = new Color(0f, 0f, 0f, 1f);
 
@@ -173,8 +174,9 @@ public class SecondarySkillCooldownUI : MonoBehaviour
         _keyText = keyObject.AddComponent<TextMeshProUGUI>();
         _keyText.text = "E";
         _keyText.alignment = TextAlignmentOptions.Center;
-        _keyText.fontSize = 20f;
-        _keyText.color = new Color(1f, 0.89f, 0.38f, 1f);
+        _keyText.fontSize = 22f;
+        _keyText.fontStyle = FontStyles.Bold;
+        _keyText.color = new Color(0.92f, 0.74f, 0.36f, 1f);
 
         RectTransform keyRect = keyObject.GetComponent<RectTransform>();
         keyRect.anchorMin = new Vector2(0.5f, 0f);
@@ -189,9 +191,9 @@ public class SecondarySkillCooldownUI : MonoBehaviour
         _nameText = nameObject.AddComponent<TextMeshProUGUI>();
         _nameText.text = "Skill";
         _nameText.alignment = TextAlignmentOptions.Center;
-        _nameText.fontSize = 15f;
+        _nameText.fontSize = 16f;
         _nameText.enableWordWrapping = false;
-        _nameText.color = new Color(0.78f, 0.93f, 1f, 1f);
+        _nameText.color = new Color(0.96f, 0.91f, 0.78f, 1f);
 
         RectTransform nameRect = nameObject.GetComponent<RectTransform>();
         nameRect.anchorMin = new Vector2(0.5f, 1f);

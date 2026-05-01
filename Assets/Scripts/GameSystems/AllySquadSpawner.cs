@@ -81,6 +81,9 @@ public class AllySquadSpawner : MonoBehaviour
 
     private void SpawnSquad(Transform player)
     {
+        if (!GameTuning.Instance.alliesEnabled)
+            return;
+
         int meleeCount = GetMeleeAllyCount();
         int rangedCount = GetRangedAllyCount();
         int count = Mathf.Clamp(meleeCount + rangedCount, 0, 8);

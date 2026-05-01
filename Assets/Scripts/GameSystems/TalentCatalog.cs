@@ -122,6 +122,63 @@ public sealed class RunUpgradeChainDisplayInfo
     }
 }
 
+public readonly struct UnlockPreviewEntry
+{
+    public readonly string Title;
+    public readonly string ShortEffect;
+    public readonly Color AccentColor;
+    public readonly int Tier;
+    public readonly string Glyph;
+
+    public UnlockPreviewEntry(string title, string shortEffect, Color accentColor, int tier, string glyph)
+    {
+        Title = title;
+        ShortEffect = shortEffect;
+        AccentColor = accentColor;
+        Tier = tier;
+        Glyph = glyph;
+    }
+}
+
+public static class TalentIconCatalog
+{
+    // Per-talent uppercase letter abbreviations.
+    // Latin letters always render, and within a single Unlocks panel the entries are siblings
+    // (same parent) so the algorithm just needs to keep siblings distinct, which it does.
+    public static string GetGlyph(string runTalentId, string rowId, string title = null)
+    {
+        string idPart = runTalentId;
+        if (!string.IsNullOrWhiteSpace(idPart) && idPart.EndsWith("_master"))
+            idPart = idPart.Substring(0, idPart.Length - "_master".Length);
+
+        if (!string.IsNullOrWhiteSpace(idPart))
+        {
+            int lastUnderscore = idPart.LastIndexOf('_');
+            if (lastUnderscore >= 0 && lastUnderscore < idPart.Length - 1)
+            {
+                string lastSegment = idPart.Substring(lastUnderscore + 1);
+                if (lastSegment.Length >= 2)
+                    return lastSegment.Substring(0, 2).ToUpperInvariant();
+                if (lastSegment.Length == 1)
+                    return lastSegment.ToUpperInvariant();
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(title))
+        {
+            string trimmed = title.Trim();
+            string[] words = trimmed.Split(' ');
+            if (words.Length >= 2 && words[0].Length >= 1 && words[1].Length >= 1)
+                return string.Concat(char.ToUpperInvariant(words[0][0]), char.ToUpperInvariant(words[1][0]));
+            if (trimmed.Length >= 2)
+                return trimmed.Substring(0, 2).ToUpperInvariant();
+            return trimmed.ToUpperInvariant();
+        }
+
+        return "?";
+    }
+}
+
 public enum RunTalentCategory
 {
     Attack,
@@ -494,6 +551,44 @@ public static class TalentCatalog
         }
 
         return options;
+    }
+
+    public static UnlockPreviewEntry[] BuildUnlockPreview(PlayerUpgradeOption option)
+    {
+        if (option == null || !option.IsRunTalent || string.IsNullOrWhiteSpace(option.RunTalentId))
+            return System.Array.Empty<UnlockPreviewEntry>();
+
+        TalentContext context = CreateCurrentContext();
+        List<UnlockPreviewEntry> entries = new List<UnlockPreviewEntry>();
+
+        for (int i = 0; i < RunTalentDefinitions.Length; i++)
+        {
+            RunTalentDefinition definition = RunTalentDefinitions[i];
+            if (definition.ParentId != option.RunTalentId)
+                continue;
+
+            string brief = SummarizeTalentEffect(definition, context);
+            string glyph = TalentIconCatalog.GetGlyph(definition.Id, definition.RowId, definition.Title);
+            entries.Add(new UnlockPreviewEntry(definition.Title, brief, definition.AccentColor, definition.Tier, glyph));
+        }
+
+        return entries.ToArray();
+    }
+
+    private static string SummarizeTalentEffect(RunTalentDefinition definition, TalentContext context)
+    {
+        string raw = definition.BuildEffectText(context);
+        if (string.IsNullOrWhiteSpace(raw))
+            return string.Empty;
+
+        int dot = raw.IndexOf('.');
+        if (dot > 0 && dot < raw.Length - 1)
+            raw = raw.Substring(0, dot);
+
+        if (raw.Length > 64)
+            raw = raw.Substring(0, 61) + "…";
+
+        return raw.Trim();
     }
 
     public static int CountRowPoints(RunTalentState state, string rowId)

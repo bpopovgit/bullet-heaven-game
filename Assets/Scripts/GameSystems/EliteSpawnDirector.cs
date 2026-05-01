@@ -36,6 +36,12 @@ public class EliteSpawnDirector : MonoBehaviour
 
     private void Awake()
     {
+        if (!GameTuning.Instance.elitesEnabled)
+        {
+            enabled = false;
+            return;
+        }
+
         _nextEliteTime = firstEliteTimeSeconds;
     }
 

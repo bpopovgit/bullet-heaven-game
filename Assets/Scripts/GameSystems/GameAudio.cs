@@ -22,7 +22,8 @@ public enum GameSfxId
     SkillFrostNova,
     EliteSpawn,
     EliteDefeated,
-    UISelect
+    UISelect,
+    GoldPickup
 }
 
 public class GameAudio : MonoBehaviour
@@ -108,6 +109,7 @@ public class GameAudio : MonoBehaviour
     public static void PlaySkillFrostNova() => Play(GameSfxId.SkillFrostNova);
     public static void PlayEliteSpawn() => Play(GameSfxId.EliteSpawn);
     public static void PlayEliteDefeated() => Play(GameSfxId.EliteDefeated);
+    public static void PlayGoldPickup() => Play(GameSfxId.GoldPickup);
     public static void PlayUISelect() => Play(GameSfxId.UISelect);
 
     private static GameAudio EnsureInstance()

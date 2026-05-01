@@ -29,6 +29,26 @@ public class FriendlyAlly : MonoBehaviour
     {
         _followTarget = followTarget;
         _formationOffset = formationOffset;
+        IgnoreCollisionWithFollowTarget();
+    }
+
+    private void IgnoreCollisionWithFollowTarget()
+    {
+        if (_followTarget == null)
+            return;
+
+        Collider2D[] mine = GetComponentsInChildren<Collider2D>();
+        Collider2D[] target = _followTarget.GetComponentsInChildren<Collider2D>();
+
+        for (int i = 0; i < mine.Length; i++)
+        {
+            if (mine[i] == null) continue;
+            for (int j = 0; j < target.Length; j++)
+            {
+                if (target[j] == null) continue;
+                Physics2D.IgnoreCollision(mine[i], target[j], true);
+            }
+        }
     }
 
     public void ConfigureCombat(

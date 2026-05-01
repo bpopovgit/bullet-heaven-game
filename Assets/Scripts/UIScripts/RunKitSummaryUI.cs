@@ -94,10 +94,10 @@ public class RunKitSummaryUI : MonoBehaviour
         _root.sizeDelta = new Vector2(430f, 86f);
 
         Image background = rootObject.AddComponent<Image>();
-        background.color = new Color(0.03f, 0.05f, 0.07f, 0.78f);
+        background.color = new Color(0.05f, 0.04f, 0.06f, 0.86f);
 
         Outline outline = rootObject.AddComponent<Outline>();
-        outline.effectColor = new Color(0.85f, 0.72f, 0.32f, 0.45f);
+        outline.effectColor = new Color(0.86f, 0.68f, 0.30f, 0.62f);
         outline.effectDistance = new Vector2(1.5f, -1.5f);
 
         GameObject accentObject = new GameObject("CharacterAccent");
@@ -112,9 +112,9 @@ public class RunKitSummaryUI : MonoBehaviour
         accentRect.anchoredPosition = Vector2.zero;
         accentRect.sizeDelta = new Vector2(8f, 0f);
 
-        _characterText = CreateText(_root, "CharacterText", new Vector2(18f, -8f), new Vector2(392f, 24f), 18f, TextAlignmentOptions.TopLeft, new Color(0.96f, 0.9f, 0.74f, 1f));
-        _primaryText = CreateText(_root, "PrimaryText", new Vector2(18f, -33f), new Vector2(392f, 22f), 15f, TextAlignmentOptions.TopLeft, new Color(0.82f, 0.92f, 0.86f, 1f));
-        _abilitiesText = CreateText(_root, "AbilitiesText", new Vector2(18f, -57f), new Vector2(392f, 22f), 13f, TextAlignmentOptions.TopLeft, new Color(0.93f, 0.79f, 0.35f, 1f));
+        _characterText = CreateText(_root, "CharacterText", new Vector2(18f, -8f), new Vector2(392f, 26f), 19f, TextAlignmentOptions.TopLeft, new Color(0.96f, 0.91f, 0.78f, 1f));
+        _primaryText = CreateText(_root, "PrimaryText", new Vector2(18f, -34f), new Vector2(392f, 22f), 16f, TextAlignmentOptions.TopLeft, new Color(0.86f, 0.84f, 0.80f, 1f));
+        _abilitiesText = CreateText(_root, "AbilitiesText", new Vector2(18f, -58f), new Vector2(392f, 22f), 14f, TextAlignmentOptions.TopLeft, new Color(0.92f, 0.74f, 0.36f, 1f));
 
         Refresh();
     }

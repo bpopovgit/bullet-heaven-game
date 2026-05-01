@@ -75,6 +75,12 @@ public class BossSpawnDirector : MonoBehaviour
         if (!scene.IsValid() || scene.name != "Game")
             return;
 
+        if (!GameTuning.Instance.bossEnabled)
+            return;
+
+        if (RunSession.IsActive && !RunSession.IsFinalDistrict)
+            return;
+
         if (FindObjectOfType<BossSpawnDirector>() != null)
             return;
 

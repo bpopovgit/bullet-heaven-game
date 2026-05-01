@@ -40,6 +40,11 @@ public class EnemyHealth : MonoBehaviour
     [SerializeField] private int bombDamage = 50;
     [SerializeField] private float bombRadius = 6f;
     [SerializeField] private GameObject bombPickupPrefab;
+    [Range(0f, 1f)]
+    [SerializeField] private float goldDropChance = 0.20f;
+    [Min(1)]
+    [SerializeField] private int goldPickupValue = 1;
+    [SerializeField] private GameObject goldPickupPrefab;
 
     private int currentHealth;
     private EnemyResistances _resists;
@@ -74,6 +79,7 @@ public class EnemyHealth : MonoBehaviour
 
     private void Awake()
     {
+        ApplyDistrictDifficulty();
         currentHealth = maxHealth;
         FactionMember.Ensure(gameObject, FactionType.Zombie);
         FactionVisualIdentity.Ensure(gameObject);
@@ -82,6 +88,19 @@ public class EnemyHealth : MonoBehaviour
 
         if (_statusReceiver == null)
             _statusReceiver = gameObject.AddComponent<StatusReceiver>();
+    }
+
+    private void ApplyDistrictDifficulty()
+    {
+        MapDefinition district = RunSession.CurrentDistrict;
+        if (district == null || Mathf.Approximately(district.EnemyHpMultiplier, 1f))
+            return;
+
+        FactionMember fm = GetComponent<FactionMember>();
+        if (fm != null && fm.Faction == FactionType.Human)
+            return;
+
+        maxHealth = Mathf.Max(1, Mathf.RoundToInt(maxHealth * district.EnemyHpMultiplier));
     }
 
     public void TakeDamage(DamagePacket packet, FactionMember attacker = null)
@@ -104,7 +123,8 @@ public class EnemyHealth : MonoBehaviour
 
         int finalDamage = Mathf.RoundToInt(packet.amount * multiplier);
 
-        if (IsPlayerSourcedDamage(attacker))
+        bool isPlayerSourced = IsPlayerSourcedDamage(attacker);
+        if (isPlayerSourced)
         {
             PlayerCombatModifiers modifiers = PlayerCombatModifiers.Instance;
             if (modifiers != null && maxHealth > 0)
@@ -112,6 +132,10 @@ public class EnemyHealth : MonoBehaviour
                 float hpFraction = (float)currentHealth / maxHealth;
                 finalDamage = modifiers.ApplyExecuteIfApplicable(finalDamage, hpFraction);
             }
+
+            FactionSkirmishUnit skirmishUnit = GetComponent<FactionSkirmishUnit>();
+            if (skirmishUnit != null && SkirmishDirector.Instance != null)
+                SkirmishDirector.Instance.OnPlayerDamagedSkirmishUnit(skirmishUnit, finalDamage);
         }
 
         currentHealth -= finalDamage;
@@ -169,6 +193,13 @@ public class EnemyHealth : MonoBehaviour
 
         Died?.Invoke(this);
         GameAudio.PlayEnemyDeath();
+
+        FactionSkirmishUnit skirmishUnit = GetComponent<FactionSkirmishUnit>();
+        if (skirmishUnit != null && SkirmishDirector.Instance != null)
+        {
+            bool playerKill = !_hasLastDamageSourceFaction || _lastDamageSourceFaction == FactionType.Human;
+            SkirmishDirector.Instance.OnSkirmishUnitKilled(skirmishUnit, playerKill);
+        }
 
         TrySpreadStatusOnKill();
 
@@ -234,6 +265,7 @@ public class EnemyHealth : MonoBehaviour
         TryDropHealthPickup();
         TryDropMagnetPickup();
         TryDropBombPickup();
+        TryDropGoldPickup();
     }
 
     private void TryDropHealthPickup()
@@ -272,6 +304,34 @@ public class EnemyHealth : MonoBehaviour
         MagnetPickup.SpawnDefault(transform.position);
     }
 
+    private void TryDropGoldPickup()
+    {
+        if (UnityEngine.Random.value > goldDropChance)
+            return;
+
+        int scaledValue = ScaleGoldByDistrict(goldPickupValue);
+
+        if (goldPickupPrefab != null)
+        {
+            GameObject pickupObject = Instantiate(goldPickupPrefab, transform.position, Quaternion.identity);
+            if (pickupObject.TryGetComponent<GoldPickup>(out var pickup))
+                pickup.SetValue(scaledValue);
+            else
+                Debug.LogWarning($"{goldPickupPrefab.name} does not have a GoldPickup component.", goldPickupPrefab);
+
+            return;
+        }
+
+        GoldPickup.SpawnDefault(transform.position, scaledValue);
+    }
+
+    private static int ScaleGoldByDistrict(int baseValue)
+    {
+        MapDefinition district = RunSession.CurrentDistrict;
+        if (district == null) return baseValue;
+        return Mathf.Max(1, Mathf.RoundToInt(baseValue * district.EnemyHpMultiplier));
+    }
+
     private void TryDropBombPickup()
     {
         if (UnityEngine.Random.value > bombDropChance)
@@ -307,5 +367,8 @@ public class EnemyHealth : MonoBehaviour
 
         if (bombRadius <= 0f)
             bombRadius = 6f;
+
+        if (goldPickupValue <= 0)
+            goldPickupValue = 1;
     }
 }
