@@ -1164,8 +1164,25 @@ MonoBehaviour:
   useGeneratedFactionDefaults: 1
   stages:
   - startTimeSeconds: 0
-    maxAlive: 6
-    respawnDelay: 2
+    maxAlive: 50
+    respawnDelay: 1
+    fillImmediately: 1
+    enemyPrefabs: []
+    allowedSpawnRegions: 6
+    factionSpawnRules:
+    - archetype: 10
+      maxAlive: 7
+      prefabOverride: {fileID: 0}
+      allowedSpawnRegions: 31
+      rewardsEnabled: 1
+    - archetype: 11
+      maxAlive: 1
+      prefabOverride: {fileID: 0}
+      allowedSpawnRegions: 10
+      rewardsEnabled: 1
+  - startTimeSeconds: 0
+    maxAlive: 50
+    respawnDelay: 1
     fillImmediately: 1
     enemyPrefabs: []
     allowedSpawnRegions: 6

@@ -189,6 +189,8 @@ public sealed class RunTalentDefinition
 {
     private readonly Func<TalentContext, RunTalentState, PlayerUpgradeOption> _optionBuilder;
     private readonly Func<TalentContext, string> _effectBuilder;
+    private readonly Func<TalentContext, string> _titleBuilder;
+    private readonly Func<TalentContext, bool> _visibilityFilter;
 
     public readonly string Id;
     public readonly string RowId;
@@ -215,7 +217,9 @@ public sealed class RunTalentDefinition
         string[] mutuallyExclusiveWithIds,
         Color accentColor,
         Func<TalentContext, string> effectBuilder,
-        Func<TalentContext, RunTalentState, PlayerUpgradeOption> optionBuilder)
+        Func<TalentContext, RunTalentState, PlayerUpgradeOption> optionBuilder,
+        Func<TalentContext, string> titleBuilder = null,
+        Func<TalentContext, bool> visibilityFilter = null)
     {
         Id = id;
         RowId = rowId;
@@ -230,6 +234,24 @@ public sealed class RunTalentDefinition
         AccentColor = accentColor;
         _effectBuilder = effectBuilder;
         _optionBuilder = optionBuilder;
+        _titleBuilder = titleBuilder;
+        _visibilityFilter = visibilityFilter;
+    }
+
+    public string BuildTitle(TalentContext context)
+    {
+        if (_titleBuilder != null)
+        {
+            string built = _titleBuilder(context);
+            if (!string.IsNullOrWhiteSpace(built))
+                return built;
+        }
+        return Title;
+    }
+
+    public bool IsVisibleFor(TalentContext context)
+    {
+        return _visibilityFilter == null || _visibilityFilter(context);
     }
 
     public bool IsRoot => string.IsNullOrWhiteSpace(ParentId);
@@ -393,15 +415,31 @@ public static class TalentCatalog
         return others.ToArray();
     }
 
+    private static Func<TalentContext, string> CharacterTitle(string ranger, string arcanist, string vanguard)
+    {
+        return context =>
+        {
+            switch (context.Character)
+            {
+                case PlayableCharacterChoice.HumanRanger: return ranger;
+                case PlayableCharacterChoice.HumanArcanist: return arcanist;
+                case PlayableCharacterChoice.HumanVanguard: return vanguard;
+                default: return ranger;
+            }
+        };
+    }
+
+    private static bool IsVanguardOnly(TalentContext context) => context.Character == PlayableCharacterChoice.HumanVanguard;
+
     private static readonly RunTalentDefinition[] RunTalentDefinitions =
     {
         // Attack Primary tree
-        new RunTalentDefinition("atk_primary_power", "attack_primary", "Primary Damage Tree", RunTalentCategory.Attack, null, "Power Shot", 5, 1, 0, null, new Color(0.9f, 0.68f, 0.24f, 1f), context => $"{context.PrimaryName} gains +8% damage per point.", BuildPrimaryPowerOption),
-        new RunTalentDefinition("atk_primary_heavy", "attack_primary", "Primary Damage Tree", RunTalentCategory.Attack, "atk_primary_power", "Big Shot", 5, 2, 1, null, new Color(1f, 0.76f, 0.32f, 1f), BuildPrimaryHeavyEffect, BuildPrimaryHeavyOption),
-        new RunTalentDefinition("atk_primary_splinter", "attack_primary", "Primary Damage Tree", RunTalentCategory.Attack, "atk_primary_power", "Splinter", 5, 2, 1, null, new Color(1f, 0.84f, 0.42f, 1f), BuildPrimarySplinterEffect, BuildPrimarySplinterOption),
-        new RunTalentDefinition("atk_primary_reaper", "attack_primary", "Primary Damage Tree", RunTalentCategory.Attack, "atk_primary_power", "Reaper Rounds", 5, 2, 1, null, new Color(0.96f, 0.62f, 0.2f, 1f), BuildPrimaryReaperEffect, BuildPrimaryReaperOption),
+        new RunTalentDefinition("atk_primary_power", "attack_primary", "Primary Damage Tree", RunTalentCategory.Attack, null, "Power Shot", 5, 1, 0, null, new Color(0.9f, 0.68f, 0.24f, 1f), context => $"{context.PrimaryName} gains +8% damage per point.", BuildPrimaryPowerOption, titleBuilder: CharacterTitle("Power Shot", "Power Cast", "Forceful Strike")),
+        new RunTalentDefinition("atk_primary_heavy", "attack_primary", "Primary Damage Tree", RunTalentCategory.Attack, "atk_primary_power", "Big Shot", 5, 2, 1, null, new Color(1f, 0.76f, 0.32f, 1f), BuildPrimaryHeavyEffect, BuildPrimaryHeavyOption, titleBuilder: CharacterTitle("Big Shot", "Heavy Cast", "Crushing Blow")),
+        new RunTalentDefinition("atk_primary_splinter", "attack_primary", "Primary Damage Tree", RunTalentCategory.Attack, "atk_primary_power", "Splinter", 5, 2, 1, null, new Color(1f, 0.84f, 0.42f, 1f), BuildPrimarySplinterEffect, BuildPrimarySplinterOption, titleBuilder: CharacterTitle("Splinter", "Branching Cast", "Sweeping Edge")),
+        new RunTalentDefinition("atk_primary_reaper", "attack_primary", "Primary Damage Tree", RunTalentCategory.Attack, "atk_primary_power", "Reaper Rounds", 5, 2, 1, null, new Color(0.96f, 0.62f, 0.2f, 1f), BuildPrimaryReaperEffect, BuildPrimaryReaperOption, titleBuilder: CharacterTitle("Reaper Rounds", "Reaping Cast", "Reaper's Cut")),
         new RunTalentDefinition("atk_primary_focus", "attack_primary", "Primary Damage Tree", RunTalentCategory.Attack, "atk_primary_heavy", "Focused Strike", 3, 3, 4, null, new Color(1f, 0.7f, 0.28f, 1f), BuildPrimaryFocusEffect, BuildPrimaryFocusOption),
-        new RunTalentDefinition("atk_primary_volley", "attack_primary", "Primary Damage Tree", RunTalentCategory.Attack, "atk_primary_splinter", "Pressure Volley", 3, 3, 4, null, new Color(1f, 0.78f, 0.36f, 1f), BuildPrimaryVolleyEffect, BuildPrimaryVolleyOption),
+        new RunTalentDefinition("atk_primary_volley", "attack_primary", "Primary Damage Tree", RunTalentCategory.Attack, "atk_primary_splinter", "Pressure Volley", 3, 3, 4, null, new Color(1f, 0.78f, 0.36f, 1f), BuildPrimaryVolleyEffect, BuildPrimaryVolleyOption, titleBuilder: CharacterTitle("Pressure Volley", "Pressure Cascade", "Whirlwind Stance")),
         new RunTalentDefinition("atk_primary_finisher", "attack_primary", "Primary Damage Tree", RunTalentCategory.Attack, "atk_primary_reaper", "Killing Stroke", 3, 3, 4, null, new Color(0.92f, 0.56f, 0.18f, 1f), BuildPrimaryFinisherEffect, BuildPrimaryFinisherOption),
         new RunTalentDefinition("atk_primary_overcharge", "attack_primary", "Primary Damage Tree", RunTalentCategory.Attack, "atk_primary_focus", "Overcharge", 2, 4, 9, MutexAgainst(AttackPrimaryCapstoneMutex, "atk_primary_overcharge"), new Color(1f, 0.86f, 0.42f, 1f), BuildPrimaryOverchargeEffect, BuildPrimaryOverchargeOption),
         new RunTalentDefinition("atk_primary_annihilator", "attack_primary", "Primary Damage Tree", RunTalentCategory.Attack, "atk_primary_finisher", "Annihilator", 2, 4, 9, MutexAgainst(AttackPrimaryCapstoneMutex, "atk_primary_annihilator"), new Color(0.9f, 0.46f, 0.16f, 1f), BuildPrimaryAnnihilatorEffect, BuildPrimaryAnnihilatorOption),
@@ -453,7 +491,7 @@ public static class TalentCatalog
         // Defense Command tree
         new RunTalentDefinition("def_command_rally", "defense_command", "Faction Command Tree", RunTalentCategory.Defense, null, "Rallying Banner", 5, 1, 0, null, new Color(0.78f, 0.74f, 1f, 1f), context => "+5% damage and +5 max HP per point.", BuildRallyingBannerOption),
         new RunTalentDefinition("def_command_guard", "defense_command", "Faction Command Tree", RunTalentCategory.Defense, "def_command_rally", "Guard Detail", 5, 2, 1, null, new Color(0.86f, 0.82f, 1f, 1f), context => "+10 max HP per point.", BuildGuardDetailOption),
-        new RunTalentDefinition("def_command_crossfire", "defense_command", "Faction Command Tree", RunTalentCategory.Defense, "def_command_rally", "Crossfire Drills", 5, 2, 1, null, new Color(0.9f, 0.86f, 1f, 1f), BuildFactionCommandEffect, BuildCrossfireDrillsOption),
+        new RunTalentDefinition("def_command_crossfire", "defense_command", "Faction Command Tree", RunTalentCategory.Defense, "def_command_rally", "Crossfire Drills", 5, 2, 1, null, new Color(0.9f, 0.86f, 1f, 1f), BuildFactionCommandEffect, BuildCrossfireDrillsOption, titleBuilder: CharacterTitle("Crossfire Drills", "Channeling Drills", "Shieldwall Drills")),
         new RunTalentDefinition("def_command_supply", "defense_command", "Faction Command Tree", RunTalentCategory.Defense, "def_command_rally", "Supply Line", 5, 2, 1, null, new Color(0.82f, 0.9f, 1f, 1f), context => "+0.45 pickup radius and +4% movement speed per point.", BuildSupplyLineOption),
         new RunTalentDefinition("def_command_guard_master", "defense_command", "Faction Command Tree", RunTalentCategory.Defense, "def_command_guard", "Guard Captain", 3, 3, 4, null, new Color(0.84f, 0.8f, 1f, 1f), context => "+14 max HP per point.", BuildGuardMasterOption),
         new RunTalentDefinition("def_command_crossfire_master", "defense_command", "Faction Command Tree", RunTalentCategory.Defense, "def_command_crossfire", "Coordinated Strike", 3, 3, 4, null, new Color(0.88f, 0.84f, 1f, 1f), BuildCrossfireMasterEffect, BuildCrossfireMasterOption),
@@ -541,6 +579,9 @@ public static class TalentCatalog
         for (int i = 0; i < RunTalentDefinitions.Length; i++)
         {
             RunTalentDefinition definition = RunTalentDefinitions[i];
+            if (!definition.IsVisibleFor(context))
+                continue;
+
             int rowPoints = CountRowPoints(state, definition.RowId);
             if (!definition.IsUnlocked(state, rowPoints) || definition.IsMaxed(state))
                 continue;
@@ -567,9 +608,13 @@ public static class TalentCatalog
             if (definition.ParentId != option.RunTalentId)
                 continue;
 
+            if (!definition.IsVisibleFor(context))
+                continue;
+
             string brief = SummarizeTalentEffect(definition, context);
-            string glyph = TalentIconCatalog.GetGlyph(definition.Id, definition.RowId, definition.Title);
-            entries.Add(new UnlockPreviewEntry(definition.Title, brief, definition.AccentColor, definition.Tier, glyph));
+            string title = definition.BuildTitle(context);
+            string glyph = TalentIconCatalog.GetGlyph(definition.Id, definition.RowId, title);
+            entries.Add(new UnlockPreviewEntry(title, brief, definition.AccentColor, definition.Tier, glyph));
         }
 
         return entries.ToArray();
@@ -628,6 +673,9 @@ public static class TalentCatalog
             if (definition.RowId != rowId)
                 continue;
 
+            if (!definition.IsVisibleFor(context))
+                continue;
+
             rowName = $"{definition.Category}: {definition.RowName}";
             nodes.Add(BuildRunTalentNode(context, state, definition));
         }
@@ -664,7 +712,7 @@ public static class TalentCatalog
 
         return new RunUpgradeNodeDisplayInfo(
             $"{points} / {definition.MaxPoints} points",
-            definition.Title,
+            definition.BuildTitle(context),
             requirement,
             effectText,
             definition.AccentColor);
@@ -688,10 +736,11 @@ public static class TalentCatalog
 
     private static string GetTalentTitle(string id)
     {
+        TalentContext context = CreateCurrentContext();
         for (int i = 0; i < RunTalentDefinitions.Length; i++)
         {
             if (RunTalentDefinitions[i].Id == id)
-                return RunTalentDefinitions[i].Title;
+                return RunTalentDefinitions[i].BuildTitle(context);
         }
 
         return "parent talent";
@@ -1385,7 +1434,7 @@ public static class TalentCatalog
                 return $"{context.PrimaryName} status chance climbs further with each cast.";
             case PlayableCharacterChoice.HumanVanguard:
             default:
-                return "Vanguard Cleave widens its arc into a sweeping pressure swing.";
+                return "First point converts Cleave into a 360 degrees Whirlwind. Each point also adds +0.18 melee range.";
         }
     }
 
@@ -1476,7 +1525,7 @@ public static class TalentCatalog
                 return CreateTalentOption("atk_primary_volley", context, state, PlayerUpgradeType.MagicStatusChance, amount: 0.1f, hasSecondaryUpgrade: true, secondaryType: PlayerUpgradeType.MagicCooldownReduction, secondaryAmount: 0.05f, scope: PlayerUpgradeScope.Arcanist);
             case PlayableCharacterChoice.HumanVanguard:
             default:
-                return CreateTalentOption("atk_primary_volley", context, state, PlayerUpgradeType.MeleeArcAngle, amount: 10f, hasSecondaryUpgrade: true, secondaryType: PlayerUpgradeType.MeleeRadius, secondaryAmount: 0.12f, scope: PlayerUpgradeScope.Vanguard);
+                return CreateTalentOption("atk_primary_volley", context, state, PlayerUpgradeType.MeleeWhirlwindUnlock, hasSecondaryUpgrade: true, secondaryType: PlayerUpgradeType.MeleeRadius, secondaryAmount: 0.18f, scope: PlayerUpgradeScope.Vanguard);
         }
     }
 
@@ -1726,7 +1775,7 @@ public static class TalentCatalog
         string description = $"{BuildAppliedTalentEffectText(type, amount, intAmount, hasSecondaryUpgrade, secondaryType, secondaryAmount, secondaryIntAmount)}\n{requirement}";
 
         return new PlayerUpgradeOption(
-            definition.Title,
+            definition.BuildTitle(context),
             description,
             type,
             amount,
@@ -1832,6 +1881,8 @@ public static class TalentCatalog
                 return $"adds a {FormatPercent(amount)} aftershock blast";
             case PlayerUpgradeType.SkillBlinkDistance:
                 return $"+{FormatDecimal(amount)} E skill blink toward cursor";
+            case PlayerUpgradeType.MeleeWhirlwindUnlock:
+                return "unlocks Whirlwind Stance";
             default:
                 return "Improve this talent";
         }

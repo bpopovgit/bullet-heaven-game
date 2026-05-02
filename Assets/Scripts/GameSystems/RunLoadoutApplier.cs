@@ -106,6 +106,27 @@ public class RunLoadoutApplier : MonoBehaviour
 
         skill.Configure(RunLoadoutState.SkillChoice);
 
+        if (player.GetComponent<PlayerDash>() == null)
+            player.AddComponent<PlayerDash>();
+
+        PlayerSecondaryWeapon secondaryWeapon = player.GetComponent<PlayerSecondaryWeapon>();
+        if (secondaryWeapon == null)
+            secondaryWeapon = player.AddComponent<PlayerSecondaryWeapon>();
+
+        secondaryWeapon.ConfigureForCharacter(RunLoadoutState.CharacterChoice);
+
+        if (RunLoadoutState.CharacterChoice == PlayableCharacterChoice.HumanVanguard)
+        {
+            if (player.GetComponent<PlayerSecondaryMelee>() == null)
+                player.AddComponent<PlayerSecondaryMelee>();
+        }
+        else
+        {
+            PlayerSecondaryMelee existingMelee = player.GetComponent<PlayerSecondaryMelee>();
+            if (existingMelee != null)
+                Destroy(existingMelee);
+        }
+
         Debug.Log($"LOADOUT APPLIED: {RunLoadoutState.BuildSummary()}");
         Debug.Log($"CHARACTER APPLIED: {characterSummary}");
         Debug.Log($"PASSIVE APPLIED: {passiveSummary}");

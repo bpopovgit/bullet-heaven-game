@@ -471,11 +471,11 @@ public static class RunLoadoutState
         switch (choice)
         {
             case StartingSkillChoice.MagneticPulse:
-                return "Magnetic Pulse";
+                return "Magnetic Vortex";
             case StartingSkillChoice.ArcaneShield:
                 return "Arcane Shield";
             case StartingSkillChoice.FrostNova:
-                return "Frost Nova";
+                return "Cryo Shatter";
             default:
                 return choice.ToString();
         }
@@ -486,11 +486,11 @@ public static class RunLoadoutState
         switch (choice)
         {
             case StartingSkillChoice.MagneticPulse:
-                return "Pushes nearby enemies back and tugs nearby pickups toward you on E.";
+                return "Drops a vortex that pulls enemies into a cluster, then detonates outward with a shock burst.";
             case StartingSkillChoice.ArcaneShield:
                 return "Grants a short burst of invulnerability on E when the screen gets dangerous.";
             case StartingSkillChoice.FrostNova:
-                return "Unleashes a cold burst around you that freezes nearby enemies in place for a short window.";
+                return "Freezes nearby enemies and primes them — your next hit on a primed enemy deals heavy shatter damage.";
             default:
                 return string.Empty;
         }

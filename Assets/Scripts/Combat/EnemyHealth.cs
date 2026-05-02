@@ -51,6 +51,48 @@ public class EnemyHealth : MonoBehaviour
     private StatusReceiver _statusReceiver;
     private bool _hasLastDamageSourceFaction;
     private FactionType _lastDamageSourceFaction;
+    private float _shatterPrimedUntil;
+    private float _shatterMultiplier = 1f;
+    private GameObject _shatterPrimeVisual;
+
+    public bool IsShatterPrimed => Time.time < _shatterPrimedUntil;
+
+    public void PrimeForShatter(float duration, float multiplier)
+    {
+        if (IsDead || duration <= 0f || multiplier <= 1f)
+            return;
+
+        _shatterPrimedUntil = Time.time + duration;
+        _shatterMultiplier = multiplier;
+        EnsureShatterPrimeVisual();
+    }
+
+    private void EnsureShatterPrimeVisual()
+    {
+        if (_shatterPrimeVisual != null)
+        {
+            ShatterPrimeGlow existing = _shatterPrimeVisual.GetComponent<ShatterPrimeGlow>();
+            if (existing != null)
+                existing.Refresh(_shatterPrimedUntil);
+            return;
+        }
+
+        _shatterPrimeVisual = new GameObject("ShatterPrimeGlow");
+        _shatterPrimeVisual.transform.SetParent(transform, false);
+        _shatterPrimeVisual.transform.localPosition = Vector3.zero;
+        _shatterPrimeVisual.AddComponent<ShatterPrimeGlow>().Refresh(_shatterPrimedUntil);
+    }
+
+    private void ConsumeShatterPrime()
+    {
+        _shatterPrimedUntil = 0f;
+        _shatterMultiplier = 1f;
+        if (_shatterPrimeVisual != null)
+        {
+            Destroy(_shatterPrimeVisual);
+            _shatterPrimeVisual = null;
+        }
+    }
 
     public event Action<EnemyHealth> Died;
     public bool IsDead { get; private set; }
@@ -131,6 +173,13 @@ public class EnemyHealth : MonoBehaviour
             {
                 float hpFraction = (float)currentHealth / maxHealth;
                 finalDamage = modifiers.ApplyExecuteIfApplicable(finalDamage, hpFraction);
+            }
+
+            if (IsShatterPrimed)
+            {
+                finalDamage = Mathf.Max(1, Mathf.RoundToInt(finalDamage * _shatterMultiplier));
+                ConsumeShatterPrime();
+                ShatterBurstVisual.Spawn(transform.position);
             }
 
             FactionSkirmishUnit skirmishUnit = GetComponent<FactionSkirmishUnit>();

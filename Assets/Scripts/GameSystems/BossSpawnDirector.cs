@@ -78,8 +78,10 @@ public class BossSpawnDirector : MonoBehaviour
         if (!GameTuning.Instance.bossEnabled)
             return;
 
-        if (RunSession.IsActive && !RunSession.IsFinalDistrict)
-            return;
+        // District-gated boss is paused while the map system is single-arena.
+        // Re-enable once distinct districts exist so the dragon is the run climax again.
+        // if (RunSession.IsActive && !RunSession.IsFinalDistrict)
+        //     return;
 
         if (FindObjectOfType<BossSpawnDirector>() != null)
             return;

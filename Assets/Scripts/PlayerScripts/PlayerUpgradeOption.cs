@@ -31,7 +31,8 @@ public enum PlayerUpgradeType
     OnKillStatusSpreadStrength,
     SkillElementBurstDamage,
     BombSecondaryBlastFraction,
-    SkillBlinkDistance
+    SkillBlinkDistance,
+    MeleeWhirlwindUnlock
 }
 
 public enum PlayerUpgradeScope
@@ -277,6 +278,10 @@ public class PlayerUpgradeOption
             case PlayerUpgradeType.SkillBlinkDistance:
                 if (modifiers != null) modifiers.AddSkillBlinkDistance(amount);
                 break;
+
+            case PlayerUpgradeType.MeleeWhirlwindUnlock:
+                if (melee != null) melee.UnlockWhirlwind();
+                break;
         }
     }
 
@@ -308,6 +313,7 @@ public class PlayerUpgradeOption
             case PlayerUpgradeType.MeleeRadius:
             case PlayerUpgradeType.MeleeArcAngle:
             case PlayerUpgradeType.MeleeCooldownReduction:
+            case PlayerUpgradeType.MeleeWhirlwindUnlock:
                 return character == PlayableCharacterChoice.HumanVanguard;
 
             case PlayerUpgradeType.MagicRange:
@@ -438,6 +444,15 @@ public class PlayerUpgradeOption
                 hasSecondaryUpgrade: true,
                 secondaryUpgradeType: PlayerUpgradeType.MeleeCooldownReduction,
                 secondaryAmount: 0.08f,
+                scope: PlayerUpgradeScope.Vanguard),
+
+            new PlayerUpgradeOption(
+                "Maelstrom Form",
+                "Cleave becomes a Whirlwind, plus +0.4 cleave range.",
+                PlayerUpgradeType.MeleeWhirlwindUnlock,
+                hasSecondaryUpgrade: true,
+                secondaryUpgradeType: PlayerUpgradeType.MeleeRadius,
+                secondaryAmount: 0.4f,
                 scope: PlayerUpgradeScope.Vanguard),
 
             new PlayerUpgradeOption(

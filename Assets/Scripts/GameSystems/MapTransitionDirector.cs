@@ -78,8 +78,10 @@ public class MapTransitionDirector : MonoBehaviour
         if (district == null)
             return;
 
-        if (Time.time - _districtStartTime >= district.DurationSeconds)
-            StartCoroutine(TransitionRoutine());
+        // District transition is disabled until distinct maps exist. Re-enable when each
+        // district has its own scene/layout instead of just a tint + timer.
+        // if (Time.time - _districtStartTime >= district.DurationSeconds)
+        //     StartCoroutine(TransitionRoutine());
     }
 
     private IEnumerator TransitionRoutine()

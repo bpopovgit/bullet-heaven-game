@@ -16,11 +16,25 @@ public class PlayerMeleeAttack : MonoBehaviour
     [SerializeField] private float visualDuration = 0.12f;
     [SerializeField] private Color slashColor = new Color(1f, 0.78f, 0.24f, 0.44f);
 
+    private const float WhirlwindDuration = 0.85f;
+    private const float WhirlwindTickInterval = 0.17f;
+    private const float WhirlwindTickDamageFraction = 0.6f;
+    private const float WhirlwindRadiusBonus = 0.55f;
+    private const float WhirlwindCooldown = 1.05f;
+
     private PlayerInput _playerInput;
     private InputAction _fire;
     private PlayerStats _stats;
     private FactionMember _faction;
     private float _cooldownRemaining;
+
+    private bool _whirlwindUnlocked;
+    private bool _whirlwindActive;
+    private float _whirlwindTimeRemaining;
+    private float _whirlwindNextTickAt;
+    private WhirlwindVisual _activeWhirlwindVisual;
+
+    public bool IsWhirlwindUnlocked => _whirlwindUnlocked;
 
     public void ConfigureForCharacter(PlayableCharacterChoice character)
     {
@@ -54,6 +68,18 @@ public class PlayerMeleeAttack : MonoBehaviour
         Debug.Log($"VANGUARD CLEAVE COOLDOWN: {cooldown:0.00}s");
     }
 
+    public void UnlockWhirlwind()
+    {
+        if (_whirlwindUnlocked)
+            return;
+
+        _whirlwindUnlocked = true;
+        Debug.Log("WHIRLWIND STANCE UNLOCKED: cleave is now a 360 degrees whirlwind.");
+
+        if (RunAnnouncementUI.Instance != null)
+            RunAnnouncementUI.Instance.ShowMessage("WHIRLWIND STANCE", 2.6f);
+    }
+
     private void Awake()
     {
         _playerInput = GetComponent<PlayerInput>();
@@ -80,12 +106,52 @@ public class PlayerMeleeAttack : MonoBehaviour
 
         _cooldownRemaining -= Time.deltaTime;
 
+        if (_whirlwindActive)
+        {
+            UpdateWhirlwind();
+            return;
+        }
+
         if (_cooldownRemaining > 0f || _fire == null || !_fire.IsPressed())
             return;
 
         Vector2 direction = GetAimDirection();
-        PerformCleave(direction);
-        _cooldownRemaining = cooldown;
+
+        if (_whirlwindUnlocked)
+            StartWhirlwind();
+        else
+        {
+            PerformCleave(direction);
+            _cooldownRemaining = cooldown;
+        }
+    }
+
+    private void StartWhirlwind()
+    {
+        _whirlwindActive = true;
+        _whirlwindTimeRemaining = WhirlwindDuration;
+        _whirlwindNextTickAt = 0f;
+        _activeWhirlwindVisual = WhirlwindVisual.Spawn(transform, radius + WhirlwindRadiusBonus, WhirlwindDuration);
+    }
+
+    private void UpdateWhirlwind()
+    {
+        _whirlwindTimeRemaining -= Time.deltaTime;
+        _whirlwindNextTickAt -= Time.deltaTime;
+
+        if (_whirlwindNextTickAt <= 0f)
+        {
+            PerformWhirlwindTick();
+            _whirlwindNextTickAt = WhirlwindTickInterval;
+        }
+
+        if (_whirlwindTimeRemaining <= 0f)
+        {
+            _whirlwindActive = false;
+            _whirlwindTimeRemaining = 0f;
+            _cooldownRemaining = WhirlwindCooldown;
+            _activeWhirlwindVisual = null;
+        }
     }
 
     private Vector2 GetAimDirection()
@@ -140,6 +206,33 @@ public class PlayerMeleeAttack : MonoBehaviour
         }
 
         SpawnSlashVisual(direction);
+    }
+
+    private void PerformWhirlwindTick()
+    {
+        int tickDamage = Mathf.Max(1, Mathf.RoundToInt(baseDamage * WhirlwindTickDamageFraction * (_stats != null ? _stats.DamageMultiplier : 1f)));
+        float effectiveRadius = radius + WhirlwindRadiusBonus;
+        DamagePacket packet = new DamagePacket
+        {
+            amount = tickDamage,
+            element = DamageElement.Physical,
+            splashRadius = 0f,
+            sourcePos = transform.position,
+            status = StatusEffect.None,
+            statusDuration = 0f,
+            statusStrength = 0f
+        };
+        packet.Clamp();
+
+        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, effectiveRadius);
+        for (int i = 0; i < hits.Length; i++)
+        {
+            Collider2D hit = hits[i];
+            if (hit == null || hit.GetComponentInParent<EnemyHealth>() == null)
+                continue;
+
+            FactionCombat.TryApplyDamage(hit.gameObject, packet, _faction, applyPlayerKnockback: false);
+        }
     }
 
     private void SpawnSlashVisual(Vector2 direction)

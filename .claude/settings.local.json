@@ -4,7 +4,8 @@
       "mcp__claude_ai_Notion__notion-fetch",
       "Bash(git *)",
       "Bash(dotnet --version)",
-      "Bash(dotnet build *)"
+      "Bash(dotnet build *)",
+      "PowerShell(cmd /c dir \"D:\\\\Bullet Heaven Game\" /AD /B)"
     ]
   }
 }

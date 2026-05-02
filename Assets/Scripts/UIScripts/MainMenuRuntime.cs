@@ -1137,7 +1137,15 @@ public class MainMenuRuntime : MonoBehaviour
             _weaponDescriptionText.text = RunLoadoutState.GetPrimaryAttackDescription(RunLoadoutState.CharacterChoice, RunLoadoutState.WeaponChoice);
 
         if (_weaponPreviewText != null)
-            _weaponPreviewText.text = RunLoadoutState.GetPrimaryAttackPreviewText(RunLoadoutState.CharacterChoice, RunLoadoutState.WeaponChoice);
+        {
+            Transform previewBox = _weaponPreviewText.transform.parent;
+            bool hidePreview = RunLoadoutState.CharacterChoice == PlayableCharacterChoice.HumanVanguard;
+            if (previewBox != null && previewBox.gameObject.activeSelf == hidePreview)
+                previewBox.gameObject.SetActive(!hidePreview);
+
+            if (!hidePreview)
+                _weaponPreviewText.text = RunLoadoutState.GetPrimaryAttackPreviewText(RunLoadoutState.CharacterChoice, RunLoadoutState.WeaponChoice);
+        }
 
         if (_bombChoiceText != null)
             _bombChoiceText.text = RunLoadoutState.GetBombName(RunLoadoutState.BombChoice);

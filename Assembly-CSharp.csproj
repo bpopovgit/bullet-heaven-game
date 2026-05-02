@@ -77,6 +77,8 @@
     <Compile Include="Assets\Scripts\Pickups\PickupSpriteFactory.cs" />
     <Compile Include="Assets\Scripts\GameSystems\FactionSkirmishDirector.cs" />
     <Compile Include="Assets\Scripts\GameSystems\RunLoadoutState.cs" />
+    <Compile Include="Assets\Scripts\PlayerScripts\WhirlwindVisual.cs" />
+    <Compile Include="Assets\Scripts\PlayerScripts\PlayerSecondaryMelee.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_ExampleScript_01.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMPro_InstructionOverlay.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\VertexShakeB.cs" />
@@ -113,8 +115,10 @@
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark04.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\ChatController.cs" />
     <Compile Include="Assets\Scripts\UIScripts\GoldCounterUI.cs" />
+    <Compile Include="Assets\Scripts\PlayerScripts\MagneticVortexEffect.cs" />
     <Compile Include="Assets\Scripts\UIScripts\RunAnnouncementUI.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_DigitValidator.cs" />
+    <Compile Include="Assets\Scripts\PlayerScripts\PlayerDash.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_FrameRateCounter.cs" />
     <Compile Include="Assets\Scripts\Combat\DamageType.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark01.cs" />
@@ -138,6 +142,7 @@
     <Compile Include="Assets\Scripts\GameSystems\MapCatalog.cs" />
     <Compile Include="Assets\Scripts\GameSystems\FactionSkirmish.cs" />
     <Compile Include="Assets\Scripts\UIScripts\ScoreTextUI.cs" />
+    <Compile Include="Assets\Scripts\PlayerScripts\PlayerSecondaryWeapon.cs" />
     <Compile Include="Assets\Scripts\GameSystems\TalentCatalog.cs" />
     <Compile Include="Assets\Scripts\UIScripts\UnlockTooltip.cs" />
     <Compile Include="Assets\Scripts\GameSystems\BossSpawnPoint.cs" />
@@ -173,6 +178,7 @@
     <Compile Include="Assets\Scripts\UIScripts\PlayerHealthUI.cs" />
     <Compile Include="Assets\Scripts\PlayerScripts\PlayerShooting.cs" />
     <Compile Include="Assets\Scripts\UIScripts\RunKitSummaryUI.cs" />
+    <Compile Include="Assets\Scripts\Combat\ShatterEffectsVisuals.cs" />
     <Compile Include="Assets\Scripts\Combat\EnemyHealth.cs" />
   </ItemGroup>
   <ItemGroup>

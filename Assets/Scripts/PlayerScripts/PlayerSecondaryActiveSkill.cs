@@ -175,39 +175,18 @@ public class PlayerSecondaryActiveSkill : MonoBehaviour
     private void ActivateMagneticPulse()
     {
         Vector2 origin = transform.position;
-        int count = Physics2D.OverlapCircleNonAlloc(origin, _config.radius, _enemyHits);
-        int pushed = 0;
 
-        DamagePacket packet = new DamagePacket(
-            _config.damage,
-            DamageElement.Physical,
-            StatusEffect.None,
-            0f,
-            0f,
-            0f,
-            origin);
-
-        for (int i = 0; i < count; i++)
-        {
-            Collider2D hit = _enemyHits[i];
-            if (hit == null || !hit.TryGetComponent<EnemyHealth>(out EnemyHealth enemy))
-                continue;
-
-            enemy.TakeDamage(packet);
-
-            Rigidbody2D enemyBody = hit.attachedRigidbody;
-            if (enemyBody != null)
-            {
-                Vector2 direction = ((Vector2)hit.transform.position - origin).normalized;
-                enemyBody.AddForce(direction * _config.force, ForceMode2D.Impulse);
-            }
-
-            pushed++;
-        }
+        MagneticVortexEffect.Spawn(
+            origin,
+            _config.radius,
+            Mathf.Max(1, _config.damage),
+            Mathf.Max(_config.force, 11f),
+            _config.iconPrimaryColor,
+            _config.iconSecondaryColor);
 
         PlayerPickup[] pickups = FindObjectsOfType<PlayerPickup>();
         int attracted = 0;
-        float pickupRadius = _config.radius * 1.8f;
+        float pickupRadius = _config.radius * 2.4f;
         for (int i = 0; i < pickups.Length; i++)
         {
             PlayerPickup pickup = pickups[i];
@@ -222,8 +201,7 @@ public class PlayerSecondaryActiveSkill : MonoBehaviour
         }
 
         GameAudio.PlaySkillMagneticPulse();
-        SecondarySkillVisual.SpawnPulse(transform.position, _config.iconPrimaryColor, _config.iconSecondaryColor, _config.radius, 0.45f);
-        Debug.Log($"MAGNETIC PULSE: pushed {pushed} enemies and attracted {attracted} pickups.");
+        Debug.Log($"MAGNETIC VORTEX: spawned at {origin}, attracted {attracted} pickups, will pull-then-detonate.");
     }
 
     private void ActivateArcaneShield()
@@ -254,9 +232,13 @@ public class PlayerSecondaryActiveSkill : MonoBehaviour
 
     private void ActivateFrostNova()
     {
+        const float ShatterPrimeDuration = 4f;
+        const float ShatterMultiplier = 1.85f;
+
         Vector2 origin = transform.position;
         int count = Physics2D.OverlapCircleNonAlloc(origin, _config.radius, _enemyHits);
         int frozen = 0;
+        int primed = 0;
 
         DamagePacket packet = new DamagePacket(
             _config.damage,
@@ -277,11 +259,17 @@ public class PlayerSecondaryActiveSkill : MonoBehaviour
 
             enemy.TakeDamage(packet);
             frozen++;
+
+            if (!enemy.IsDead)
+            {
+                enemy.PrimeForShatter(ShatterPrimeDuration, ShatterMultiplier);
+                primed++;
+            }
         }
 
         GameAudio.PlaySkillFrostNova();
         SecondarySkillVisual.SpawnPulse(transform.position, _config.iconPrimaryColor, _config.iconSecondaryColor, _config.radius, 0.55f);
-        Debug.Log($"FROST NOVA: froze {frozen} enemies.");
+        Debug.Log($"CRYO SHATTER: froze {frozen} enemies, primed {primed} for shatter (×{ShatterMultiplier}).");
     }
 
     private static SecondaryActiveSkillDefinition CreateConfig(StartingSkillChoice choice)
@@ -307,7 +295,7 @@ public class PlayerSecondaryActiveSkill : MonoBehaviour
             case StartingSkillChoice.FrostNova:
                 return new SecondaryActiveSkillDefinition
                 {
-                    displayName = "Frost Nova",
+                    displayName = "Cryo Shatter",
                     type = SecondaryActiveSkillType.FrostNova,
                     cooldown = 13f,
                     radius = 4.8f,
@@ -323,15 +311,15 @@ public class PlayerSecondaryActiveSkill : MonoBehaviour
             default:
                 return new SecondaryActiveSkillDefinition
                 {
-                    displayName = "Magnetic Pulse",
+                    displayName = "Magnetic Vortex",
                     type = SecondaryActiveSkillType.MagneticPulse,
-                    cooldown = 11f,
-                    radius = 5.5f,
-                    duration = 0.45f,
-                    force = 11f,
-                    damage = 10,
-                    statusDuration = 0f,
-                    statusStrength = 0f,
+                    cooldown = 12f,
+                    radius = 5.2f,
+                    duration = 0.95f,
+                    force = 14f,
+                    damage = 38,
+                    statusDuration = 1.6f,
+                    statusStrength = 0.35f,
                     iconPrimaryColor = new Color(0.42f, 1f, 0.72f, 1f),
                     iconSecondaryColor = new Color(0.95f, 1f, 0.78f, 0.9f)
                 };
